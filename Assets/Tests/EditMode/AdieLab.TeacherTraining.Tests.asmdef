@@ -1,0 +1,15 @@
+{
+  "name": "AdieLab.TeacherTraining.Tests",
+  "rootNamespace": "AdieLab.TeacherTraining.Tests",
+  "references": [
+    "AdieLab.TeacherTraining",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}

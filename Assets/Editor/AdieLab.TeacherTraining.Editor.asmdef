@@ -1,0 +1,13 @@
+{
+  "name": "AdieLab.TeacherTraining.Editor",
+  "rootNamespace": "AdieLab.TeacherTraining.Editor",
+  "references": [
+    "AdieLab.TeacherTraining",
+    "Unity.ugui",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true
+}

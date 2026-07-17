@@ -1,0 +1,255 @@
+using System;
+using System.IO;
+using System.Linq;
+using AdieLab.TeacherTraining;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace AdieLab.TeacherTraining.Editor
+{
+    [InitializeOnLoad]
+    public static class ClassmateGazePlayModeQaRunner
+    {
+        private const string ArmedKey = "AdieLab.TeacherTraining.ClassmateGazeQaArmed";
+        private const string QuitKey = "AdieLab.TeacherTraining.ClassmateGazeQaQuit";
+        private const string ScenePath = "Assets/Scenes/KoreanClassroomTraining.unity";
+        private const string OutputPath = "Assets/Reference/Unity_Classmates_Tracking_Teacher.png";
+        private const string IdleBehaviorOutputPath = "Assets/Reference/Unity_Npc_IdleBehaviors.png";
+        private const string ClassroomIdleOutputPath = "Assets/Reference/Unity_Npc_IdleBehaviors_ClassroomView.png";
+        private static double startedAt;
+        private static bool cameraMoved;
+        private static Vector3[] directionsBeforeMove;
+
+        static ClassmateGazePlayModeQaRunner()
+        {
+            if (SessionState.GetBool(ArmedKey, false) || SessionState.GetBool(QuitKey, false))
+            {
+                ArmCallbacks();
+            }
+        }
+
+        public static void RunFromCommandLine()
+        {
+            SessionState.SetBool(ArmedKey, true);
+            SessionState.SetBool(QuitKey, false);
+            cameraMoved = false;
+            directionsBeforeMove = null;
+            ArmCallbacks();
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            EditorApplication.EnterPlaymode();
+        }
+
+        private static void ArmCallbacks()
+        {
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.EnteredPlayMode && SessionState.GetBool(ArmedKey, false))
+            {
+                startedAt = EditorApplication.timeSinceStartup;
+                EditorApplication.update -= Tick;
+                EditorApplication.update += Tick;
+            }
+            else if (state == PlayModeStateChange.EnteredEditMode && SessionState.GetBool(QuitKey, false))
+            {
+                SessionState.SetBool(QuitKey, false);
+                EditorApplication.Exit(0);
+            }
+        }
+
+        private static void Tick()
+        {
+            try
+            {
+                double elapsed = EditorApplication.timeSinceStartup - startedAt;
+                StudentGazeController[] gazes = UnityEngine.Object.FindObjectsByType<StudentGazeController>(FindObjectsSortMode.None);
+                Camera teacherCamera = UnityEngine.Object.FindAnyObjectByType<Camera>();
+                double requiredWait = cameraMoved ? 2.2d : 8.0d;
+                if (gazes.Length != 14 || teacherCamera == null || elapsed < requiredWait)
+                {
+                    return;
+                }
+
+                StudentGazeController[] observed = gazes.Where(gaze => gaze.StartsAttentive).ToArray();
+                StudentGazeController[] distracted = gazes.Where(gaze => !gaze.StartsAttentive).ToArray();
+                NpcIdleBehaviorController[] idleBehaviors = UnityEngine.Object.FindObjectsByType<NpcIdleBehaviorController>(FindObjectsSortMode.None);
+                Require(observed.Length == 14 && distracted.Length == 0,
+                    $"Expected every classmate to attend to the teacher. attentive={observed.Length} distracted={distracted.Length}");
+                Require(idleBehaviors.Length == 14, $"Expected an idle behavior controller on every classmate. actual={idleBehaviors.Length}");
+                Require(gazes.All(gaze => gaze.GetComponent<NpcPerformance>()?.UprightEyeContact == false),
+                    "Teacher-facing gaze incorrectly replaced a seated classmate gesture with the full-body UprightListen state.");
+                int overheadArmPoses = gazes.Count(HasOverheadArmPose);
+                Require(overheadArmPoses == 0,
+                    $"Classmate gaze produced overhead or sharply folded arm poses. expected=0 actual={overheadArmPoses}");
+                float initialFaceAlignment = observed.Average(gaze =>
+                {
+                    Vector3 toTeacher = (teacherCamera.transform.position - Head(gaze).position).normalized;
+                    return Vector3.Dot(Head(gaze).up, toTeacher);
+                });
+                Require(initialFaceAlignment > 0.82f,
+                    $"Classmates are not visibly facing the teacher. expected>0.82 actual={initialFaceAlignment:F3}");
+                int headDownGestures = gazes.Count(gaze => IsHeadDownGesture(gaze.GetComponent<NpcPerformance>()?.CurrentGesture));
+                Require(headDownGestures == 0,
+                    $"A classmate still starts with a head-down gesture. expected=0 actual={headDownGestures}");
+                int fullBodyAmbientGestures = observed.Count(gaze =>
+                {
+                    Animator classmateAnimator = gaze.GetComponentInChildren<Animator>();
+                    return classmateAnimator != null && !classmateAnimator.GetCurrentAnimatorStateInfo(0).IsName("Idle");
+                });
+                Require(fullBodyAmbientGestures <= 1,
+                    $"Too many attentive classmates play full-body idle clips concurrently. expected<=1 actual={fullBodyAmbientGestures}");
+                int idleVariety = idleBehaviors.Select(controller => controller.CurrentBehavior).Distinct().Count();
+                Require(idleVariety >= 5, $"Classmate idle behavior pool is too repetitive. distinct={idleVariety}");
+                int fastPassiveIdles = idleBehaviors.Count(controller =>
+                {
+                    Animator classmateAnimator = controller.GetComponentInChildren<Animator>();
+                    return controller.CurrentBehavior != NpcIdleBehavior.Yawn &&
+                           controller.CurrentBehavior != NpcIdleBehavior.ChinRest &&
+                           classmateAnimator != null && classmateAnimator.speed > 0.05f;
+                });
+                Require(fastPassiveIdles == 0,
+                    $"Passive idle clips still advance fast enough to synchronize large motions. expected=0 actual={fastPassiveIdles}");
+                int gestureVariety = gazes.Select(gaze => gaze.GetComponent<NpcPerformance>()?.CurrentGesture).Distinct().Count();
+                Require(gestureVariety >= 5, $"Classmate ambient gestures are still synchronized. distinct={gestureVariety}");
+                foreach (StudentGazeController gaze in observed)
+                {
+                    gaze.BeginTeacherAttention(8f);
+                }
+                foreach (StudentGazeController gaze in distracted)
+                {
+                    gaze.BeginTeacherDistraction(8f);
+                }
+
+                if (!cameraMoved)
+                {
+                    Render(teacherCamera, ClassroomIdleOutputPath);
+                    GameObject.Find("Classmate_Seoyeon")?.GetComponent<NpcIdleBehaviorController>()
+                        ?.PlayImmediately(NpcIdleBehavior.Yawn, 6f);
+                    GameObject.Find("Classmate_Sua")?.GetComponent<NpcIdleBehaviorController>()
+                        ?.PlayImmediately(NpcIdleBehavior.ChinRest, 8f);
+                    directionsBeforeMove = observed.Select(HeadFaceDirection).ToArray();
+                    teacherCamera.transform.position += new Vector3(1.35f, 0.12f, -0.45f);
+                    cameraMoved = true;
+                    startedAt = EditorApplication.timeSinceStartup;
+                    return;
+                }
+
+                if (elapsed < 2.2d)
+                {
+                    return;
+                }
+
+                float meanAlignment = observed.Average(gaze =>
+                {
+                    Vector3 toTeacher = (teacherCamera.transform.position - Head(gaze).position).normalized;
+                    return Vector3.Dot(HeadFaceDirection(gaze), toTeacher);
+                });
+                float meanDirectionChange = observed.Select((gaze, index) =>
+                    Vector3.Angle(directionsBeforeMove[index], HeadFaceDirection(gaze))).Average();
+
+                Require(meanAlignment > 0.82f, $"Classmate heads did not align with the moved teacher. alignment={meanAlignment:F3}");
+                Require(meanDirectionChange > 2.5f, $"Classmate gaze did not respond to teacher movement. change={meanDirectionChange:F2}");
+                NpcPerformance yawningStudent = GameObject.Find("Classmate_Seoyeon")?.GetComponent<NpcPerformance>();
+                NpcIdleBehaviorController chinRestStudent = GameObject.Find("Classmate_Sua")?.GetComponent<NpcIdleBehaviorController>();
+                Require(yawningStudent != null && yawningStudent.GetActionUnit(FacialActionUnit.AU26JawDrop) > 0.8f,
+                    "Yawn idle behavior did not drive the jaw-drop action unit.");
+                Require(chinRestStudent != null && chinRestStudent.CurrentBehavior == NpcIdleBehavior.ChinRest,
+                    "Chin-rest idle behavior did not remain active for the capture.");
+
+                Button modeButton = GameObject.Find("ModeButton_2")?.GetComponent<Button>();
+                TeacherFootstepAudio footsteps = teacherCamera.GetComponent<TeacherFootstepAudio>();
+                Require(modeButton != null && footsteps != null, "Classroom audio feedback components are missing.");
+                modeButton.onClick.Invoke();
+                footsteps.PlayStep();
+                Require(modeButton.GetComponent<AudioSource>()?.isPlaying == true, "Button click audio did not play.");
+                Require(footsteps.IsPlaying && footsteps.PlayedStepCount == 1, "Teacher footstep audio did not play.");
+
+                Render(teacherCamera, OutputPath);
+                Render(teacherCamera, IdleBehaviorOutputPath);
+                Debug.Log($"CLASSMATE_GAZE_QA_OK students={gazes.Length} attentive={observed.Length} gestures={gestureVariety} idleBehaviors={idleVariety} alignment={meanAlignment:F3} directionChange={meanDirectionChange:F2}");
+                Debug.Log("NPC_IDLE_BEHAVIOR_QA_OK yawn=AU26 chinRest=active concurrentFullBody<=1");
+                Debug.Log("CLASSROOM_AUDIO_QA_OK buttonClick=playing footstep=playing movementBinding=keyboard");
+                Finish(true);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                Finish(false);
+            }
+        }
+
+        private static Transform Head(StudentGazeController gaze)
+        {
+            Animator animator = gaze.GetComponentInChildren<Animator>();
+            Transform head = animator != null ? animator.GetBoneTransform(HumanBodyBones.Head) : null;
+            return head != null ? head : throw new InvalidOperationException($"Head bone missing on {gaze.name}.");
+        }
+
+        private static Vector3 HeadFaceDirection(StudentGazeController gaze)
+        {
+            return Head(gaze).up;
+        }
+
+        private static bool HasOverheadArmPose(StudentGazeController gaze)
+        {
+            Animator animator = gaze.GetComponentInChildren<Animator>();
+            Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
+            Transform leftHand = animator.GetBoneTransform(HumanBodyBones.LeftHand);
+            Transform rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+            return leftHand.position.y > head.position.y + 0.03f ||
+                   rightHand.position.y > head.position.y + 0.03f;
+        }
+
+        private static bool IsHeadDownGesture(BehaviorGesture? gesture)
+        {
+            return gesture == BehaviorGesture.AvoidGaze ||
+                   gesture == BehaviorGesture.Withdraw ||
+                   gesture == BehaviorGesture.Shield;
+        }
+
+        private static void Require(bool condition, string message)
+        {
+            if (!condition)
+            {
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        private static void Render(Camera camera, string outputPath)
+        {
+            const int width = 2560;
+            const int height = 1440;
+            RenderTexture target = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
+            RenderTexture previous = RenderTexture.active;
+            camera.targetTexture = target;
+            RenderTexture.active = target;
+            camera.Render();
+            Texture2D image = new Texture2D(width, height, TextureFormat.RGB24, false);
+            image.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+            image.Apply();
+            File.WriteAllBytes(outputPath, image.EncodeToPNG());
+            camera.targetTexture = null;
+            RenderTexture.active = previous;
+            UnityEngine.Object.DestroyImmediate(image);
+            target.Release();
+            UnityEngine.Object.DestroyImmediate(target);
+        }
+
+        private static void Finish(bool success)
+        {
+            EditorApplication.update -= Tick;
+            SessionState.SetBool(ArmedKey, false);
+            SessionState.SetBool(QuitKey, true);
+            EditorApplication.ExitPlaymode();
+            if (!success)
+            {
+                EditorApplication.delayCall += () => EditorApplication.Exit(1);
+            }
+        }
+    }
+}

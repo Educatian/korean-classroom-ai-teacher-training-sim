@@ -1,0 +1,26 @@
+* text=auto
+
+*.cs text eol=lf
+*.shader text eol=lf
+*.cginc text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.meta text eol=lf
+*.unity text eol=lf merge=unityyamlmerge
+*.prefab text eol=lf merge=unityyamlmerge
+*.mat text eol=lf merge=unityyamlmerge
+*.asset text eol=lf merge=unityyamlmerge
+*.controller text eol=lf merge=unityyamlmerge
+*.anim text eol=lf merge=unityyamlmerge
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.tga binary
+*.fbx binary
+*.wav binary
+*.mp3 binary
+*.mp4 binary
+*.ttf binary
+*.otf binary

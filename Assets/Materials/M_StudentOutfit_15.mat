@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_StudentOutfit_15
+  m_Shader: {fileID: 4800000, guid: 91bb201eed81e0640947e7f7df6393a2, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: ebed53aac8e75494db5bb6d77fe6843a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FabricTex:
+        m_Texture: {fileID: 2800000, guid: 4cb6cf0b338fa92468c1d1ce13a01cb8, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GraphicAtlas:
+        m_Texture: {fileID: 2800000, guid: 8aebfdac70f5a014a8328681d74d3c0e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 8e8fcf8a61cb61c4ba544fb975942de4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BumpScale: 1
+    - _FabricScale: 2.4385457
+    - _FabricStrength: 0.3711134
+    - _Glossiness: 0.28
+    - _GraphicIndex: 11
+    - _GraphicRotation: 10.617362
+    - _GraphicScale: 1.0726297
+    - _GraphicStrength: 0.9546377
+    - _Metallic: 0
+    - _PatternScale: 20.1193
+    - _PatternStrength: 0.27371997
+    - _PatternType: 1
+    - _TintStrength: 0.98
+    m_Colors:
+    - _AccentColor: {r: 0.80179787, g: 0.79808253, b: 0.44702193, a: 1}
+    - _ClothingColor: {r: 0.2503785, g: 0.22283588, b: 0.5843304, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _GraphicColor: {r: 0.8808521, g: 0.69577163, b: 0.49995303, a: 1}
+    - _GraphicOffset: {r: -0.005475576, g: 0.0009917808, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

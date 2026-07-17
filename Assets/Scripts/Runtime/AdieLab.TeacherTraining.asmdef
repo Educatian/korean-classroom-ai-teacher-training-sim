@@ -1,0 +1,9 @@
+{
+  "name": "AdieLab.TeacherTraining",
+  "rootNamespace": "AdieLab.TeacherTraining",
+  "references": [
+    "Unity.ugui",
+    "Unity.TextMeshPro"
+  ],
+  "autoReferenced": true
+}
