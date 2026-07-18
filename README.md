@@ -1,4 +1,4 @@
-# Generative AI Teacher Response Training Simulation
+# Korean Classroom AI Teacher Response Simulator
 
 English | [한국어 README](README.ko.md)
 
