@@ -1,179 +1,132 @@
-# 정서·행동위기 학생 대응 생성형 AI 교사대응훈련
+# Generative AI Teacher Response Training Simulation
 
-한국 초등학교 교실에서 정서·행동 위기 신호를 보이는 학생에게 교사가 안전하고 관계 중심적으로 대응하는 방법을 연습하는 Unity 6 연구 프로토타입입니다. Microsoft Rocketbox 기반 학생 아바타, 한국 교실 환경, 직접 대화, 선택형 대응, 연속적인 정서 변화, 얼굴 Action Unit, 문제행동 제스처, 수행 피드백을 하나의 재현 가능한 시뮬레이션으로 구성했습니다.
+English | [한국어 README](README.ko.md)
 
-> 이 프로젝트는 연구·개발 및 교사교육용 프로토타입입니다. 임상 진단, 실제 학교의 위기 대응 절차, 교원 자격 평가 또는 전문가 판단을 대체하지 않습니다.
+A Unity 6 research prototype for practicing teacher responses to elementary students showing emotional and behavioral distress in a realistic Korean classroom. The system combines Microsoft Rocketbox-based student avatars, a procedurally assembled Korean classroom, direct teacher-student dialogue, structured response choices, affect dynamics, facial Action Unit control, behavioral gestures, and evidence-centered session logging.
 
-| 항목 | 현재 기준 |
+This project is a research and teacher-education prototype. It does not replace clinical judgment, school crisis protocols, professional supervision, or validated teacher certification assessment.
+
+| Area | Current state |
 |---|---|
-| 엔진 | Unity `6000.4.9f1` |
-| 대상 플랫폼 | Windows 11, Built-in Render Pipeline |
-| 훈련 씬 | 일반 교실 1개, 원형 토론·발표 교실 1개 |
-| 학생 NPC | 교실당 15명, Microsoft Rocketbox 기반 |
-| 대화 | 로컬 결정론적 fallback + 선택적 OpenRouter 연동 |
-| 자동 검증 | EditMode `33/33` 통과, Windows player build 성공 |
-| 프로젝트 상태 | Active research prototype |
+| Engine | Unity `6000.4.9f1` |
+| Primary platform | Windows 11, Built-in Render Pipeline |
+| Training scenes | Scene 1 general classroom, Scene 2 circle discussion and presentation |
+| Student NPCs | 15 Rocketbox-based students per classroom |
+| Dialogue | Deterministic local fallback plus optional OpenRouter LLM integration |
+| Assessment | Authored response scoring plus evidence-centered telemetry events |
+| Validation | EditMode `67/67` passed, rendered PlayMode QA passed, Windows player build passed |
+| Status | Active research prototype |
 
-## 화면 미리보기
+## Screenshots
 
-| 한국 초등학교 일반 교실 | 학생 정면 아이컨택 |
-|---|---|
-| ![한국 초등학교 일반 교실](Assets/Reference/ClassroomReference_ChairBagGameplayFinal.png) | ![학생 아이컨택](Assets/Reference/StudentEyeContact_ChairBagGameplayFinal.png) |
+The screenshots below are captured from the current Unity scene/player QA loop and are kept in [`Assets/Reference`](Assets/Reference).
 
-| 원형 토론·발표 교실 | 얼굴을 가리지 않는 머리 위 말풍선 |
-|---|---|
-| ![원형 토론 교실](Assets/Reference/CircleDiscussionReference.png) | ![머리 위 말풍선](Assets/Reference/Unity_SpeechBubble_HeadAnchored.png) |
+### General Korean Classroom
 
-## 프로젝트 목표
+![General Korean classroom gameplay preview](Assets/Reference/Unity_PlayMode_Preview.png)
 
-이 프로토타입은 교사가 학생의 행동만 통제하는 연습이 아니라, 행동 전후의 정서 신호와 교실 맥락을 함께 읽고 공동조절(co-regulation) 중심의 대응을 선택하도록 설계했습니다.
+The general classroom scene is modeled around a contemporary Korean elementary classroom: front storage cabinets, desks and green chairs at elementary proportions, fluorescent ceiling lights, an electronic board, window views, backpacks, and a rear bulletin board assembled from individual poster, worksheet, notice, and student-art assets.
 
-- 학생의 시선, 호흡, 자세, 표정, 손동작에서 초기 위기 신호를 관찰합니다.
-- 공개적 압박을 낮추고 학생의 존엄, 안전, 선택권을 보존하는 언어를 연습합니다.
-- 안정화 이후 작은 수업 복귀 단계와 비공개 후속 지원을 연결합니다.
-- 동일한 교사 발화가 학생의 정서가, 각성, 주도성, 얼굴 근육, 제스처에 어떻게 반영되는지 확인합니다.
-- 선택 결과와 훈련 과정을 구조화된 로그로 남겨 후속 학습분석에 사용할 수 있게 합니다.
+### Face-to-Face Dialogue
 
-## 구현된 기능
+![Face-to-face student dialogue with head-anchored speech bubble](Assets/Reference/Unity_FaceToFace_Dialogue.png)
 
-### 한국 초등학교 교실
+The focal student can be addressed directly from the teacher's viewpoint. The translucent speech bubble is anchored above the student's head and adjusted to avoid covering the face during eye contact. The lower HUD preserves the recent teacher utterance, student reply, and affect vector.
 
-- 전자칠판, 전면 수납장, 후면 게시판, 창문, 천장 조명, 벽체, 바닥, 교사용 책상 구현
-- 초등학생 비율에 맞춘 책상과 의자, 교실 간격, 이동 동선 구성
-- 책상 측면에 걸린 개별 책가방과 앞주머니·옆주머니·상단 패널 디테일
-- 한 장의 배경 이미지가 아닌 개별 작품, 통신문, 워크시트, 제목표 에셋 배치
-- 지나치게 정렬되지 않은 실제 교실 분위기를 위한 게시물 회전·간격 변형
-- ImageGen 기반 벽, 바닥, 책상, 게시물, 창밖 학교 풍경 재질
+### Upright Eye Contact
 
-### 학생 NPC와 외형 다양성
+![Upright eye-contact close-up](Assets/Reference/Unity_Upright_EyeContact_Closeup.png)
 
-- Rocketbox child avatar를 Humanoid와 얼굴 blendshape가 유지된 상태로 사용
-- 15명의 학생에게 서로 다른 얼굴, 피부톤, 머리색, 헤어 재질, 의상 재질 배정
-- 생성형 얼굴 텍스처와 8종 직물 표면, 15종 비문자형 가슴 그래픽 atlas 적용
-- 상업 로고와 실제 학교 문장을 사용하지 않는 연령 적합 의상 구성
-- 머리와 눈동자가 교사를 추적하되 학생별 확률과 주기를 달리하는 시선 시스템
+The face-to-face camera supports an upright posture and teacher-facing gaze. This is used for moments when the student has re-engaged enough to respond directly without looking down.
 
-### 정서, 표정, 몸동작
+### Circle Discussion Scene
 
-- 정서가(valence), 각성(arousal), 주도성(dominance)을 연속 값으로 관리
-- 한 번의 대화에서 정서가 비현실적으로 급변하지 않도록 변화량 제한과 지수 보간 적용
-- 정서 상태와 LLM 지시를 Rocketbox 얼굴 blendshape에 연결하는 Action Unit 제어
-- 회피, 안절부절, 철회, 항의, 반항, 책상 두드리기, 방어, 가리키기, 밀어내기, 경청, 회복 제스처
-- 중립, 경청, 둘러보기, 책상 만지작거리기, 어깨 움직임, 턱 괴기, 하품 idle behavior
-- 학생 이름 기반의 안정적 난수로 각 NPC의 동작 속도, 시작 위상, 행동 순서를 다르게 구성
+![Circle discussion and presentation scene](Assets/Reference/CircleDiscussionReference.png)
 
-### 훈련 UI와 상호작용
+Scene 2 separates the same training system into a circle discussion and presentation arrangement. It focuses on peer attention pressure, public exposure, turn-taking conflict, leaving-seat attempts, private recontact, and supported return to a small speaking task.
 
-- 관찰, 대응, 대화, 디브리핑의 네 가지 작업 모드
-- 머리 위에 고정되고 얼굴 영역을 피하는 반투명 라운드 말풍선
-- Noto Sans KR SDF 기반 한국어 HUD와 TMP 입력창
-- 9-slice 라운드 카드, 모드 선택 강조, 버튼 hover·press 애니메이션
-- 섬세한 버튼 피드백 사운드와 교사 이동 시 교실 신발·슬리퍼 계열 발소리
-- 학생 정면 대화 시점과 교실 탐색 시점 전환
-- Windows DictationRecognizer 기반 선택적 마이크 입력
+### Scene 2 Eye Contact
 
-## 두 개의 훈련 씬
+![Circle scene eye-contact dialogue](Assets/Reference/CircleStudentEyeContact.png)
 
-각 씬은 6개의 순차적 상황과 상황별 3개의 교사 대응 선택지를 포함합니다. 선택지는 `0–3`의 authored quality를 가지며, 직접 대화는 선택지 흐름과 병행해서 사용할 수 있습니다.
+The circle scene uses the same direct-dialogue and speech-bubble system, allowing teacher response practice when the student is surrounded by classmates.
 
-### Scene 1: 일반 교실 대응
+### Debrief
 
-경로: [`Assets/Scenes/KoreanClassroomTraining.unity`](Assets/Scenes/KoreanClassroomTraining.unity)
+![Training debrief screen](Assets/Reference/TrainingDebrief.png)
 
-1. 과제 과부하와 거부
-2. 분노 상승과 책상 두드리기
-3. 불안과 과호흡
-4. 또래 갈등 직후
-5. 침묵과 철회
-6. 안정화와 수업 복귀
+After the six-beat session, the simulation produces a local debrief and stores structured session records for later analysis.
 
-핵심 연습은 감정 인정, 낮은 자극, 안전한 거리, 제한된 선택권, 비공개 재접촉, 작은 복귀 과제입니다.
+## Research Purpose
 
-### Scene 2: 원형 토론·발표 대응
+The prototype is designed to help teachers practice co-regulation-oriented responses, not merely behavior control. It emphasizes reading emotional signals before, during, and after visible behavior, then choosing low-escalation language that preserves student dignity, safety, and agency.
 
-경로: [`Assets/Scenes/KoreanClassroomCircleTraining.unity`](Assets/Scenes/KoreanClassroomCircleTraining.unity)
+The current training loop asks the teacher to:
 
-1. 발표 차례 회피
-2. 또래 끼어들기와 조롱
-3. 자료 밀치기와 항의
-4. 자리 이탈 시도
-5. 비공개 재접촉
-6. 작은 발표로 복귀
+- observe gaze, posture, breathing cues, facial expression, and hand movement;
+- reduce public pressure and avoid unnecessary confrontation;
+- validate emotion without endorsing unsafe behavior;
+- offer constrained choices and a short regulation pathway;
+- support a small return-to-learning step after stabilization;
+- review how each response affects valence, arousal, dominance, gesture, gaze, and facial Action Units.
 
-원형 배치에서 발생하는 또래 시선 압박, 공개 노출, 발언 질서, 이동 안전, 지원된 재진입을 다룹니다.
+## Implemented Features
 
-시나리오 원문과 선택지는 [`TrainingScenarioLibrary.cs`](Assets/Scripts/Runtime/TrainingScenarioLibrary.cs)에 있습니다.
+### Korean Elementary Classroom Environment
 
-## 조작법
+- Procedural scene builders for the general classroom and the circle discussion classroom.
+- Realistic classroom components: electronic board, rear bulletin board, storage cabinets, windows, ceiling lights, student desks, chairs, teacher desk, floor and wall materials.
+- Individual bulletin-board assets instead of one flattened background image.
+- Slightly rotated and unevenly spaced drawings, notices, worksheets, and class-title signs to avoid an over-arranged look.
+- Generated material assets for floor, wall, desk laminate, bulletin items, and exterior Korean school window backdrop.
+- Hanging backpacks with pocket, panel, zipper, and scale variation.
 
-| 입력 | 동작 |
-|---|---|
-| `W`, `A`, `S`, `D` | 교실 안에서 교사 시점 이동 |
-| 마우스 오른쪽 버튼 + 이동 | 교실 시점 회전 |
-| `F` | 교실 탐색 시점과 학생 정면 대화 시점 전환 |
-| 대응 선택지 클릭 | 현재 상황에 대한 교사 대응 선택 및 피드백 표시 |
-| `Enter` | 직접 대화 입력창의 교사 발화 전송 |
-| 마이크 버튼 | Windows 음성 받아쓰기 시작·종료 |
-| 상단 모드 버튼 | 관찰, 대응, 대화, 디브리핑 화면 전환 |
+### Student Avatars
 
-## 빠른 시작
+- Microsoft Rocketbox child avatars configured as Humanoid characters.
+- Fifteen students per scene with varied face textures, skin tone, hair material, clothing texture, fabric surface, and non-text graphic motifs.
+- Gaze behavior that tracks the teacher with per-student probability and timing variation.
+- A small number of students can look down or away while most students orient toward the teacher, matching the classroom management requirement.
 
-### 1. 저장소 받기
+### Emotion, Gesture, and Facial Control
 
-비공개 저장소 접근 권한과 GitHub CLI 인증이 있는 환경에서는 다음 명령을 사용할 수 있습니다.
+- Continuous affect vector: valence `-1..1`, arousal `0..1`, dominance `-1..1`.
+- Bounded affect transitions so one teacher utterance does not create unrealistic emotional jumps.
+- Facial Action Unit mapping from normalized `0..1` values to Rocketbox blendshape weights.
+- Supported AUs include `AU1`, `AU2`, `AU4`, `AU5`, `AU6`, `AU7`, `AU9`, `AU12`, `AU15`, `AU17`, `AU20`, `AU23`, `AU24`, `AU25`, `AU26`, and `AU45`.
+- Gesture repertoire for avoid gaze, fidget, withdraw, protest, defiant posture, desk tapping, shielding, pointing, pushing away, listening, and recovering.
+- Idle behaviors including listening, looking around, desk fidgeting, shoulder motion, chin resting, and yawning.
+- Source-owned AU overrides so dialogue animation can control only the expression channels it owns and release them cleanly afterward.
 
-```powershell
-gh repo clone Educatian/korean-classroom-ai-teacher-training-sim
-Set-Location korean-classroom-ai-teacher-training-sim
-```
+### Teacher Interaction UI
 
-### 2. Unity에서 열기
+- Four training modes: observation, response, dialogue, and debriefing.
+- Rounded translucent HUD panels using TextMeshPro and Noto Sans KR SDF font assets.
+- Structured multiple-choice response buttons with press/hover motion.
+- Direct dialogue input with optional Windows DictationRecognizer microphone input.
+- Subtle button feedback sound and classroom-footstep style movement audio.
+- Scene selector for switching between the general classroom and the circle discussion scene.
 
-1. Unity Hub에서 저장소 루트를 엽니다.
-2. 정확한 Editor 버전 `6000.4.9f1`을 선택합니다.
-3. 첫 import가 끝날 때까지 기다립니다. `Library`, `Temp`, `Logs`, IDE 프로젝트 파일은 로컬에서 재생성됩니다.
-4. 일반 교실 또는 원형 토론 씬을 엽니다.
-5. Play를 누릅니다.
+### OpenRouter LLM Integration
 
-OpenRouter 키가 없어도 전체 선택형 훈련과 로컬 직접 대화를 실행할 수 있습니다.
+The simulation can run fully without an API key through a deterministic local fallback. When configured, OpenRouter is used for direct student dialogue.
 
-## OpenRouter LLM 연결
-
-### 환경변수
-
-API 키는 프로젝트, 씬, 프리팹, README 또는 `.env` 파일에 저장하지 않습니다. Unity Editor나 Windows player를 실행하기 전에 운영체제 환경변수로 설정합니다.
+Environment variables:
 
 ```text
 OPENROUTER_API_KEY=<your key>
 OPENROUTER_ENDPOINT=https://openrouter.ai/api/v1/chat/completions
 OPENROUTER_MODEL=openai/gpt-4o-mini
+OPENROUTER_MAX_TOKENS=320
+OPENROUTER_TEMPERATURE=0.25
+OPENROUTER_PROMPT_VERSION=1
 ```
 
-- `OPENROUTER_API_KEY`: 필수
-- `OPENROUTER_ENDPOINT`: 선택적 endpoint override
-- `OPENROUTER_MODEL`: 선택적 model override
-- [`.env.example`](.env.example): 변수 이름 안내용이며 Unity가 자동으로 읽지 않음
-
-기본 요청은 30초 timeout과 최대 2회 시도를 사용합니다. `408`, `429`, 네트워크 오류, `5xx`는 일시 오류로 취급합니다. 응답 형식이 잘못되거나 요청이 실패하면 현재 세션을 중단하지 않고 로컬 학생 반응으로 전환합니다.
-
-### LLM에 전달되는 정보
-
-직접 대화 시 다음 정보가 OpenRouter endpoint로 전송됩니다.
-
-- 현재 교사 발화
-- 최대 최근 5개의 교사·학생 대화 쌍
-- 현재 valence, arousal, dominance 값
-- 학생 역할, 안전 범위, 출력 형식을 정의한 system instruction
-
-학생 이름, 실제 학생 기록, 계정 정보 또는 API 키를 prompt 본문에 넣지 마세요. 실제 연구 데이터 사용 전에는 별도의 IRB, 개인정보 처리, 보관 기간, 공급자 정책 검토가 필요합니다.
-
-### 구조화된 학생 응답
-
-학생 turn은 아래 형태의 JSON object로 제한됩니다. 수치 범위와 gesture enum은 수신 후 다시 검증합니다.
+The LLM response is constrained to structured JSON:
 
 ```json
 {
-  "studentReply": "…네. 잠깐만 시간을 주세요.",
+  "studentReply": "Yes. I think I need a short break.",
   "valence": -0.15,
   "arousal": 0.42,
   "dominance": -0.05,
@@ -183,103 +136,120 @@ OPENROUTER_MODEL=openai/gpt-4o-mini
     "au2": 0.04,
     "au4": 0.0,
     "au5": 0.08,
-    "au6": 0.0,
-    "au7": 0.0,
-    "au9": 0.0,
     "au12": 0.08,
-    "au15": 0.0,
-    "au17": 0.0,
-    "au20": 0.0,
-    "au23": 0.0,
-    "au24": 0.0,
-    "au25": 0.1,
-    "au26": 0.0
+    "au25": 0.1
   }
 }
 ```
 
-구현은 [`GenerativeAiCoach.cs`](Assets/Scripts/Runtime/GenerativeAiCoach.cs)에 있습니다.
+Malformed, unsafe, or unavailable LLM responses route to local fallback instead of stopping the training session. API keys and raw LLM responses are not written to the session log.
 
-## 정서와 Action Unit 제어
+## Training Scenes
 
-### 연속 정서 벡터
+### Scene 1: General Classroom Response
 
-| 축 | 범위 | 의미 |
-|---|---:|---|
-| valence | `-1..1` | 부정적 정서에서 긍정적 정서까지 |
-| arousal | `0..1` | 낮은 각성에서 높은 각성까지 |
-| dominance | `-1..1` | 위축된 상태에서 주도적 상태까지 |
+File: [`Assets/Scenes/KoreanClassroomTraining.unity`](Assets/Scenes/KoreanClassroomTraining.unity)
 
-`AffectDynamics`는 LLM이 제안한 목표를 즉시 적용하지 않고 단일 turn 변화량을 제한한 뒤 프레임 단위로 보간합니다. 정서 벡터는 표정 profile, 제스처 강도, animation speed, 시선 회피 정도에 함께 영향을 줍니다.
+1. Task overload and refusal
+2. Rising anger and desk tapping
+3. Anxiety and overbreathing
+4. After a peer conflict
+5. Silence and withdrawal
+6. Stabilization and return to class
 
-### 지원 Action Unit
+The core response skills are emotion validation, low stimulation, safe distance, limited choices, private recontact, and small return-to-learning steps.
 
-`AU1`, `AU2`, `AU4`, `AU5`, `AU6`, `AU7`, `AU9`, `AU12`, `AU15`, `AU17`, `AU20`, `AU23`, `AU24`, `AU25`, `AU26`, `AU45`를 지원합니다. 외부 제어값은 `0..1`이고, Rocketbox blendshape에는 `0..100`으로 변환됩니다.
+### Scene 2: Circle Discussion and Presentation Response
 
-런타임 API는 개별 AU override, release, 전체 override clear를 지원합니다. 직접 LLM 지시가 없는 AU는 정서 profile에서 계산되며, 명시적 override는 release 전까지 정서 업데이트보다 우선합니다. 자세한 매핑은 [`Docs/ACTION_UNIT_CONTROL.md`](Docs/ACTION_UNIT_CONTROL.md)를 확인하세요.
+File: [`Assets/Scenes/KoreanClassroomCircleTraining.unity`](Assets/Scenes/KoreanClassroomCircleTraining.unity)
 
-## 평가와 세션 로그
+1. Avoiding a presentation turn
+2. Peer interruption and ridicule
+3. Pushing away materials and protesting
+4. Attempting to leave the seat
+5. Private recontact
+6. Returning through a small presentation step
 
-### 선택형 대응 점수
+This scene adds peer gaze pressure, public exposure, turn-taking order, movement safety, and supported re-entry into the classroom activity.
 
-각 선택지는 `0..3` quality를 가지며 누적 점수에 반영됩니다. 완료 시 다음 여섯 차원의 디브리핑을 생성합니다.
+The scenario source is implemented in [`TrainingScenarioLibrary.cs`](Assets/Scripts/Runtime/TrainingScenarioLibrary.cs).
 
-1. 학생 존엄
-2. 낮은 자극
-3. 감정 인정
-4. 선택권
-5. 안전
-6. 수업 복귀
+## Evidence-Centered Telemetry
 
-전체 수준은 `기초 연습`, `성장 중`, `숙련`으로 표시됩니다. 현재 rubric은 연구 프로토타입용 authored heuristic이며 타당화된 교원평가 도구가 아닙니다.
+The runtime separates raw text from research telemetry. Session events include:
 
-### JSON Lines 기록
+- session, scenario, beat, and phase identifiers;
+- teacher action source, such as choice or typed utterance;
+- hashed and length-only text metadata instead of raw teacher/student text;
+- pre/post affect state;
+- gesture, gaze, trust, engagement, and target vector signals;
+- scoring evidence and rubric dimensions;
+- LLM route, model, prompt version, fallback state, and latency metadata when applicable.
 
-선택형 대응은 다음 위치에 한 줄당 하나의 JSON object로 추가됩니다.
+Replay validation checks event sequence order and schema compatibility. This makes the prototype more useful for future learning analytics and evidence-centered design work while reducing unnecessary sensitive text retention.
 
-```text
-Application.persistentDataPath/teacher_training_sessions.jsonl
-```
-
-기록 필드는 `sessionId`, `timestampUtc`, `beatIndex`, `beatTitle`, `selectedOption`, `quality`, `cumulativeScore`입니다. API 키와 LLM raw response는 이 로그에 저장하지 않습니다.
-
-## 시스템 구조
+## Architecture
 
 ```mermaid
 flowchart LR
-    A["교사 관찰·발화·선택"] --> B{"상호작용 경로"}
-    B -->|"선택형"| C["Scenario Library"]
-    B -->|"직접 대화"| D{"OpenRouter 설정"}
-    D -->|"사용 가능"| E["Structured LLM turn"]
-    D -->|"미설정·실패"| F["Local deterministic fallback"]
-    C --> G["Affect target"]
-    E --> G
-    F --> G
-    G --> H["AffectDynamics"]
-    H --> I["Facial AU · gaze · gesture · speech"]
-    C --> J["ResponseScorer · rubric"]
-    J --> K["HUD · debrief · JSONL log"]
+    A["Teacher observes, speaks, or selects"] --> B["Training input arbiter"]
+    B --> C["Turn coordinator"]
+    C --> D{"Interaction route"}
+    D -->|"Choice"| E["Scenario library"]
+    D -->|"Free text"| F{"OpenRouter configured"}
+    F -->|"Yes"| G["Structured LLM student turn"]
+    F -->|"No or unsafe"| H["Local fallback student turn"]
+    E --> I["Evidence scoring"]
+    G --> I
+    H --> I
+    I --> J["Affect dynamics"]
+    J --> K["NPC performance: AU, gesture, gaze"]
+    I --> L["HUD feedback and debrief"]
+    I --> M["Privacy-aware telemetry"]
 ```
 
-| 구성 요소 | 책임 |
+| Component | Responsibility |
 |---|---|
-| [`SimulationController.cs`](Assets/Scripts/Runtime/SimulationController.cs) | 세션, 선택, 직접 대화, fallback, 로그 orchestration |
-| [`TrainingScenarioLibrary.cs`](Assets/Scripts/Runtime/TrainingScenarioLibrary.cs) | 두 씬의 6단계 상황과 authored response |
-| [`GenerativeAiCoach.cs`](Assets/Scripts/Runtime/GenerativeAiCoach.cs) | OpenRouter 요청, JSON parsing, retry, validation |
-| [`AffectDynamics.cs`](Assets/Scripts/Runtime/AffectDynamics.cs) | 정서 변화량 제한과 연속 보간 |
-| [`FacialActionUnitController.cs`](Assets/Scripts/Runtime/FacialActionUnitController.cs) | AU profile, override, Rocketbox blendshape 매핑 |
-| [`NpcPerformance.cs`](Assets/Scripts/Runtime/NpcPerformance.cs) | 정서·gesture·animation·상체 procedural motion 통합 |
-| [`BehaviorGesturePlanner.cs`](Assets/Scripts/Runtime/BehaviorGesturePlanner.cs) | 정서와 단계에 맞는 문제행동 제스처 선택 |
-| [`StudentGazeController.cs`](Assets/Scripts/Runtime/StudentGazeController.cs) | 학생별 확률 기반 teacher tracking과 head turn 제한 |
-| [`NpcIdleBehaviorController.cs`](Assets/Scripts/Runtime/NpcIdleBehaviorController.cs) | 경청·둘러보기·턱 괴기·하품 등 idle sequence |
-| [`TrainingHud.cs`](Assets/Scripts/Runtime/TrainingHud.cs) | 선택지, 말풍선, 직접 대화, 피드백 표시 |
-| [`TeacherRubricEvaluator.cs`](Assets/Scripts/Runtime/TeacherRubricEvaluator.cs) | 6차원 디브리핑 요약 |
+| [`SimulationController.cs`](Assets/Scripts/Runtime/SimulationController.cs) | Session orchestration, response flow, direct dialogue, scoring, and logging |
+| [`TrainingTurnCoordinator.cs`](Assets/Scripts/Runtime/TrainingTurnCoordinator.cs) | Shared state transitions for choice and free-text turns |
+| [`TrainingInputArbiter.cs`](Assets/Scripts/Runtime/TrainingInputArbiter.cs) | Duplicate and stale input protection |
+| [`TrainingSessionState.cs`](Assets/Scripts/Runtime/TrainingSessionState.cs) | Training phase and beat lifecycle |
+| [`TrainingTelemetryModels.cs`](Assets/Scripts/Runtime/TrainingTelemetryModels.cs) | Research telemetry event schema |
+| [`TrainingResearchCatalog.cs`](Assets/Scripts/Runtime/TrainingResearchCatalog.cs) | Persona and scenario metadata for research use |
+| [`GenerativeAiCoach.cs`](Assets/Scripts/Runtime/GenerativeAiCoach.cs) | OpenRouter request construction, retry, parsing, and validation |
+| [`OpenRouterRuntimePolicy.cs`](Assets/Scripts/Runtime/OpenRouterRuntimePolicy.cs) | LLM runtime settings, safety policy, and structured output normalization |
+| [`FacialActionUnitController.cs`](Assets/Scripts/Runtime/FacialActionUnitController.cs) | AU profile, explicit overrides, and Rocketbox blendshape mapping |
+| [`NpcPerformance.cs`](Assets/Scripts/Runtime/NpcPerformance.cs) | Affect, gesture, animation, gaze, and procedural upper-body integration |
+| [`TrainingHud.cs`](Assets/Scripts/Runtime/TrainingHud.cs) | Response UI, speech bubble, dialogue, and feedback panels |
+| [`TrainingSceneSelector.cs`](Assets/Scripts/Runtime/TrainingSceneSelector.cs) | Scene 1 and Scene 2 switching |
 
-## 재현 가능한 씬 생성
+## Running the Project
 
-씬에 직접 만든 객체만 수정하면 다음 생성에서 사라질 수 있습니다. 교실 배치, 학생, 재질, HUD처럼 유지되어야 하는 변경은 Editor builder에도 반영해야 합니다.
+1. Open the repository root in Unity Hub.
+2. Use Unity `6000.4.9f1`.
+3. Let the first import complete.
+4. Open either training scene:
+   - [`Assets/Scenes/KoreanClassroomTraining.unity`](Assets/Scenes/KoreanClassroomTraining.unity)
+   - [`Assets/Scenes/KoreanClassroomCircleTraining.unity`](Assets/Scenes/KoreanClassroomCircleTraining.unity)
+5. Press Play.
 
-Unity 메뉴:
+Controls:
+
+| Input | Action |
+|---|---|
+| `W`, `A`, `S`, `D` | Move the teacher viewpoint |
+| Right mouse button + move | Rotate classroom view |
+| `F` | Toggle classroom view and face-to-face conversation focus |
+| Response button | Select a teacher response and show feedback |
+| `Enter` | Submit typed teacher dialogue |
+| Microphone button | Toggle Windows dictation input |
+| Top mode buttons | Switch observation, response, dialogue, and debrief views |
+
+## Rebuilding Scenes
+
+The scenes are generated by editor builders. If a change should persist, update the relevant builder instead of editing only the scene hierarchy.
+
+Unity menu commands:
 
 ```text
 Tools > Teacher Training > Build Korean Classroom
@@ -287,7 +257,7 @@ Tools > Teacher Training > Build Circle Discussion Scene
 Tools > Teacher Training > Capture Classroom Preview
 ```
 
-주요 builder:
+Main builders:
 
 - [`KoreanClassroomBuilder.cs`](Assets/Editor/KoreanClassroomBuilder.cs)
 - [`KoreanClassroomCircleBuilder.cs`](Assets/Editor/KoreanClassroomCircleBuilder.cs)
@@ -295,9 +265,18 @@ Tools > Teacher Training > Capture Classroom Preview
 - [`KoreanClassroomBulletinBuilder.cs`](Assets/Editor/KoreanClassroomBulletinBuilder.cs)
 - [`KoreanClassroomBackpackBuilder.cs`](Assets/Editor/KoreanClassroomBackpackBuilder.cs)
 
-## 테스트
+## Validation
 
-2026-07-17 기준 메인 프로젝트를 Unity `6000.4.9f1`로 재생성한 뒤 EditMode `33/33`이 통과했습니다.
+Final verification from the current development pass:
+
+- EditMode tests: `67/67` passed.
+- Rendered PlayMode QA: passed with nine current screenshots.
+- Eye-contact alignment: `faceAxis=1.000`.
+- Flow QA: six beats, four modes, verified buttons, six persistence records.
+- Windows build: `WINDOWS_BUILD_OK`, output `Builds/TeacherResponseTrainingFinal/TeacherResponseTraining.exe`.
+- Scene 2 built-player captures refreshed from the Windows player.
+
+Commands:
 
 ```powershell
 & 'C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Unity.exe' `
@@ -308,23 +287,6 @@ Tools > Teacher Training > Capture Classroom Preview
   -logFile '<repository-root>\Logs\editmode.log'
 ```
 
-현재 test suite:
-
-- affect transition과 OpenRouter payload·parser
-- 얼굴 AU override와 남학생 canonical face channel
-- response scoring과 rubric
-- 교실 15명·시선 controller 구성
-- 원형 토론 scene layout
-- 말풍선 head anchor와 face-to-face framing
-- Noto Sans KR SDF HUD와 mode visibility
-- 책상에 걸린 상세 책가방
-- 버튼·이동 피드백 audio
-- 6개 위기 맥락과 대화 memory bound
-
-테스트 근거와 수동 QA 범위는 [`Docs/VALIDATION.md`](Docs/VALIDATION.md)에 기록합니다.
-
-## Windows 빌드
-
 ```powershell
 & 'C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Unity.exe' `
   -batchmode -nographics -quit `
@@ -333,80 +295,66 @@ Tools > Teacher Training > Capture Classroom Preview
   -logFile '<repository-root>\Logs\windows-build.log'
 ```
 
-성공 시 log에 `WINDOWS_BUILD_OK`가 기록됩니다. `Builds/`와 `Logs/`는 재생성 가능한 로컬 산출물이므로 Git에서 제외합니다.
+Detailed QA notes are in [`Docs/VALIDATION.md`](Docs/VALIDATION.md).
 
-## 프로젝트 구조
+## Repository Layout
 
 ```text
 Assets/
-├─ Art/                         # 교실·UI·폰트·오디오용 아트
-├─ Editor/                      # 씬·메시·재질·QA·빌드 자동화
+├─ Art/                         # Classroom, UI, font, texture, and audio assets
+├─ Editor/                      # Scene, mesh, material, QA, and build automation
 ├─ Generated/
-│  ├─ StudentClothing/          # 8 fabric + 15 graphic atlas
-│  └─ StudentFaces/             # 생성형 학생 얼굴 텍스처
-├─ Materials/                   # 교실·학생 인스턴스 재질
-├─ Meshes/                      # 책상·의자·칠판·책가방 등 생성 메시
-├─ Reference/                   # 선별된 storyboard와 시각 QA 근거
-├─ Scenes/                      # 두 개의 실행 씬
-├─ Scripts/Runtime/             # 시뮬레이션 런타임
-├─ Shaders/                     # 얼굴·의상 전용 shader
-├─ Tests/EditMode/              # 자동 회귀 테스트
+│  ├─ StudentClothing/          # Fabric and graphic atlas textures
+│  └─ StudentFaces/             # Generated student face textures
+├─ Materials/                   # Classroom and student materials
+├─ Meshes/                      # Generated desks, chairs, boards, backpacks, fixtures
+├─ Reference/                   # Storyboards, QA screenshots, gameplay references
+├─ Scenes/                      # Runtime training scenes
+├─ Scripts/Runtime/             # Simulation runtime code
+├─ Shaders/                     # Face and clothing shaders
+├─ Tests/EditMode/              # Automated regression tests
 └─ ThirdParty/MicrosoftRocketbox/
-Docs/                           # 설계·검증·에셋·목표 부합성 문서
-Documentation/                  # 세부 개발 로드맵
-Packages/                       # Unity package manifest와 lock
+Docs/                           # Design, validation, asset, and alignment documentation
+Documentation/                  # Detailed development roadmap
+Packages/                       # Unity package manifest and lock file
 ProjectSettings/                # Unity project settings
 ```
 
-## 에셋, 라이선스, 저장소 정책
+## Assets and License Notes
 
-- Microsoft Rocketbox 파일은 [`Assets/ThirdParty/MicrosoftRocketbox/LICENSE.md`](Assets/ThirdParty/MicrosoftRocketbox/LICENSE.md)의 MIT License를 유지합니다.
-- `NotoSansKR-VF.ttf`는 [`Assets/Art/Fonts/OFL.txt`](Assets/Art/Fonts/OFL.txt)의 SIL Open Font License 1.1 고지를 유지합니다.
-- 생성형 얼굴·의상·교실 재질은 프로젝트 전용 에셋이며 제작 원칙은 [`Docs/IMAGEGEN_ASSET_PIPELINE.md`](Docs/IMAGEGEN_ASSET_PIPELINE.md)에 기록합니다.
-- 실제 학생 개인정보, 승인되지 않은 원본 교실 사진, API 키는 저장소에 포함하지 않습니다.
-- `Library`, `Temp`, `Builds`, `Logs`, QA clone, raw recording, diagnostic frame은 [`.gitignore`](.gitignore)로 제외합니다.
-- 바이너리 에셋과 Unity YAML 파일의 처리 규칙은 [`.gitattributes`](.gitattributes)에 정의합니다.
+- Microsoft Rocketbox assets retain their MIT License notice in [`Assets/ThirdParty/MicrosoftRocketbox/LICENSE.md`](Assets/ThirdParty/MicrosoftRocketbox/LICENSE.md).
+- `NotoSansKR-VF.ttf` retains the SIL Open Font License notice in [`Assets/Art/Fonts/OFL.txt`](Assets/Art/Fonts/OFL.txt).
+- Generated classroom, clothing, and face textures are project-specific assets. The production rules are documented in [`Docs/IMAGEGEN_ASSET_PIPELINE.md`](Docs/IMAGEGEN_ASSET_PIPELINE.md).
+- Real student records, unapproved source classroom photos, and API keys are not stored in the repository.
+- `Library`, `Temp`, `Builds`, `Logs`, raw recordings, and local diagnostic frames are intentionally ignored.
 
-자세한 내용은 [`Docs/ASSET_AND_LICENSE_GUIDE.md`](Docs/ASSET_AND_LICENSE_GUIDE.md)를 확인하세요.
+## Known Limitations
 
-## 현재 검증 상태와 알려진 한계
+- The current validated deployment target is Windows desktop. WebGL and VR are represented as constrained deployment paths rather than finished production builds.
+- Direct student speech synthesis is not yet implemented.
+- Windows dictation is available for teacher input, but a full Korean STT/TTS research pipeline remains future work.
+- Rubric scores are authored research heuristics, not validated teacher evaluation instruments.
+- Some Unity 6 obsolete API warnings remain around `FindObjectsByType` overloads; these do not block the current build or tests.
 
-완료된 기준:
+## Documentation
 
-- 일반 교실과 원형 교실 모두 학생 15명 구성 확인
-- 두 씬의 30개 얼굴 render에서 중복 눈·코·입과 깨진 얼굴 mesh 최종 점검
-- 15개 학생 의상의 색·패턴·fabric·graphic 구분 확인
-- 말풍선 head anchor, 얼굴 회피, 1920×1080 HUD 가독성 확인
-- OpenRouter 미설정·실패 시 로컬 fallback 확인
-- Windows player build 성공
+- [Korean README](README.ko.md)
+- [`Docs/PROJECT_GUIDE.md`](Docs/PROJECT_GUIDE.md)
+- [`Docs/SCENE_CONTRACT.md`](Docs/SCENE_CONTRACT.md)
+- [`Docs/ACTION_UNIT_CONTROL.md`](Docs/ACTION_UNIT_CONTROL.md)
+- [`Docs/IMAGEGEN_ASSET_PIPELINE.md`](Docs/IMAGEGEN_ASSET_PIPELINE.md)
+- [`Docs/PROPOSAL_ALIGNMENT_AUDIT.md`](Docs/PROPOSAL_ALIGNMENT_AUDIT.md)
+- [`Docs/VISUAL_IMPROVEMENTS.md`](Docs/VISUAL_IMPROVEMENTS.md)
+- [`Docs/VALIDATION.md`](Docs/VALIDATION.md)
+- [`Documentation/StudentSimulationDetailedRoadmap.md`](Documentation/StudentSimulationDetailedRoadmap.md)
 
-폴리시된 데모 릴리스 전에 남은 시각 QA:
+## Contribution Rules
 
-- 여성 Rocketbox 상의의 가슴 graphic 위치를 조금 위로 조정
-- 첫 ribbon motif를 글자처럼 보이지 않는 추상 motif로 교체
-- 손 UV island 주변 의상 mask를 명시적으로 강화하고 전신 pose에서 재검증
-- 기존 preview를 실제 연속 interaction이 확인되는 gameplay recording으로 교체
+1. Scene changes that must persist should be reflected in the scene builders.
+2. Preserve `.meta` files when adding or moving Unity assets.
+3. Add focused regression tests for behavior contracts, parsing, scoring, and layout-sensitive UI changes.
+4. Visual changes should include before/after screenshots with scene, resolution, and build context.
+5. Do not commit API keys, real student data, or assets with unclear licensing.
+6. Describe emotional and behavioral characteristics as observable training-context signals, not as diagnostic labels.
 
-자동 테스트 통과와 별개로 위 항목은 시연 품질을 위한 release blocker로 관리합니다. 최신 기록은 [`Docs/VALIDATION.md`](Docs/VALIDATION.md)가 기준입니다.
-
-## 문서 모음
-
-- [`Docs/PROJECT_GUIDE.md`](Docs/PROJECT_GUIDE.md): 실행, 구성, 개발 규칙
-- [`Docs/SCENE_CONTRACT.md`](Docs/SCENE_CONTRACT.md): 씬 hierarchy와 생성 계약
-- [`Docs/ACTION_UNIT_CONTROL.md`](Docs/ACTION_UNIT_CONTROL.md): Action Unit과 gesture API
-- [`Docs/IMAGEGEN_ASSET_PIPELINE.md`](Docs/IMAGEGEN_ASSET_PIPELINE.md): 생성 이미지 제작·검증 loop
-- [`Docs/PROPOSAL_ALIGNMENT_AUDIT.md`](Docs/PROPOSAL_ALIGNMENT_AUDIT.md): 연구개발 목표 부합성 점검
-- [`Docs/VISUAL_IMPROVEMENTS.md`](Docs/VISUAL_IMPROVEMENTS.md): UI, 말풍선, 아이컨택 개선 기록
-- [`Docs/VALIDATION.md`](Docs/VALIDATION.md): 자동·수동 QA와 release checklist
-- [`Documentation/StudentSimulationDetailedRoadmap.md`](Documentation/StudentSimulationDetailedRoadmap.md): 세부 개발 과제 roadmap
-
-## 기여 원칙
-
-1. 생성 씬 변경은 scene file뿐 아니라 해당 builder에 반영합니다.
-2. Unity asset을 이동하거나 추가할 때 `.meta`를 함께 보존합니다.
-3. 행동 계약, parsing, scoring, layout regression에는 대응 test를 추가합니다.
-4. 시각 변경은 scene, resolution, build 정보가 있는 before·after 캡처를 남깁니다.
-5. API 키, 실제 학생 자료, 라이선스가 불명확한 에셋을 커밋하지 않습니다.
-6. 정서·행동 특성을 진단명으로 단정하지 않고 훈련 맥락과 관찰 가능한 행동으로 기술합니다.
-
-자세한 기준은 [`CONTRIBUTING.md`](CONTRIBUTING.md)에 있습니다.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for more detail.

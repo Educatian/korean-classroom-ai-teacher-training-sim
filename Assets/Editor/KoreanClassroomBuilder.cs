@@ -72,6 +72,19 @@ namespace AdieLab.TeacherTraining.Editor
             Debug.Log($"Korean classroom scene built at {ScenePath}");
         }
 
+        public static string[] GetTrainingScenePaths()
+        {
+            return TrainingSceneRegistry.SceneAssetPaths();
+        }
+
+        private static void RegisterTrainingScenes()
+        {
+            string[] paths = GetTrainingScenePaths();
+            EditorBuildSettings.scenes = Array.ConvertAll(
+                paths,
+                path => new EditorBuildSettingsScene(path, true));
+        }
+
         public static void BuildFromCommandLine()
         {
             try
@@ -107,11 +120,10 @@ namespace AdieLab.TeacherTraining.Editor
             try
             {
                 BuildAll();
+                BuildCircleScene();
                 const string output = "Builds/TeacherResponseTrainingFinal/TeacherResponseTraining.exe";
                 Directory.CreateDirectory(Path.GetDirectoryName(output) ?? "Builds");
-                string[] buildScenes = File.Exists(CircleScenePath)
-                    ? new[] { ScenePath, CircleScenePath }
-                    : new[] { ScenePath };
+                string[] buildScenes = GetTrainingScenePaths();
                 BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
                 {
                     scenes = buildScenes,
@@ -214,7 +226,7 @@ namespace AdieLab.TeacherTraining.Editor
 
             Selection.activeGameObject = camera.gameObject;
             EditorSceneManager.SaveScene(scene, ScenePath);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+            RegisterTrainingScenes();
             AssetDatabase.SaveAssets();
         }
 
@@ -897,11 +909,32 @@ namespace AdieLab.TeacherTraining.Editor
 
             RectTransform topBar = Panel(canvasObject.transform, "TopBar", UiTokens.Header, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -UiTokens.HeaderHeight), Vector2.zero);
             TMP_Text title = Label(topBar, "AppTitle", "정서·행동 지원 교사 대응 훈련", font, UiTokens.TitleSize, FontStyles.Bold, UiTokens.TextOnDark, TextAlignmentOptions.MidlineLeft);
-            SetRect(title.rectTransform, new Vector2(0f, 0f), new Vector2(0.37f, 1f), new Vector2(32f, 0f), new Vector2(-10f, 0f));
+            SetRect(title.rectTransform, new Vector2(0f, 0f), new Vector2(0.285f, 1f), new Vector2(32f, 0f), new Vector2(-10f, 0f));
             TMP_Text beat = Label(topBar, "BeatLabel", "상황 1/3", font, 19, FontStyles.Bold, UiTokens.AccentText, TextAlignmentOptions.MidlineRight);
             SetRect(beat.rectTransform, new Vector2(0.76f, 0f), new Vector2(1f, 1f), new Vector2(10f, 0f), new Vector2(-32f, 0f));
 
             string[] modeNames = { "관찰", "대응", "대화", "디브리핑" };
+            RectTransform sceneSwitch = Panel(
+                topBar,
+                nameof(TrainingSceneSelector),
+                UiTokens.Option,
+                new Vector2(0.292f, 0.20f),
+                new Vector2(0.37f, 0.80f),
+                Vector2.zero,
+                Vector2.zero);
+            Button sceneToggleButton = sceneSwitch.gameObject.AddComponent<Button>();
+            sceneToggleButton.targetGraphic = sceneSwitch.GetComponent<Image>();
+            sceneSwitch.gameObject.AddComponent<ButtonMotion>();
+            TMP_Text sceneToggleLabel = Label(
+                sceneSwitch,
+                nameof(TrainingSceneId),
+                new string(new[] { 'S', 'C', 'E', 'N', 'E', ' ', '1' }),
+                font,
+                12,
+                FontStyles.Bold,
+                UiTokens.TextOnDark,
+                TextAlignmentOptions.Center);
+            SetRect(sceneToggleLabel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             Button[] modeButtons = new Button[modeNames.Length];
             for (int i = 0; i < modeNames.Length; i++)
             {
@@ -1068,6 +1101,12 @@ namespace AdieLab.TeacherTraining.Editor
             navigatorSerialized.FindProperty("debriefPanel").objectReferenceValue = debriefPanel;
             navigatorSerialized.FindProperty("debriefText").objectReferenceValue = debriefText;
             navigatorSerialized.ApplyModifiedPropertiesWithoutUndo();
+
+            TrainingSceneSelector sceneSelector = canvasObject.AddComponent<TrainingSceneSelector>();
+            SerializedObject sceneSelectorSerialized = new SerializedObject(sceneSelector);
+            sceneSelectorSerialized.FindProperty(nameof(sceneToggleButton)).objectReferenceValue = sceneToggleButton;
+            sceneSelectorSerialized.FindProperty(nameof(sceneToggleLabel)).objectReferenceValue = sceneToggleLabel;
+            sceneSelectorSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             VoiceDialogueController voice = canvasObject.AddComponent<VoiceDialogueController>();
             SerializedObject voiceSerialized = new SerializedObject(voice);

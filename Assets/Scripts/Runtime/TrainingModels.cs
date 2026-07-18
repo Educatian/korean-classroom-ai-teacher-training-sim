@@ -110,6 +110,7 @@ namespace AdieLab.TeacherTraining
         [Range(0, 3)] public int quality;
         public string rationale;
         public StudentAffect resultingAffect;
+        public CompetencyEvidence[] competencyEvidence;
     }
 
     [Serializable]

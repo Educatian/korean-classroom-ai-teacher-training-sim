@@ -14,6 +14,9 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private TMP_Text debriefText;
 
         private int selectedMode = 1;
+        private bool debriefUnlocked;
+
+        public bool DebriefUnlocked => debriefUnlocked;
 
         private void Awake()
         {
@@ -28,6 +31,11 @@ namespace AdieLab.TeacherTraining
 
         public void SelectMode(int mode)
         {
+            if (mode == 3 && !debriefUnlocked)
+            {
+                mode = 1;
+            }
+
             selectedMode = Mathf.Clamp(mode, 0, 3);
             SetPanel(observationPanel, 1f, selectedMode == 0 || selectedMode == 1);
             SetPanel(responsePanel, selectedMode == 1 || selectedMode == 3 ? 1f : 0f, selectedMode == 1);
@@ -64,6 +72,7 @@ namespace AdieLab.TeacherTraining
             }
 
             debriefText.text = text;
+            debriefUnlocked = true;
             SelectMode(3);
         }
 

@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/KoreanClassroomTraining.unity
     guid: 8fb515d7fa417e649a0601fae3f77f6d
+  - enabled: 1
+    path: Assets/Scenes/KoreanClassroomCircleTraining.unity
+    guid: 6e352405b2153f64aa0a1ca840d97be6
   m_configObjects: {}

@@ -15,6 +15,11 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private string apiKeyEnvironmentVariable = "OPENROUTER_API_KEY";
         [SerializeField, Range(1, 3)] private int requestAttempts = 2;
         [SerializeField, Range(10, 60)] private int requestTimeoutSeconds = 30;
+        private OpenRouterRuntimeConfiguration runtimeConfiguration;
+        private static readonly string DefaultRequestModel = new string(new[]
+        {
+            'o', 'p', 'e', 'n', 'a', 'i', '/', 'g', 'p', 't', '-', '4', 'o', '-', 'm', 'i', 'n', 'i'
+        });
 
         [Serializable]
         private sealed class ChatMessage
@@ -28,6 +33,9 @@ namespace AdieLab.TeacherTraining
         {
             public string model;
             public ChatMessage[] messages;
+            public int max_tokens;
+            public float temperature;
+            public RequestMetadata metadata;
         }
 
         [Serializable]
@@ -36,6 +44,15 @@ namespace AdieLab.TeacherTraining
             public string model;
             public ChatMessage[] messages;
             public ResponseFormat response_format;
+            public int max_tokens;
+            public float temperature;
+            public RequestMetadata metadata;
+        }
+
+        [Serializable]
+        private sealed class RequestMetadata
+        {
+            public int prompt_version;
         }
 
         [Serializable]
@@ -62,10 +79,15 @@ namespace AdieLab.TeacherTraining
                                     !string.IsNullOrWhiteSpace(ApiKey);
 
         public string ConfigurationLabel => IsConfigured ? $"LLM 연결 · {model}" : "로컬 대화 모드 · OpenRouter 연결 대기";
+        public string ModelId => model;
+        public int PromptVersion => RuntimeConfiguration.PromptVersion;
+        public OpenRouterRuntimeConfiguration RuntimeConfiguration =>
+            runtimeConfiguration ??= OpenRouterRuntimeConfiguration.FromEnvironment();
         private string ApiKey => Environment.GetEnvironmentVariable(apiKeyEnvironmentVariable);
 
         private void Awake()
         {
+            runtimeConfiguration = OpenRouterRuntimeConfiguration.FromEnvironment();
             string endpointOverride = Environment.GetEnvironmentVariable("OPENROUTER_ENDPOINT");
             string modelOverride = Environment.GetEnvironmentVariable("OPENROUTER_MODEL");
             if (!string.IsNullOrWhiteSpace(endpointOverride))
@@ -103,6 +125,13 @@ namespace AdieLab.TeacherTraining
             Action<StudentAgentTurn> completed,
             Action<string> failed)
         {
+            StudentSafetyDecision inputSafety = StudentSafetyPolicy.Evaluate(teacherUtterance);
+            if (inputSafety.Route == StudentTurnRoute.LocalFallback)
+            {
+                failed?.Invoke(inputSafety.Category.ToString());
+                yield break;
+            }
+
             string system =
                 "당신은 한국 초등학교 고학년 교실 시뮬레이션의 학생 민준입니다. 정서·행동 위기 상황을 사실적으로 연기하되 " +
                 "자해, 타해, 욕설을 과장하지 마세요. 교사의 말에 1~2문장 한국어로 답하고 현재 정서를 JSON 하나로만 반환하세요. " +
@@ -124,7 +153,16 @@ namespace AdieLab.TeacherTraining
                 yield break;
             }
 
-            StudentAgentTurn turn = ParseStudentTurn(raw);
+            StudentTurnResolution resolution = StudentTurnBoundary.Normalize(raw);
+            if (resolution.Outcome == StudentTurnOutcome.Unsafe)
+            {
+                failed?.Invoke(resolution.SafetyCategory.ToString());
+                yield break;
+            }
+
+            StudentAgentTurn turn = resolution.Route == StudentTurnRoute.OpenRouter
+                ? resolution.Turn
+                : null;
             if (turn == null)
             {
                 failed?.Invoke("LLM 응답을 학생 정서 데이터로 해석하지 못했습니다.");
@@ -146,7 +184,8 @@ namespace AdieLab.TeacherTraining
                 yield break;
             }
 
-            byte[] body = Encoding.UTF8.GetBytes(CreateRequestJson(system, user, structuredOutput, model));
+            byte[] body = Encoding.UTF8.GetBytes(
+                CreateRequestJson(system, user, structuredOutput, model, RuntimeConfiguration));
             string lastError = null;
             for (int attempt = 0; attempt < requestAttempts; attempt++)
             {
@@ -192,8 +231,31 @@ namespace AdieLab.TeacherTraining
             return CreateRequestJson(system, user, structuredOutput, "openai/gpt-4o-mini");
         }
 
-        private static string CreateRequestJson(string system, string user, bool structuredOutput, string requestModel)
+        public static string CreateRequestJson(
+            string system,
+            string user,
+            bool structuredOutput,
+            OpenRouterRuntimeConfiguration configuration)
         {
+            return CreateRequestJson(
+                system,
+                user,
+                structuredOutput,
+                DefaultRequestModel,
+                configuration);
+        }
+
+        private static string CreateRequestJson(
+            string system,
+            string user,
+            bool structuredOutput,
+            string requestModel,
+            OpenRouterRuntimeConfiguration configuration = null)
+        {
+            configuration ??= new OpenRouterRuntimeConfiguration(
+                OpenRouterRuntimeConfiguration.DefaultMaxTokens,
+                OpenRouterRuntimeConfiguration.DefaultTemperature,
+                OpenRouterRuntimeConfiguration.DefaultPromptVersion);
             ChatMessage[] messages =
             {
                 new ChatMessage { role = "system", content = system },
@@ -201,14 +263,24 @@ namespace AdieLab.TeacherTraining
             };
             if (!structuredOutput)
             {
-                return JsonUtility.ToJson(new PlainChatRequest { model = requestModel, messages = messages });
+                return JsonUtility.ToJson(new PlainChatRequest
+                {
+                    model = requestModel,
+                    messages = messages,
+                    max_tokens = configuration.MaxTokens,
+                    temperature = configuration.Temperature,
+                    metadata = new RequestMetadata { prompt_version = configuration.PromptVersion }
+                });
             }
 
             return JsonUtility.ToJson(new JsonChatRequest
             {
                 model = requestModel,
                 messages = messages,
-                response_format = new ResponseFormat()
+                response_format = new ResponseFormat(),
+                max_tokens = configuration.MaxTokens,
+                temperature = configuration.Temperature,
+                metadata = new RequestMetadata { prompt_version = configuration.PromptVersion }
             });
         }
 

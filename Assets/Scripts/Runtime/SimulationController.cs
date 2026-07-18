@@ -20,12 +20,24 @@ namespace AdieLab.TeacherTraining
         private string sessionId;
         private int beatIndex;
         private int score;
-        private bool awaitingContinue;
-        private bool sessionComplete;
         private int dialogueRequestId;
+        private int telemetrySequence;
+        private float studentTrust = 0.2f;
+        private float studentEngagement = 0.2f;
+        private TrainingTurnCoordinator turnCoordinator;
         private readonly ConversationMemory conversationMemory = new ConversationMemory(5);
         private readonly List<TeacherResponseOption> selectedResponses = new List<TeacherResponseOption>();
+        private readonly List<TrainingTelemetryEvent> telemetryEvents = new List<TrainingTelemetryEvent>();
         private NpcSpeechPerformance speechPerformance;
+
+        private bool awaitingContinue =>
+            turnCoordinator != null && turnCoordinator.Phase == TrainingPhase.ReviewingFeedback;
+        private bool sessionComplete =>
+            turnCoordinator != null &&
+            (turnCoordinator.Phase == TrainingPhase.Complete || turnCoordinator.Phase == TrainingPhase.Aborted);
+        private TrainingSceneId ActiveSceneId => circleDiscussionScenario
+            ? TrainingSceneId.CircleDiscussion
+            : TrainingSceneId.GeneralClassroom;
 
         private void Awake()
         {
@@ -33,6 +45,7 @@ namespace AdieLab.TeacherTraining
             beats = circleDiscussionScenario
                 ? TrainingScenarioLibrary.BuildCircleDiscussionScenario()
                 : TrainingScenarioLibrary.BuildDefaultScenario();
+            turnCoordinator = new TrainingTurnCoordinator(beats.Length);
             speechPerformance = focalStudent.GetComponent<NpcSpeechPerformance>();
             if (speechPerformance == null)
             {
@@ -75,11 +88,29 @@ namespace AdieLab.TeacherTraining
             }
 
             PresentBeat();
+            turnCoordinator.Start();
+            RecordLifecycleEvent(
+                TrainingEventKind.SessionStarted,
+                TrainingPhase.PresentingScenario,
+                turnCoordinator.Phase);
             hud.SetDialogueState(false, aiCoach == null ? "로컬 대화 모드" : aiCoach.ConfigurationLabel);
         }
 
         private void OnDestroy()
         {
+            speechPerformance?.StopSpeaking();
+            if (turnCoordinator != null && !sessionComplete)
+            {
+                TrainingPhase previous = turnCoordinator.Phase;
+                if (turnCoordinator.TryAbort())
+                {
+                    RecordLifecycleEvent(
+                        TrainingEventKind.SessionAborted,
+                        previous,
+                        TrainingPhase.Aborted);
+                }
+            }
+
             if (hud == null)
             {
                 return;
@@ -92,10 +123,16 @@ namespace AdieLab.TeacherTraining
 
         private void HandleTeacherUtterance(string utterance)
         {
-            if (sessionComplete)
+            if (sessionComplete ||
+                !turnCoordinator.TrySubmit(
+                    TeacherAction.FromUtterance(utterance),
+                    out TrainingRequestToken token))
             {
                 return;
             }
+
+            StudentStateSnapshot stateBefore = CaptureStudentState();
+            DateTime requestStartedUtc = DateTime.UtcNow;
 
             teacherCamera?.EnterConversationFocus();
             focalStudent.SetGesture(BehaviorGesture.Listen, 0.55f);
@@ -109,31 +146,69 @@ namespace AdieLab.TeacherTraining
                     focalStudent.CurrentVector,
                     turn =>
                     {
-                        if (!sessionComplete && requestId == dialogueRequestId)
+                        if (requestId == dialogueRequestId && turnCoordinator.TryResolve(token))
                         {
-                            ApplyStudentTurn(utterance, turn, true);
+                            ApplyStudentTurn(
+                                utterance,
+                                turn,
+                                true,
+                                stateBefore,
+                                token,
+                                requestStartedUtc);
                         }
                     },
                     error =>
                     {
-                        if (!sessionComplete && requestId == dialogueRequestId)
+                        if (requestId == dialogueRequestId && turnCoordinator.TryResolve(token))
                         {
-                            ApplyStudentTurn(utterance, BuildLocalTurn(utterance), false, error);
+                            ApplyStudentTurn(
+                                utterance,
+                                BuildLocalTurn(utterance),
+                                false,
+                                stateBefore,
+                                token,
+                                requestStartedUtc,
+                                error);
                         }
                     }));
                 return;
             }
 
-            ApplyStudentTurn(utterance, BuildLocalTurn(utterance), false);
+            if (turnCoordinator.TryResolve(token))
+            {
+                ApplyStudentTurn(
+                    utterance,
+                    BuildLocalTurn(utterance),
+                    false,
+                    stateBefore,
+                    token,
+                    requestStartedUtc);
+            }
         }
 
-        private void ApplyStudentTurn(string utterance, StudentAgentTurn turn, bool fromLlm, string error = null)
+        private void ApplyStudentTurn(
+            string utterance,
+            StudentAgentTurn turn,
+            bool fromLlm,
+            StudentStateSnapshot stateBefore,
+            TrainingRequestToken token,
+            DateTime requestStartedUtc,
+            string error = null)
         {
+            TeacherResponseOption assessment = TeacherActionEvidenceEvaluator.ForUtterance(utterance);
             BehaviorGesture gesture = Enum.TryParse(turn.gesture, true, out BehaviorGesture parsed)
                 ? parsed
                 : BehaviorGesture.Fidget;
             AffectVector affect = new AffectVector(turn.valence, turn.arousal, turn.dominance);
             focalStudent.SetAffectVector(affect, gesture);
+            selectedResponses.Add(assessment);
+            score = ResponseScorer.AddResponse(score, assessment);
+            UpdateResearchProgress(assessment.quality);
+            foreach (NpcPerformance classmate in classmates)
+            {
+                classmate.SetAffect(
+                    assessment.quality >= 2 ? StudentAffect.Recovering : StudentAffect.Uneasy);
+            }
             conversationMemory.Add(utterance, turn.studentReply);
             speechPerformance.Speak(turn.studentReply, turn.actionUnits);
             bool conversationalEyeContact = gesture == BehaviorGesture.Recover || gesture == BehaviorGesture.Listen;
@@ -149,6 +224,19 @@ namespace AdieLab.TeacherTraining
             }
 
             hud.SetDialogueState(false, source);
+            hud.ShowFeedback(assessment, score, beatIndex + 1);
+            RecordResolvedTurn(
+                TrainingActionSource.TeacherUtterance,
+                utterance,
+                turn.studentReply,
+                stateBefore,
+                CaptureStudentState(),
+                assessment.competencyEvidence,
+                token,
+                fromLlm,
+                requestStartedUtc,
+                error);
+            AppendRecord(-1, assessment);
         }
 
         private StudentAgentTurn BuildLocalTurn(string utterance)
@@ -179,22 +267,45 @@ namespace AdieLab.TeacherTraining
 
         private void HandleOptionSelected(int optionIndex)
         {
-            if (awaitingContinue || optionIndex < 0 || optionIndex >= beats[beatIndex].options.Length)
+            if (optionIndex < 0 ||
+                optionIndex >= beats[beatIndex].options.Length ||
+                !turnCoordinator.TrySubmit(
+                    TeacherAction.FromChoice(optionIndex),
+                    out TrainingRequestToken token))
+            {
+                return;
+            }
+
+            StudentStateSnapshot stateBefore = CaptureStudentState();
+            if (!turnCoordinator.TryResolve(token))
             {
                 return;
             }
 
             TeacherResponseOption option = beats[beatIndex].options[optionIndex];
+            CrisisScenarioProfile scenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, beatIndex);
+            option.competencyEvidence = TeacherActionEvidenceEvaluator.ForChoice(scenario, option);
             selectedResponses.Add(option);
             score = ResponseScorer.AddResponse(score, option);
+            UpdateResearchProgress(option.quality);
             focalStudent.SetAffect(option.resultingAffect);
             foreach (NpcPerformance classmate in classmates)
             {
                 classmate.SetAffect(option.quality >= 2 ? StudentAffect.Recovering : StudentAffect.Uneasy);
             }
 
-            awaitingContinue = true;
             hud.ShowFeedback(option, score, beatIndex + 1);
+            RecordResolvedTurn(
+                TrainingActionSource.TeacherChoice,
+                option.spokenResponse,
+                beats[beatIndex].studentLine,
+                stateBefore,
+                CaptureStudentState(),
+                option.competencyEvidence,
+                token,
+                false,
+                DateTime.UtcNow,
+                null);
             AppendRecord(optionIndex, option);
             if (aiCoach != null && aiCoach.IsConfigured)
             {
@@ -211,26 +322,33 @@ namespace AdieLab.TeacherTraining
 
         private void HandleContinue()
         {
-            if (!awaitingContinue)
+            if (!turnCoordinator.TryAdvance(out bool complete))
             {
                 return;
             }
 
-            awaitingContinue = false;
             dialogueRequestId++;
-            beatIndex++;
-            if (beatIndex >= beats.Length)
+            speechPerformance?.StopSpeaking();
+            beatIndex = turnCoordinator.BeatIndex;
+            if (complete)
             {
-                sessionComplete = true;
                 focalStudent.SetAffect(StudentAffect.Recovering);
                 focalStudent.SetUprightEyeContact(true);
                 teacherCamera?.SetUprightFocus(true);
                 hud.ShowCompletion(score, beats.Length * 3);
-                modeNavigator?.ShowDebrief(TeacherRubricEvaluator.Evaluate(selectedResponses));
+                RecordLifecycleEvent(
+                    TrainingEventKind.SessionCompleted,
+                    TrainingPhase.ReviewingFeedback,
+                    TrainingPhase.Complete);
+                modeNavigator?.ShowDebrief(TeacherRubricEvaluator.Evaluate(telemetryEvents));
                 return;
             }
 
             PresentBeat();
+            RecordLifecycleEvent(
+                TrainingEventKind.BeatPresented,
+                TrainingPhase.PresentingScenario,
+                TrainingPhase.AwaitingTeacherAction);
             hud.SetDialogueState(false, aiCoach == null ? "로컬 대화 모드" : aiCoach.ConfigurationLabel);
         }
 
@@ -242,6 +360,185 @@ namespace AdieLab.TeacherTraining
                 focalStudent.SetGesture(beat.entryGesture, beat.gestureIntensity);
             }
             hud.ShowBeat(beatIndex, beats.Length, beat, score, beatIndex);
+        }
+
+        private void UpdateResearchProgress(int quality)
+        {
+            float normalized = Mathf.Clamp(quality, 0, 3) / 3f;
+            studentTrust = Mathf.Clamp01(studentTrust + Mathf.Lerp(-0.08f, 0.12f, normalized));
+            studentEngagement = Mathf.Clamp01(
+                studentEngagement + Mathf.Lerp(-0.06f, 0.10f, normalized));
+        }
+
+        private StudentStateSnapshot CaptureStudentState()
+        {
+            if (focalStudent == null)
+            {
+                return new StudentStateSnapshot
+                {
+                    engagement = studentEngagement,
+                    trust = studentTrust
+                };
+            }
+
+            bool gaze = focalStudent.UprightEyeContact ||
+                        focalStudent.CurrentGesture == BehaviorGesture.Listen ||
+                        focalStudent.CurrentGesture == BehaviorGesture.Recover;
+            return new StudentStateSnapshot
+            {
+                affect = focalStudent.TargetVector,
+                gesture = focalStudent.CurrentGesture,
+                gestureIntensity = focalStudent.TargetVector.arousal,
+                gazeContact = gaze ? 1f : 0.25f,
+                engagement = studentEngagement,
+                trust = studentTrust
+            };
+        }
+
+        private void RecordResolvedTurn(
+            TrainingActionSource teacherSource,
+            string teacherText,
+            string studentReply,
+            StudentStateSnapshot stateBefore,
+            StudentStateSnapshot stateAfter,
+            CompetencyEvidence[] evidence,
+            TrainingRequestToken token,
+            bool fromLlm,
+            DateTime requestStartedUtc,
+            string error)
+        {
+            CrisisScenarioProfile scenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, beatIndex);
+            string teacherHash = TextHash(teacherText);
+            string replyHash = TextHash(studentReply);
+            var inference = new ModelPromptProvenance
+            {
+                modelId = aiCoach == null ? string.Empty : aiCoach.ModelId,
+                promptTemplateId = nameof(GenerativeAiCoach),
+                promptVersion = aiCoach == null ? 0 : aiCoach.PromptVersion,
+                promptHash = TextHash(string.Concat(scenario.id, beatIndex.ToString(), teacherHash)),
+                fallbackUsed = teacherSource == TrainingActionSource.TeacherUtterance && !fromLlm,
+                fallbackReason = error ?? string.Empty,
+                latencyMilliseconds = Math.Max(
+                    0L,
+                    (long)(DateTime.UtcNow - requestStartedUtc).TotalMilliseconds)
+            };
+            StudentSafetyCategory safetyCategory = StudentSafetyCategory.None;
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                Enum.TryParse(error, true, out safetyCategory);
+            }
+
+            StudentTurnRoute route = fromLlm
+                ? StudentTurnRoute.OpenRouter
+                : teacherSource == TrainingActionSource.TeacherChoice
+                    ? StudentTurnRoute.ScriptedScenario
+                    : StudentTurnRoute.LocalFallback;
+            StudentTurnOutcome outcome = safetyCategory != StudentSafetyCategory.None
+                ? StudentTurnOutcome.Unsafe
+                : string.IsNullOrWhiteSpace(error)
+                    ? StudentTurnOutcome.Accepted
+                    : StudentTurnOutcome.Malformed;
+            AppendTelemetry(new TrainingTelemetryEvent
+            {
+                eventId = Guid.NewGuid().ToString(),
+                sessionId = sessionId,
+                sequence = telemetrySequence++,
+                timestampUtc = DateTime.UtcNow.ToString(new string(new[] { 'O' })),
+                scenarioId = scenario.id,
+                beatIndex = beatIndex,
+                kind = TrainingEventKind.TeacherAction,
+                phaseBefore = TrainingPhase.AwaitingTeacherAction,
+                phaseAfter = TrainingPhase.AwaitingStudentResponse,
+                actionId = token.Value.ToString(),
+                actionSource = teacherSource,
+                teacherTextLength = teacherText == null ? 0 : teacherText.Length,
+                teacherTextHash = teacherHash,
+                studentReplyHash = string.Empty,
+                turnRoute = route,
+                turnOutcome = outcome,
+                studentStateBefore = stateBefore,
+                studentStateAfter = stateBefore,
+                inference = inference,
+                competencyEvidence = evidence ?? Array.Empty<CompetencyEvidence>()
+            });
+            AppendTelemetry(new TrainingTelemetryEvent
+            {
+                eventId = Guid.NewGuid().ToString(),
+                sessionId = sessionId,
+                sequence = telemetrySequence++,
+                timestampUtc = DateTime.UtcNow.ToString(new string(new[] { 'O' })),
+                scenarioId = scenario.id,
+                beatIndex = beatIndex,
+                kind = TrainingEventKind.StudentResponse,
+                phaseBefore = TrainingPhase.AwaitingStudentResponse,
+                phaseAfter = TrainingPhase.ReviewingFeedback,
+                actionId = token.Value.ToString(),
+                actionSource = fromLlm
+                    ? TrainingActionSource.GenerativeModel
+                    : teacherSource == TrainingActionSource.TeacherChoice
+                        ? TrainingActionSource.ScriptedScenario
+                        : TrainingActionSource.LocalFallback,
+                teacherTextLength = teacherText == null ? 0 : teacherText.Length,
+                teacherTextHash = teacherHash,
+                studentReplyHash = replyHash,
+                turnRoute = route,
+                turnOutcome = outcome,
+                studentStateBefore = stateBefore,
+                studentStateAfter = stateAfter,
+                inference = inference,
+                competencyEvidence = Array.Empty<CompetencyEvidence>()
+            });
+        }
+
+        private void RecordLifecycleEvent(
+            TrainingEventKind kind,
+            TrainingPhase phaseBefore,
+            TrainingPhase phaseAfter)
+        {
+            StudentStateSnapshot state = CaptureStudentState();
+            CrisisScenarioProfile scenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, beatIndex);
+            AppendTelemetry(new TrainingTelemetryEvent
+            {
+                eventId = Guid.NewGuid().ToString(),
+                sessionId = sessionId,
+                sequence = telemetrySequence++,
+                timestampUtc = DateTime.UtcNow.ToString(new string(new[] { 'O' })),
+                scenarioId = scenario.id,
+                beatIndex = beatIndex,
+                kind = kind,
+                phaseBefore = phaseBefore,
+                phaseAfter = phaseAfter,
+                actionSource = TrainingActionSource.System,
+                studentStateBefore = state,
+                studentStateAfter = state
+            });
+        }
+
+        private void AppendTelemetry(TrainingTelemetryEvent trainingEvent)
+        {
+            telemetryEvents.Add(trainingEvent);
+#if !UNITY_WEBGL
+            string fileName = new string(new[]
+            {
+                't', 'e', 'a', 'c', 'h', 'e', 'r', '_', 't', 'r', 'a', 'i', 'n', 'i', 'n', 'g', '_',
+                't', 'e', 'l', 'e', 'm', 'e', 't', 'r', 'y', '.', 'j', 's', 'o', 'n', 'l'
+            });
+            string path = Path.Combine(Application.persistentDataPath, fileName);
+            try
+            {
+                File.AppendAllText(path, JsonUtility.ToJson(trainingEvent) + Environment.NewLine);
+            }
+            catch (Exception exception) when (
+                exception is IOException || exception is UnauthorizedAccessException)
+            {
+                Debug.LogWarning(exception.GetType().Name);
+            }
+#endif
+        }
+
+        private static string TextHash(string value)
+        {
+            return Hash128.Compute(value ?? string.Empty).ToString();
         }
 
         private void AppendRecord(int selectedOption, TeacherResponseOption option)

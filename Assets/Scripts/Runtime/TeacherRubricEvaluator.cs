@@ -42,11 +42,10 @@ namespace AdieLab.TeacherTraining
             var dimensions = new RubricDimension[Labels.Length];
             for (int i = 0; i < dimensions.Length; i++)
             {
-                float emphasis = i % 2 == 0 ? 0.08f : -0.05f;
                 dimensions[i] = new RubricDimension
                 {
                     label = Labels[i],
-                    score = Mathf.Clamp(average + emphasis, 0f, 3f)
+                    score = average
                 };
             }
 
@@ -56,6 +55,42 @@ namespace AdieLab.TeacherTraining
                 averageScore = average,
                 overallLevel = average >= 2.5f ? "숙련" : average >= 1.7f ? "성장 중" : "기초 연습"
             };
+        }
+
+        public static RubricSummary Evaluate(IReadOnlyList<TrainingTelemetryEvent> events)
+        {
+            EvidenceCenteredScoreSummary evidence = EvidenceCenteredScoring.Evaluate(events);
+            var dimensions = new RubricDimension[Labels.Length];
+            for (int index = 0; index < dimensions.Length; index++)
+            {
+                CompetencyDimensionScore score = evidence.dimensions[index];
+                dimensions[index] = new RubricDimension
+                {
+                    label = Labels[index],
+                    score = score.hasEvidence ? score.score : 0f
+                };
+            }
+
+            return new RubricSummary
+            {
+                dimensions = dimensions,
+                averageScore = evidence.averageScore,
+                overallLevel = OverallLevel(evidence.averageScore)
+            };
+        }
+
+        private static string OverallLevel(float average)
+        {
+            return average >= 2.5f
+                ? Korean('\uC219', '\uB828')
+                : average >= 1.7f
+                    ? Korean('\uC131', '\uC7A5', ' ', '\uC911')
+                    : Korean('\uAE30', '\uCD08', ' ', '\uC5F0', '\uC2B5');
+        }
+
+        private static string Korean(params char[] characters)
+        {
+            return new string(characters);
         }
     }
 }

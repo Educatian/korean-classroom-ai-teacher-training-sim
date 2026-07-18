@@ -22,11 +22,14 @@ namespace AdieLab.TeacherTraining
         private float gestureMotionPhase;
         private float animationSpeedBias = 1f;
         private System.Random gestureRandom;
+        private readonly ProceduralRotationState proceduralRotation = new ProceduralRotationState();
+        private Transform proceduralChest;
         [SerializeField] private bool ambientPerformance;
 
         public StudentAffect CurrentAffect => currentAffect;
         public BehaviorGesture CurrentGesture => currentGesture;
         public AffectVector CurrentVector => currentVector;
+        public AffectVector TargetVector => targetVector;
         public int BlendShapeChannelCount => face == null ? 0 : face.ChannelCount;
         public bool UprightEyeContact => uprightEyeContact;
         private void Awake()
@@ -126,20 +129,6 @@ namespace AdieLab.TeacherTraining
                 return;
             }
 
-            if (!uprightEyeContact)
-            {
-                Transform chest = animator.GetBoneTransform(HumanBodyBones.Chest);
-                if (chest == null)
-                {
-                    chest = animator.GetBoneTransform(HumanBodyBones.Spine);
-                }
-
-                if (chest != null)
-                {
-                    chest.rotation = Quaternion.AngleAxis(-12f, Vector3.right) * chest.rotation;
-                }
-            }
-
             Vector3 lensDirection = conversationTarget.position - head.position;
             if (lensDirection.sqrMagnitude < 0.0001f)
             {
@@ -218,6 +207,15 @@ namespace AdieLab.TeacherTraining
             face.SetActionUnit(unit, intensity, immediate);
         }
 
+        public void SetActionUnit(
+            FacialActionUnit unit,
+            float intensity,
+            int sourceId,
+            bool immediate = false)
+        {
+            face.SetActionUnit(unit, intensity, sourceId, immediate);
+        }
+
         public float GetActionUnit(FacialActionUnit unit)
         {
             return face.GetActionUnit(unit);
@@ -228,9 +226,22 @@ namespace AdieLab.TeacherTraining
             face.ReleaseActionUnit(unit, immediate);
         }
 
+        public void ReleaseActionUnit(
+            FacialActionUnit unit,
+            int sourceId,
+            bool immediate = false)
+        {
+            face.ReleaseActionUnit(unit, sourceId, immediate);
+        }
+
         public void ClearActionUnitOverrides(bool immediate = false)
         {
             face.ClearActionUnitOverrides(immediate);
+        }
+
+        public void ClearActionUnitOverrides(int sourceId, bool immediate = false)
+        {
+            face.ClearActionUnitOverrides(sourceId, immediate);
         }
 
         public float GetMaxBlendShapeWeight(params string[] tokens)
@@ -308,36 +319,45 @@ namespace AdieLab.TeacherTraining
                 return;
             }
 
+            if (proceduralChest != chest)
+            {
+                proceduralChest = chest;
+                proceduralRotation.Reset();
+            }
+
             float pulse = Mathf.Sin(Time.time * Mathf.Lerp(2.1f, 7.5f, currentVector.arousal) + gestureMotionPhase);
+            Quaternion offset = Quaternion.identity;
             if (currentGesture == BehaviorGesture.Fidget || currentGesture == BehaviorGesture.DeskTap)
             {
-                chest.rotation = Quaternion.AngleAxis(pulse * 2.2f * gestureIntensity, Vector3.forward) * chest.rotation;
+                offset = Quaternion.AngleAxis(pulse * 2.2f * gestureIntensity, Vector3.forward);
             }
             else if (currentGesture == BehaviorGesture.Shield || currentGesture == BehaviorGesture.Withdraw)
             {
-                chest.rotation = Quaternion.AngleAxis(7f * gestureIntensity, Vector3.right) * chest.rotation;
+                offset = Quaternion.AngleAxis(7f * gestureIntensity, Vector3.right);
             }
             else if (currentGesture == BehaviorGesture.Point || currentGesture == BehaviorGesture.PushAway)
             {
-                chest.rotation = Quaternion.AngleAxis(pulse * 3.5f * gestureIntensity, Vector3.up) * chest.rotation;
+                offset = Quaternion.AngleAxis(pulse * 3.5f * gestureIntensity, Vector3.up);
             }
             else if (currentGesture == BehaviorGesture.Listen)
             {
-                chest.rotation = Quaternion.AngleAxis(-2.4f * gestureIntensity, Vector3.right) * chest.rotation;
+                offset = Quaternion.AngleAxis(-2.4f * gestureIntensity, Vector3.right);
             }
             else if (currentGesture == BehaviorGesture.AvoidGaze)
             {
-                chest.rotation = Quaternion.AngleAxis(4.5f * gestureIntensity, Vector3.right) * chest.rotation;
+                offset = Quaternion.AngleAxis(4.5f * gestureIntensity, Vector3.right);
             }
             else if (currentGesture == BehaviorGesture.Protest)
             {
-                chest.rotation = Quaternion.AngleAxis(-2.2f * gestureIntensity, Vector3.right) * chest.rotation;
-                chest.rotation = Quaternion.AngleAxis(pulse * 1.4f * gestureIntensity, Vector3.forward) * chest.rotation;
+                offset = Quaternion.AngleAxis(pulse * 1.4f * gestureIntensity, Vector3.forward)
+                    * Quaternion.AngleAxis(-2.2f * gestureIntensity, Vector3.right);
             }
             else if (currentGesture == BehaviorGesture.Neutral)
             {
-                chest.rotation = Quaternion.AngleAxis(pulse * 0.65f * gestureIntensity, Vector3.right) * chest.rotation;
+                offset = Quaternion.AngleAxis(pulse * 0.65f * gestureIntensity, Vector3.right);
             }
+
+            chest.rotation = proceduralRotation.Apply(chest.rotation, offset);
         }
 
         private static AffectVector VectorFor(StudentAffect affect)

@@ -67,6 +67,10 @@ namespace AdieLab.TeacherTraining.Tests
             // Then
             Assert.That(summary.dimensions, Has.Length.EqualTo(6));
             Assert.That(summary.averageScore, Is.GreaterThan(0f));
+            Assert.That(
+                summary.dimensions.All(item =>
+                    System.Math.Abs(item.score - summary.averageScore) < 0.001f),
+                Is.True);
             Assert.That(summary.overallLevel, Is.Not.Empty);
         }
     }

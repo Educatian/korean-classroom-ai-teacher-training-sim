@@ -101,11 +101,7 @@ namespace AdieLab.TeacherTraining.Editor
             Cylinder("DiscussionCenterMarker", context.transform, new Vector3(0f, 0.015f, 0f), new Vector3(1.15f, 0.018f, 1.15f), Quaternion.identity, Mat("M_WorkMint"));
 
             EditorSceneManager.SaveScene(scene, CircleScenePath);
-            EditorBuildSettings.scenes = new[]
-            {
-                new EditorBuildSettingsScene(ScenePath, true),
-                new EditorBuildSettingsScene(CircleScenePath, true)
-            };
+            RegisterTrainingScenes();
             AssetDatabase.SaveAssets();
         }
     }

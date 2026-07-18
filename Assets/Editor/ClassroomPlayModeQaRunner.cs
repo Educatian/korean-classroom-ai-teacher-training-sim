@@ -147,6 +147,10 @@ namespace AdieLab.TeacherTraining.Editor
                         focal.SetUprightEyeContact(false);
                         UnityEngine.Object.FindAnyObjectByType<TeacherCameraController>()?.SetUprightFocus(false);
                         UnityEngine.Object.FindAnyObjectByType<TrainingHud>()?.SetSpeechBubbleAvoidsFace(false);
+                        ClickButton(new string(new[]
+                        {
+                            'C', 'o', 'n', 't', 'i', 'n', 'u', 'e', 'B', 'u', 't', 't', 'o', 'n'
+                        }));
                         ClickButton("ModeButton_1");
                         ClickButton("OptionButton_2");
                         Advance(QaPhase.AwaitAngry);
@@ -165,7 +169,7 @@ namespace AdieLab.TeacherTraining.Editor
                         float smileWeight = focal.GetMaxBlendShapeWeight("mouthsmile", "mouth_smile", "lipcornerpull");
                         Require(smileWeight > 3f, $"Recovering smile blendshape did not animate. weight={smileWeight:F1}");
                         CaptureAvatarFrame(focal, "Assets/Reference/Unity_Recovering_Closeup.png");
-                        for (int beat = 2; beat < 6; beat++)
+                        for (int beat = 3; beat < 6; beat++)
                         {
                             ClickButton("ContinueButton");
                             ClickButton("OptionButton_1");

@@ -16,6 +16,8 @@ namespace AdieLab.TeacherTraining
         private readonly Dictionary<FacialActionUnit, float> affectUnits = new Dictionary<FacialActionUnit, float>();
         private readonly Dictionary<FacialActionUnit, float> overrideUnits = new Dictionary<FacialActionUnit, float>();
         private readonly HashSet<FacialActionUnit> activeOverrides = new HashSet<FacialActionUnit>();
+        private readonly Dictionary<int, Dictionary<FacialActionUnit, float>> sourcedOverrides =
+            new Dictionary<int, Dictionary<FacialActionUnit, float>>();
         private readonly HashSet<FacialActionUnit> explicitActionUnits = new HashSet<FacialActionUnit>();
         private float blinkTimer;
 
@@ -71,14 +73,54 @@ namespace AdieLab.TeacherTraining
             }
         }
 
-        public float GetActionUnit(FacialActionUnit unit)
+        public void SetActionUnit(
+            FacialActionUnit unit,
+            float intensity,
+            int sourceId,
+            bool immediate = false)
         {
-            if (activeOverrides.Contains(unit))
+            if (sourceId == 0)
             {
-                return overrideUnits.TryGetValue(unit, out float overridden) ? overridden : 0f;
+                SetActionUnit(unit, intensity, immediate);
+                return;
             }
 
-            return affectUnits.TryGetValue(unit, out float affect) ? affect : 0f;
+            if (!sourcedOverrides.TryGetValue(sourceId, out Dictionary<FacialActionUnit, float> source))
+            {
+                source = new Dictionary<FacialActionUnit, float>();
+                sourcedOverrides[sourceId] = source;
+            }
+
+            source[unit] = Mathf.Clamp01(intensity);
+            RebuildTargets();
+            if (immediate)
+            {
+                ApplyTargetsImmediately();
+            }
+        }
+
+        public float GetActionUnit(FacialActionUnit unit)
+        {
+            bool overridden = false;
+            float strongest = 0f;
+            if (activeOverrides.Contains(unit))
+            {
+                strongest = overrideUnits.TryGetValue(unit, out float defaultValue) ? defaultValue : 0f;
+                overridden = true;
+            }
+
+            foreach (Dictionary<FacialActionUnit, float> source in sourcedOverrides.Values)
+            {
+                if (source.TryGetValue(unit, out float sourceValue))
+                {
+                    strongest = overridden ? Mathf.Max(strongest, sourceValue) : sourceValue;
+                    overridden = true;
+                }
+            }
+
+            return overridden
+                ? strongest
+                : affectUnits.TryGetValue(unit, out float affect) ? affect : 0f;
         }
 
         public void ReleaseActionUnit(FacialActionUnit unit, bool immediate = false)
@@ -91,9 +133,55 @@ namespace AdieLab.TeacherTraining
             }
         }
 
+        public void ReleaseActionUnit(
+            FacialActionUnit unit,
+            int sourceId,
+            bool immediate = false)
+        {
+            if (sourceId == 0)
+            {
+                ReleaseActionUnit(unit, immediate);
+                return;
+            }
+
+            if (sourcedOverrides.TryGetValue(sourceId, out Dictionary<FacialActionUnit, float> source))
+            {
+                source.Remove(unit);
+                if (source.Count == 0)
+                {
+                    sourcedOverrides.Remove(sourceId);
+                }
+            }
+
+            RebuildTargets();
+            if (immediate)
+            {
+                ApplyTargetsImmediately();
+            }
+        }
+
         public void ClearActionUnitOverrides(bool immediate = false)
         {
             activeOverrides.Clear();
+            sourcedOverrides.Clear();
+            RebuildTargets();
+            if (immediate)
+            {
+                ApplyTargetsImmediately();
+            }
+        }
+
+        public void ClearActionUnitOverrides(int sourceId, bool immediate = false)
+        {
+            if (sourceId == 0)
+            {
+                activeOverrides.Clear();
+            }
+            else
+            {
+                sourcedOverrides.Remove(sourceId);
+            }
+
             RebuildTargets();
             if (immediate)
             {

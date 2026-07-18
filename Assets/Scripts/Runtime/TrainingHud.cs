@@ -81,7 +81,7 @@ namespace AdieLab.TeacherTraining
                 Mathf.Lerp(canvasRect.rect.yMin, canvasRect.rect.yMax, viewport.y));
             float halfWidth = speechBubble.rect.width * 0.5f;
             float halfHeight = speechBubble.rect.height * 0.5f;
-            float verticalOffset = halfHeight + (speechBubbleAvoidsFace ? 128f : 96f);
+            float verticalOffset = halfHeight + (speechBubbleAvoidsFace ? 178f : 118f);
             Vector2 desired = local + new Vector2(81f, verticalOffset);
             desired.x = Mathf.Clamp(desired.x, canvasRect.rect.xMin + halfWidth + 20f, canvasRect.rect.xMax - halfWidth - 20f);
             desired.y = Mathf.Clamp(desired.y, canvasRect.rect.yMin + halfHeight + 130f, canvasRect.rect.yMax - halfHeight - 80f);
