@@ -101,3 +101,12 @@ The final PlayMode run logged `CLASSMATE_GAZE_QA_OK`, `NPC_IDLE_BEHAVIOR_QA_OK`,
 - Live OpenRouter evidence: three consecutive turns passed with `openai/gpt-4o-mini`; log markers `LIVE_LLM_DIALOGUE_TURN_OK` x3 and `LIVE_LLM_DIALOGUE_EVIDENCE_OK`.
 - Visual inspection: speech bubble remained above the focal student's head, HUD text was readable, and the new floor/desk/wall surfaces and Blender-authored air purifier appeared at teacher eye height.
 - Known tooling issue: the headless editor-only preview camera crashed in native shadow rendering after writing no new preview; Windows-player captures succeeded and are the authoritative evidence for this pass.
+
+## Electronic-board object replacement (2026-07-19)
+
+- Replaced the legacy primitive `ElectronicBoardAssembly` in both training scenes with the Blender-authored `ElectronicBoardAssembly_Blender` model.
+- The replacement validates 13 authored OBJ parts before saving: frame, inner bezel, active screen, tray, camera ring/lens, input panel, four ports, and both speaker arrays.
+- A visible hardware pass adds a brushed-metal double bezel, active teal display surface, camera housing/lens/status light, accessory tray and stylus, four differentiated input ports, and perforated left/right speaker grilles.
+- The final Windows player evidence passed with `ELECTRONIC_BOARD_EVIDENCE_OK renderers=43 meshes=43 vertices=26491` and produced `Assets/Reference/Unity_ElectronicBoard_Applied.png` plus `Assets/Reference/Unity_ElectronicBoard_Detail.png`.
+- The final EditMode regression suite passed `91/91`. The Windows build succeeded with `WINDOWS_BUILD_OK bytes=326098822`.
+- Desktop validation emitted expected non-fatal OpenXR runtime discovery warnings because no headset runtime was active; rendering and evidence capture completed successfully.

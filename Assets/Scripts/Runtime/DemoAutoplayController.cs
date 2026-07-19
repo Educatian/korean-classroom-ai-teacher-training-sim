@@ -53,9 +53,86 @@ namespace AdieLab.TeacherTraining
                 return;
             }
 
+            if (Array.IndexOf(arguments, "--board-evidence") >= 0)
+            {
+                StartCoroutine(CaptureElectronicBoardEvidence(arguments));
+                return;
+            }
+
             StartCoroutine(PlayDemo(arguments, circleSceneLoaded));
         }
 
+        private IEnumerator CaptureElectronicBoardEvidence(string[] arguments)
+        {
+            yield return new WaitForSecondsRealtime(6f);
+            if (string.IsNullOrWhiteSpace(captureDirectory))
+            {
+                FailEvidence("electronic-board capture directory unavailable", 8);
+                yield break;
+            }
+
+            GameObject board = GameObject.Find("ElectronicBoardAssembly_Blender");
+            Camera camera = FindAnyObjectByType<Camera>();
+            if (board == null || camera == null || GameObject.Find("ElectronicBoardAssembly") != null)
+            {
+                FailEvidence("electronic-board replacement validation failed", 9);
+                yield break;
+            }
+
+            Renderer[] renderers = board.GetComponentsInChildren<Renderer>(true);
+            MeshFilter[] meshFilters = board.GetComponentsInChildren<MeshFilter>(true);
+            int vertexCount = meshFilters.Sum(filter => filter.sharedMesh != null ? filter.sharedMesh.vertexCount : 0);
+            if (renderers.Length == 0 || meshFilters.Length == 0 || vertexCount < 500)
+            {
+                FailEvidence($"electronic-board mesh validation failed: renderers={renderers.Length}, meshes={meshFilters.Length}, vertices={vertexCount}", 10);
+                yield break;
+            }
+            TeacherCameraController teacherCamera = camera.GetComponent<TeacherCameraController>();
+            if (teacherCamera != null)
+            {
+                teacherCamera.enabled = false;
+            }
+            Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+            bool[] canvasStates = canvases.Select(canvas => canvas.enabled).ToArray();
+            foreach (Canvas canvas in canvases)
+            {
+                canvas.enabled = false;
+            }
+
+            Vector3 savedPosition = camera.transform.position;
+            Quaternion savedRotation = camera.transform.rotation;
+            float savedFieldOfView = camera.fieldOfView;
+            camera.transform.position = new Vector3(0.20f, 1.58f, -2.80f);
+            camera.transform.rotation = Quaternion.LookRotation(new Vector3(-0.75f, 1.95f, 4.55f) - camera.transform.position);
+            camera.fieldOfView = 40f;
+            yield return new WaitForEndOfFrame();
+            Capture("Unity_ElectronicBoard_Applied.png");
+            yield return new WaitForSecondsRealtime(1f);
+
+            camera.transform.position = new Vector3(-0.10f, 1.78f, 1.45f);
+            camera.transform.rotation = Quaternion.LookRotation(new Vector3(-0.75f, 1.92f, 4.48f) - camera.transform.position);
+            camera.fieldOfView = 48f;
+            yield return new WaitForEndOfFrame();
+            Capture("Unity_ElectronicBoard_Detail.png");
+            yield return new WaitForSecondsRealtime(1f);
+
+            camera.transform.SetPositionAndRotation(savedPosition, savedRotation);
+            camera.fieldOfView = savedFieldOfView;
+            for (int i = 0; i < canvases.Length; i++)
+            {
+                canvases[i].enabled = canvasStates[i];
+            }
+            if (teacherCamera != null)
+            {
+                teacherCamera.enabled = true;
+            }
+
+            Debug.Log($"ELECTRONIC_BOARD_EVIDENCE_OK renderers={renderers.Length} meshes={meshFilters.Length} vertices={vertexCount}");
+            if (Array.IndexOf(arguments, "--autoplay-exit") >= 0)
+            {
+                Application.Quit();
+            }
+        }
         private IEnumerator CaptureLiveDialogueEvidence(string[] arguments, bool circleScene)
         {
             yield return new WaitForSecondsRealtime(7f);

@@ -1,5 +1,9 @@
+using System;
+using System.IO;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace AdieLab.TeacherTraining.Editor
 {
@@ -61,6 +65,8 @@ namespace AdieLab.TeacherTraining.Editor
             instance.transform.localRotation = Quaternion.identity;
             instance.transform.localScale = Vector3.one;
 
+            BuildGeneratedElectronicBoardHardware(instance.transform);
+
             Cube("Header", instance.transform, new Vector3(0f, 2.06f, -0.18f), new Vector3(2.55f, 0.10f, 0.018f), Mat("M_WorkMint"));
             Cube("CardA", instance.transform, new Vector3(-1.15f, 1.58f, -0.18f), new Vector3(0.92f, 0.62f, 0.018f), Mat("M_WorkBlue"));
             Cube("CardB", instance.transform, new Vector3(0f, 1.58f, -0.18f), new Vector3(0.92f, 0.62f, 0.018f), Mat("M_WorkMint"));
@@ -69,6 +75,52 @@ namespace AdieLab.TeacherTraining.Editor
             return true;
         }
 
+        private static void BuildGeneratedElectronicBoardHardware(Transform board)
+        {
+            Material frame = Mat("M_ElectronicFrame");
+            Material screen = Mat("M_ElectronicScreen");
+            Material metal = Mat("M_Metal");
+            Material rubber = Mat("M_Rubber");
+            Material glass = Mat("M_Glass");
+            Material indicator = Mat("M_WorkMint");
+
+            Cube("ActiveDisplaySurface", board, new Vector3(0f, 1.65f, -0.145f), new Vector3(4.28f, 1.24f, 0.025f), screen);
+            Cube("BezelTop", board, new Vector3(0f, 2.30f, -0.19f), new Vector3(4.56f, 0.085f, 0.075f), frame);
+            Cube("BezelBottom", board, new Vector3(0f, 0.99f, -0.19f), new Vector3(4.56f, 0.085f, 0.075f), frame);
+            Cube("BezelLeft", board, new Vector3(-2.26f, 1.65f, -0.19f), new Vector3(0.085f, 1.38f, 0.075f), frame);
+            Cube("BezelRight", board, new Vector3(2.26f, 1.65f, -0.19f), new Vector3(0.085f, 1.38f, 0.075f), frame);
+            Cube("BrushedMetalTopTrim", board, new Vector3(0f, 2.335f, -0.235f), new Vector3(4.42f, 0.018f, 0.018f), metal);
+            Cube("BrushedMetalBottomTrim", board, new Vector3(0f, 1.025f, -0.235f), new Vector3(4.42f, 0.018f, 0.018f), metal);
+
+            RoundedBox("CameraHousing", board, new Vector3(0f, 2.46f, -0.235f), new Vector3(0.34f, 0.16f, 0.09f), 0.035f, "ElectronicBoardCameraHousingV2", frame);
+            Cylinder("CameraLensRing", board, new Vector3(0f, 2.46f, -0.295f), new Vector3(0.048f, 0.018f, 0.048f), Quaternion.Euler(90f, 0f, 0f), metal);
+            Cylinder("CameraLens", board, new Vector3(0f, 2.46f, -0.318f), new Vector3(0.029f, 0.012f, 0.029f), Quaternion.Euler(90f, 0f, 0f), glass);
+            Sphere("CameraStatusLed", board, new Vector3(0.105f, 2.455f, -0.291f), new Vector3(0.018f, 0.018f, 0.012f), indicator);
+
+            Cube("AccessoryTray", board, new Vector3(0f, 0.82f, -0.18f), new Vector3(3.78f, 0.075f, 0.34f), frame);
+            Cube("AccessoryTrayLip", board, new Vector3(0f, 0.84f, -0.355f), new Vector3(3.78f, 0.055f, 0.035f), metal);
+            Cylinder("TrayStylus", board, new Vector3(-1.15f, 0.89f, -0.36f), new Vector3(0.018f, 0.26f, 0.018f), Quaternion.Euler(0f, 0f, 90f), Mat("M_Paper"));
+
+            RoundedBox("InputPanel", board, new Vector3(1.60f, 0.90f, -0.275f), new Vector3(0.72f, 0.20f, 0.055f), 0.018f, "ElectronicBoardInputPanelV2", frame);
+            Material[] portMaterials = { metal, Mat("M_WorkBlue"), metal, indicator };
+            string[] portNames = { "UsbCPort", "UsbAPort", "HdmiPort", "AudioPort" };
+            for (int index = 0; index < portNames.Length; index++)
+            {
+                float x = 1.37f + index * 0.15f;
+                Cube(portNames[index], board, new Vector3(x, 0.90f, -0.31f), new Vector3(0.085f, index == 3 ? 0.045f : 0.055f, 0.018f), portMaterials[index]);
+            }
+
+            for (int side = -1; side <= 1; side += 2)
+            {
+                float x = side * 2.17f;
+                Cube(side < 0 ? "LeftSpeakerGrille" : "RightSpeakerGrille", board, new Vector3(x, 1.64f, -0.235f), new Vector3(0.13f, 1.02f, 0.045f), metal);
+                for (int index = 0; index < 8; index++)
+                {
+                    float y = 1.25f + index * 0.11f;
+                    Sphere($"{(side < 0 ? "Left" : "Right")}SpeakerPerforation_{index:00}", board, new Vector3(x, y, -0.27f), new Vector3(0.027f, 0.027f, 0.012f), rubber);
+                }
+            }
+        }
         private static void BuildGeneratedClassroomProps(Transform parent)
         {
             InstantiateGeneratedModel("SM_AirPurifier_Realistic.obj", "AirPurifier_Blender", parent, new Vector3(5.75f, 0f, 4.35f), Quaternion.identity);
@@ -90,6 +142,104 @@ namespace AdieLab.TeacherTraining.Editor
             instance.transform.localPosition = position;
             instance.transform.localRotation = rotation;
             instance.transform.localScale = Vector3.one;
+        }
+        [MenuItem("Tools/Teacher Training/Replace Electronic Board In Training Scenes")]
+        public static void ReplaceElectronicBoardInTrainingScenes()
+        {
+            ValidateGeneratedElectronicBoardSource();
+            foreach (string scenePath in GetTrainingScenePaths())
+            {
+                Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+                GameObject legacy = FindSceneObject(scene, "ElectronicBoardAssembly");
+                GameObject generated = FindSceneObject(scene, "ElectronicBoardAssembly_Blender");
+                Transform parent = legacy != null
+                    ? legacy.transform.parent
+                    : generated != null
+                        ? generated.transform.parent
+                        : null;
+                if (parent == null)
+                {
+                    throw new InvalidOperationException($"Electronic board parent is missing in {scenePath}.");
+                }
+
+                if (legacy != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(legacy);
+                }
+                if (generated != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(generated);
+                }
+                if (!TryBuildGeneratedElectronicBoard(parent))
+                {
+                    throw new InvalidOperationException($"Generated electronic board asset is missing in {scenePath}.");
+                }
+
+                if (scene.name == "KoreanClassroomCircleTraining")
+                {
+                    GameObject teacherCamera = FindSceneObject(scene, "TeacherCamera");
+                    if (teacherCamera != null)
+                    {
+                        Vector3 eyePosition = new Vector3(-5.40f, 1.62f, 4.15f);
+                        teacherCamera.transform.SetPositionAndRotation(
+                            eyePosition,
+                            Quaternion.LookRotation(new Vector3(0f, 1.08f, 0f) - eyePosition));
+                    }
+                }
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                Debug.Log($"ELECTRONIC_BOARD_REPLACED scene={scene.name}");
+            }
+
+            AssetDatabase.SaveAssets();
+        }
+
+        private static void ValidateGeneratedElectronicBoardSource()
+        {
+            const string modelPath = "Assets/Models/Generated/SM_ElectronicBoard_Realistic.obj";
+            string source = File.ReadAllText(modelPath);
+            string[] requiredParts =
+            {
+                "Frame", "InnerBezel", "Screen", "Tray", "CameraRing", "CameraLens",
+                "InputPanel", "Port0", "Port1", "Port2", "Port3", "Speaker_-1_0_0", "Speaker_1_0_0"
+            };
+            foreach (string part in requiredParts)
+            {
+                if (!source.Contains($"o {part}\n") && !source.Contains($"o {part}\r\n"))
+                {
+                    throw new InvalidDataException($"Generated electronic board is missing authored part '{part}'.");
+                }
+            }
+        }
+
+        public static void ReplaceElectronicBoardInTrainingScenesFromCommandLine()
+        {
+            try
+            {
+                ReplaceElectronicBoardInTrainingScenes();
+                Debug.Log("ELECTRONIC_BOARD_REPLACEMENT_OK");
+                EditorApplication.Exit(0);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                EditorApplication.Exit(1);
+            }
+        }
+
+        private static GameObject FindSceneObject(Scene scene, string objectName)
+        {
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                foreach (Transform candidate in root.GetComponentsInChildren<Transform>(true))
+                {
+                    if (candidate.name == objectName)
+                    {
+                        return candidate.gameObject;
+                    }
+                }
+            }
+            return null;
         }
         private static void BuildFrontCabinets(Transform parent)
         {
