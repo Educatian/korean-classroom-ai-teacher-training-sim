@@ -2,7 +2,7 @@
 
 ## Current automated baseline
 
-On 2026-07-17, the main project was regenerated with Unity `6000.4.9f1` and the EditMode suite passed `33/33` tests with zero failures, skips, or inconclusive results.
+On 2026-07-18, both classroom scenes were regenerated with Unity `6000.4.9f1` and the expanded EditMode suite passed `67/67` tests with zero failures, skips, or inconclusive results. The Windows player build completed successfully at 318,261,430 bytes.
 
 ```powershell
 & 'C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Unity.exe' `
@@ -22,16 +22,21 @@ The local logs are excluded from Git. A passing result must be regenerated on ea
 - The randomized outfit roster shows 15 distinct color, pattern, fabric, and chest-graphic assignments, and the original Rocketbox shirt marks are suppressed.
 - Speech bubbles remain anchored above the focal student's head and the dialogue HUD remains readable at 1920×1080.
 
-## Open visual QA items
+## Completed visual-polish pass
 
-The repository is an active prototype. Current review notes to address in the next visual pass are:
+- Raised the female Rocketbox chest-graphic origin from 0.430 to 0.455 while preserving the male origin.
+- Replaced the top-left letter-like apparel mark with a rounded three-pebble orbit generated through imagegen.
+- Added a skin-protection mask so torso fallback tinting does not recolor skin-like hand UV islands.
+- Recorded a continuous built-player interaction covering free dialogue, upright eye contact, mode changes, response choices, and debrief. The delivered H.264 MP4 is 2560x1080 at 30 fps for 36.2 seconds and decodes without errors.
 
-- tune the female Rocketbox torso UV origin so chest graphics sit slightly higher;
-- replace the ribbon-like first graphic with a less letter-like abstract motif;
-- harden the clothing mask around hand UV islands and verify uncropped full-body poses;
-- replace the legacy gameplay preview with a verified continuous interaction recording.
+## Final manual visual sign-off (2026-07-18)
 
-These items do not invalidate the automated baseline, but they remain release blockers for a polished demonstration build.
+- `Unity_VisualPolish_FemaleYawn_FullBody.png` confirms the raised female chest graphic remains on the shirt and both hands retain their skin material during the yawn pose.
+- `Unity_VisualPolish_ChinRest_FullBody.png` confirms the full seated silhouette remains readable during the chin-rest/thoughtful pose, without clothing, desk, or chair penetration.
+- `Unity_VisualPolish_ExtremePushAway_FullBody.png` confirms both open hands remain skin-toned during the strong two-arm gesture and neither sleeve nor torso is masked by the chair.
+- The rounded three-pebble orbit motif remains visibly abstract and non-letter-like in both the close pose captures and normal-distance classroom captures.
+
+The final PlayMode run logged `CLASSMATE_GAZE_QA_OK`, `NPC_IDLE_BEHAVIOR_QA_OK`, and `CLASSROOM_AUDIO_QA_OK`. Automated scene contracts, the `67/67` EditMode suite, player build, MP4 decode, timeline contact-sheet generation, and the required human visual checks are complete.
 
 ## Release checklist
 

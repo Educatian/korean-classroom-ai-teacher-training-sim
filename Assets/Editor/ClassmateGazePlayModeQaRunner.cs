@@ -18,6 +18,9 @@ namespace AdieLab.TeacherTraining.Editor
         private const string OutputPath = "Assets/Reference/Unity_Classmates_Tracking_Teacher.png";
         private const string IdleBehaviorOutputPath = "Assets/Reference/Unity_Npc_IdleBehaviors.png";
         private const string ClassroomIdleOutputPath = "Assets/Reference/Unity_Npc_IdleBehaviors_ClassroomView.png";
+        private const string FemaleYawnOutputPath = "Assets/Reference/Unity_VisualPolish_FemaleYawn_FullBody.png";
+        private const string ChinRestOutputPath = "Assets/Reference/Unity_VisualPolish_ChinRest_FullBody.png";
+        private const string ExtremeGestureOutputPath = "Assets/Reference/Unity_VisualPolish_ExtremePushAway_FullBody.png";
         private static double startedAt;
         private static bool cameraMoved;
         private static Vector3[] directionsBeforeMove;
@@ -93,9 +96,17 @@ namespace AdieLab.TeacherTraining.Editor
                 });
                 Require(initialFaceAlignment > 0.82f,
                     $"Classmates are not visibly facing the teacher. expected>0.82 actual={initialFaceAlignment:F3}");
-                int headDownGestures = gazes.Count(gaze => IsHeadDownGesture(gaze.GetComponent<NpcPerformance>()?.CurrentGesture));
-                Require(headDownGestures == 0,
-                    $"A classmate still starts with a head-down gesture. expected=0 actual={headDownGestures}");
+                string[] headDownStudents = gazes
+                    .Where(gaze => IsHeadDownGesture(gaze.GetComponent<NpcPerformance>()?.CurrentGesture))
+                    .Select(gaze => $"{gaze.name}:{gaze.GetComponent<NpcPerformance>()?.CurrentGesture}:" +
+                                    $"{gaze.GetComponent<NpcIdleBehaviorController>()?.CurrentBehavior}")
+                    .ToArray();
+                if (!cameraMoved)
+                {
+                    Require(headDownStudents.Length == 0,
+                        $"A classmate still starts with a head-down gesture. expected=0 actual={headDownStudents.Length} " +
+                        $"students=[{string.Join(",", headDownStudents)}]");
+                }
                 int fullBodyAmbientGestures = observed.Count(gaze =>
                 {
                     Animator classmateAnimator = gaze.GetComponentInChildren<Animator>();
@@ -171,6 +182,21 @@ namespace AdieLab.TeacherTraining.Editor
 
                 Render(teacherCamera, OutputPath);
                 Render(teacherCamera, IdleBehaviorOutputPath);
+                RenderStudentFrame(teacherCamera, yawningStudent, FemaleYawnOutputPath);
+                NpcPerformance chinRestPerformance = chinRestStudent.GetComponent<NpcPerformance>();
+                Require(chinRestPerformance != null, "Chin-rest student performance component is missing.");
+                Animator chinRestAnimator = chinRestPerformance.GetComponentInChildren<Animator>();
+                Require(chinRestAnimator != null, "Chin-rest student animator is missing.");
+                chinRestAnimator.Play("AvoidGaze", 0, 0.42f);
+                chinRestAnimator.Update(0f);
+                RenderStudentFrame(teacherCamera, chinRestPerformance, ChinRestOutputPath);
+
+                yawningStudent.SetGesture(BehaviorGesture.PushAway, 0.78f);
+                Animator extremeAnimator = yawningStudent.GetComponentInChildren<Animator>();
+                Require(extremeAnimator != null, "Extreme-gesture student animator is missing.");
+                extremeAnimator.Play("PushAway", 0, 0.42f);
+                extremeAnimator.Update(0f);
+                RenderStudentFrame(teacherCamera, yawningStudent, ExtremeGestureOutputPath);
                 Debug.Log($"CLASSMATE_GAZE_QA_OK students={gazes.Length} attentive={observed.Length} gestures={gestureVariety} idleBehaviors={idleVariety} alignment={meanAlignment:F3} directionChange={meanDirectionChange:F2}");
                 Debug.Log("NPC_IDLE_BEHAVIOR_QA_OK yawn=AU26 chinRest=active concurrentFullBody<=1");
                 Debug.Log("CLASSROOM_AUDIO_QA_OK buttonClick=playing footstep=playing movementBinding=keyboard");
@@ -240,6 +266,47 @@ namespace AdieLab.TeacherTraining.Editor
             UnityEngine.Object.DestroyImmediate(target);
         }
 
+        private static void RenderStudentFrame(Camera camera, NpcPerformance student, string outputPath)
+        {
+            Vector3 savedPosition = camera.transform.position;
+            Quaternion savedRotation = camera.transform.rotation;
+            float savedFieldOfView = camera.fieldOfView;
+            Canvas[] canvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+            bool[] canvasStates = canvases.Select(canvas => canvas.enabled).ToArray();
+            foreach (Canvas canvas in canvases)
+            {
+                canvas.enabled = false;
+            }
+
+            NpcPerformance[] students = UnityEngine.Object.FindObjectsByType<NpcPerformance>(FindObjectsSortMode.None);
+            NpcPerformance[] hiddenStudents = students
+                .Where(candidate => candidate != student && candidate.gameObject.activeSelf)
+                .ToArray();
+            foreach (NpcPerformance hiddenStudent in hiddenStudents)
+            {
+                hiddenStudent.gameObject.SetActive(false);
+            }
+
+            Vector3 focus = student.transform.position + Vector3.up * 0.92f;
+            Vector3 cameraPosition = Vector3.Lerp(focus, savedPosition, 0.52f);
+            cameraPosition.y = Mathf.Max(cameraPosition.y, focus.y + 0.85f);
+            camera.transform.position = cameraPosition;
+            camera.transform.rotation = Quaternion.LookRotation(focus - camera.transform.position, Vector3.up);
+            camera.fieldOfView = 36f;
+            Render(camera, outputPath);
+
+            camera.transform.position = savedPosition;
+            camera.transform.rotation = savedRotation;
+            camera.fieldOfView = savedFieldOfView;
+            for (int i = 0; i < canvases.Length; i++)
+            {
+                canvases[i].enabled = canvasStates[i];
+            }
+            foreach (NpcPerformance hiddenStudent in hiddenStudents)
+            {
+                hiddenStudent.gameObject.SetActive(true);
+            }
+        }
         private static void Finish(bool success)
         {
             EditorApplication.update -= Tick;

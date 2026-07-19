@@ -366,8 +366,8 @@ namespace AdieLab.TeacherTraining.Editor
             Cylinder("LegBrace", desk.transform, new Vector3(0f, 0.28f, 0.27f), new Vector3(0.026f, 0.51f, 0.026f), Quaternion.Euler(0f, 0f, 90f), metal);
 
             GameObject seat = RootObject("Chair", desk.transform, new Vector3(0f, 0f, -0.58f));
-            RoundedBox("Seat", seat.transform, new Vector3(0f, 0.46f, 0f), new Vector3(0.52f, 0.07f, 0.46f), 0.025f, "ChairSeat", chair);
-            Cube("SeatEdge", seat.transform, new Vector3(0f, 0.42f, 0f), new Vector3(0.54f, 0.025f, 0.48f), Mat("M_DeskEdge"));
+            RoundedBox("Seat", seat.transform, new Vector3(0f, 0.39f, 0f), new Vector3(0.52f, 0.07f, 0.46f), 0.025f, "ChairSeat", chair);
+            Cube("SeatEdge", seat.transform, new Vector3(0f, 0.35f, 0f), new Vector3(0.54f, 0.025f, 0.48f), Mat("M_DeskEdge"));
             GameObject chairBack = RoundedBox("Back", seat.transform, new Vector3(0f, 0.80f, -0.30f), new Vector3(0.56f, 0.36f, 0.055f), 0.022f, "ChairBack", chair);
             chairBack.transform.localRotation = Quaternion.Euler(-9f, 0f, 0f);
             Cylinder("BackSupportL", seat.transform, new Vector3(-0.21f, 0.64f, -0.27f), new Vector3(0.024f, 0.25f, 0.024f), Quaternion.Euler(-9f, 0f, 0f), metal);
@@ -660,7 +660,7 @@ namespace AdieLab.TeacherTraining.Editor
                 jaw.localScale = Vector3.Scale(jaw.localScale, new Vector3(jawWidth, 1f, 1f));
             }
 
-            ApplyStudentClothingTint(student, variant);
+            ApplyStudentClothingTint(student, variant, female);
             ApplyStudentHairStyle(student, variant, female, faceTextureIndex);
         }
 
@@ -782,7 +782,7 @@ namespace AdieLab.TeacherTraining.Editor
             return new Vector4(0.4330f, 0.7050f, 0.5670f, 0.7050f);
         }
 
-        private static void ApplyStudentClothingTint(GameObject student, int variant)
+        private static void ApplyStudentClothingTint(GameObject student, int variant, bool female)
         {
             string[] fabricTextures =
             {
@@ -866,10 +866,12 @@ namespace AdieLab.TeacherTraining.Editor
                     outfit.SetFloat("_FabricStrength", fabricStrength);
                     outfit.SetTexture("_GraphicAtlas", graphicAtlas);
                     outfit.SetFloat("_GraphicIndex", graphicIndex);
+                    outfit.SetFloat("_GraphicCenterY", female ? 0.455f : 0.430f);
                     outfit.SetFloat("_GraphicScale", graphicScale);
                     outfit.SetFloat("_GraphicRotation", graphicRotation);
                     outfit.SetVector("_GraphicOffset", graphicOffset);
                     outfit.SetFloat("_GraphicStrength", graphicStrength);
+                    outfit.SetFloat("_SkinProtection", 1f);
                     outfit.SetFloat("_Glossiness", 0.28f);
                     materials[i] = outfit;
                     EditorUtility.SetDirty(outfit);

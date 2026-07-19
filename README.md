@@ -21,6 +21,14 @@ This project is a research and teacher-education prototype. It does not replace 
 
 The screenshots below are captured from the current Unity scene/player QA loop and are kept in [`Assets/Reference`](Assets/Reference).
 
+### Continuous Built-Player Gameplay
+
+[Watch or download the 36.2-second gameplay recording](Assets/Reference/Video/TeacherResponseTraining_RealGameplay_HQ.mp4)
+
+![Continuous gameplay timeline contact sheet](Assets/Reference/Video/TeacherResponseTraining_RealGameplay_ContactSheet.png)
+
+This is a continuous recording of the Windows player, not a slideshow. It covers free teacher dialogue, upright student eye contact, mode changes, structured response choices, and debrief at 2560×1080 and 30 fps.
+
 ### General Korean Classroom
 
 ![General Korean classroom gameplay preview](Assets/Reference/Unity_PlayMode_Preview.png)

@@ -17,9 +17,11 @@ Shader "AdieLab/StudentClothingTint"
         _FabricStrength ("Fabric Texture Strength", Range(0,1)) = 0.32
         _GraphicIndex ("Chest Graphic Index", Range(0,14)) = 0
         _GraphicStrength ("Chest Graphic Strength", Range(0,1)) = 0.92
+        _GraphicCenterY ("Chest Graphic Center Y", Range(0.36,0.52)) = 0.43
         _GraphicScale ("Chest Graphic Scale", Range(0.6,1.4)) = 1
         _GraphicRotation ("Chest Graphic Rotation", Range(-20,20)) = 0
         _GraphicOffset ("Chest Graphic Offset", Vector) = (0,0,0,0)
+        _SkinProtection ("Hand UV Protection", Range(0,1)) = 1
         _BumpMap ("Normal Map", 2D) = "bump" {}
         _BumpScale ("Normal Strength", Range(0,2)) = 1
         _Metallic ("Metallic", Range(0,1)) = 0
@@ -51,9 +53,11 @@ Shader "AdieLab/StudentClothingTint"
         half _FabricStrength;
         half _GraphicIndex;
         half _GraphicStrength;
+        half _GraphicCenterY;
         half _GraphicScale;
         half _GraphicRotation;
         half4 _GraphicOffset;
+        half _SkinProtection;
         half _BumpScale;
         half _Metallic;
         half _Glossiness;
@@ -81,7 +85,8 @@ Shader "AdieLab/StudentClothingTint"
                 (1.0 - smoothstep(0.91, 0.95, input.uv_MainTex.y));
             half torsoMask = torsoX * torsoY;
             half chromaGarmentMask = smoothstep(0.18, 0.38, chroma) * (1.0 - skinMask);
-            half garmentMask = max(chromaGarmentMask, torsoMask);
+            half protectedTorsoMask = torsoMask * (1.0 - skinMask * _SkinProtection);
+            half garmentMask = max(chromaGarmentMask, protectedTorsoMask);
 
             half2 patternUv = input.uv_MainTex * max(_PatternScale, 1.0);
             half horizontal = smoothstep(0.72, 0.96, abs(sin(patternUv.y * 3.14159265)));
@@ -123,7 +128,7 @@ Shader "AdieLab/StudentClothingTint"
             }
 
             half sourceFabricShading = 0.68 + luminance * 0.46;
-            half fabricShading = lerp(sourceFabricShading, 0.96, torsoMask * 0.86);
+            half fabricShading = lerp(sourceFabricShading, 0.96, protectedTorsoMask * 0.86);
             half3 generatedFabric = tex2D(_FabricTex, input.uv_MainTex * _FabricScale).rgb;
             half generatedFabricLuminance = dot(generatedFabric, half3(0.299, 0.587, 0.114));
             half generatedFabricDetail = lerp(1.0, 0.68 + generatedFabricLuminance * 0.64, _FabricStrength);
@@ -131,7 +136,7 @@ Shader "AdieLab/StudentClothingTint"
             half3 accentFabric = _AccentColor.rgb * fabricShading * generatedFabricDetail;
             half3 fabric = lerp(baseFabric, accentFabric, pattern * _PatternStrength);
 
-            half2 graphicLocal = input.uv_MainTex - (half2(0.5, 0.43) + _GraphicOffset.xy);
+            half2 graphicLocal = input.uv_MainTex - (half2(0.5, _GraphicCenterY) + _GraphicOffset.xy);
             graphicLocal /= half2(0.155, 0.135) * max(_GraphicScale, 0.01);
             half angle = radians(_GraphicRotation);
             half sine = sin(angle);
@@ -152,10 +157,10 @@ Shader "AdieLab/StudentClothingTint"
             half3 graphicSample = tex2D(_GraphicAtlas, atlasUv).rgb;
             half graphicLuminance = dot(graphicSample, half3(0.299, 0.587, 0.114));
             half graphicMask = smoothstep(0.12, 0.72, graphicLuminance) *
-                cellInterior * torsoMask * garmentMask * _GraphicStrength;
+                cellInterior * protectedTorsoMask * garmentMask * _GraphicStrength;
             fabric = lerp(fabric, _GraphicColor.rgb * fabricShading, graphicMask);
 
-            half clothingBlend = saturate(_TintStrength * garmentMask + torsoMask * 0.06);
+            half clothingBlend = saturate(_TintStrength * garmentMask + protectedTorsoMask * 0.06);
 
             output.Albedo = lerp(source.rgb, fabric, clothingBlend);
             output.Normal = UnpackScaleNormal(tex2D(_BumpMap, input.uv_BumpMap), _BumpScale);

@@ -45,6 +45,7 @@ Material:
     - _FabricScale: 1.8170147
     - _FabricStrength: 0.28365883
     - _Glossiness: 0.28
+    - _GraphicCenterY: 0.43
     - _GraphicIndex: 6
     - _GraphicRotation: 1.3528032
     - _GraphicScale: 0.8899706
@@ -53,6 +54,7 @@ Material:
     - _PatternScale: 10.323345
     - _PatternStrength: 0.31085905
     - _PatternType: 6
+    - _SkinProtection: 1
     - _TintStrength: 0.98
     m_Colors:
     - _AccentColor: {r: 0.804413, g: 0.4430147, b: 0.36698315, a: 1}

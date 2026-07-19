@@ -19,7 +19,7 @@ Unity imports these eight albedos at 1024 px, sRGB, repeat wrapping, high-qualit
 
 ## Original chest graphic atlas
 
-`GraphicAtlas_15.png` was generated as an exact 4 by 4 high-contrast atlas: fifteen original, text-free youth apparel motifs and one blank bottom-right cell. Motifs include abstract geometry, mountain and sun, orbit, lightning, waves, pixel flower, checker crest, smiling sun, paper plane, sprout, arches, star cluster, ribbon, shape-only shield, and modern doodle lines. The source prompt required pure black cell backgrounds, centered white and light-gray graphics, generous padding, crisp edges, no words, no letters, no numbers, no brands, and no trademarks.
+`GraphicAtlas_15.png` was generated as an exact 4 by 4 high-contrast atlas: fifteen original, text-free youth apparel motifs and one blank bottom-right cell. The top-left ribbon-like mark was replaced with a rounded three-pebble orbit so it cannot be read as a letter. Motifs include abstract geometry, mountain and sun, orbit, lightning, waves, pixel flower, checker crest, smiling sun, paper plane, sprout, arches, star cluster, ribbon, shape-only shield, and modern doodle lines. The source prompt required pure black cell backgrounds, centered white and light-gray graphics, generous padding, crisp edges, no words, no letters, no numbers, no brands, and no trademarks.
 
 Unity imports the atlas at native resolution up to 2048 px, sRGB, clamp wrapping, uncompressed, and without mipmaps to prevent cross-cell bleeding. `StudentClothingTint.shader` thresholds the black background, recolors each motif, and selects a different cell for every student.
 

@@ -16,10 +16,17 @@ namespace AdieLab.TeacherTraining.Tests
             NpcPerformance[] students = Object.FindObjectsByType<NpcPerformance>(FindObjectsSortMode.None);
             StudentGazeController[] gazes = Object.FindObjectsByType<StudentGazeController>(FindObjectsSortMode.None);
             NpcIdleBehaviorController[] idleBehaviors = Object.FindObjectsByType<NpcIdleBehaviorController>(FindObjectsSortMode.None);
+            Transform furniture = GameObject.Find("00_ENVIRONMENT/Furniture").transform;
+            Transform[] chairSeats = furniture.GetComponentsInChildren<Transform>(true)
+                .Where(item => item.name == "Seat" && item.parent != null && item.parent.name == "Chair")
+                .ToArray();
 
             Assert.That(students.Length, Is.EqualTo(15));
             Assert.That(gazes.Length, Is.EqualTo(14));
             Assert.That(idleBehaviors.Length, Is.EqualTo(14));
+            Assert.That(chairSeats, Has.Length.EqualTo(20));
+            Assert.That(chairSeats.All(seat => seat.localPosition.y <= 0.40f), Is.True,
+                "Chair seats must remain below the seated Rocketbox thigh mesh in extreme poses.");
             Assert.That(idleBehaviors.Count(controller => controller.IsAttentiveProfile), Is.EqualTo(14));
             Assert.That(idleBehaviors.Count(controller => !controller.IsAttentiveProfile), Is.EqualTo(0));
             Assert.That(System.Enum.IsDefined(typeof(NpcIdleBehavior), NpcIdleBehavior.Yawn), Is.True);
@@ -68,9 +75,11 @@ namespace AdieLab.TeacherTraining.Tests
                                                             material.HasProperty("_GraphicAtlas") &&
                                                             material.HasProperty("_GraphicColor") &&
                                                             material.HasProperty("_GraphicIndex") &&
+                                                            material.HasProperty("_GraphicCenterY") &&
                                                             material.HasProperty("_GraphicScale") &&
                                                             material.HasProperty("_GraphicRotation") &&
                                                             material.HasProperty("_GraphicOffset") &&
+                                                            material.HasProperty("_SkinProtection") &&
                                                             material.HasProperty("_GraphicStrength")), Is.True);
             Assert.That(allOutfitMaterials.All(material =>
             {
@@ -92,6 +101,12 @@ namespace AdieLab.TeacherTraining.Tests
                 return graphicIndex >= 0 && graphicIndex <= 14 &&
                        material.GetFloat("_GraphicStrength") >= 0.88f;
             }), Is.True, "Graphic assignment must exclude the blank atlas cell and remain clearly visible.");
+            Material femaleOutfit = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/M_StudentOutfit_01.mat");
+            Material maleOutfit = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/M_StudentOutfit_02.mat");
+            Assert.That(femaleOutfit.GetFloat("_GraphicCenterY"), Is.GreaterThan(maleOutfit.GetFloat("_GraphicCenterY")),
+                "Female Rocketbox chest graphics must use the raised UV origin.");
+            Assert.That(allOutfitMaterials.All(material => material.GetFloat("_SkinProtection") >= 0.99f), Is.True,
+                "Outfit tinting must protect skin-colored hand UV islands.");
             TextureImporter graphicAtlasImporter = AssetImporter.GetAtPath(
                 "Assets/Generated/StudentClothing/GraphicAtlas_15.png") as TextureImporter;
             Assert.That(graphicAtlasImporter, Is.Not.Null);
