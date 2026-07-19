@@ -102,6 +102,17 @@ The current training loop asks the teacher to:
 - Generated material assets for floor, wall, desk laminate, bulletin items, and exterior Korean school window backdrop.
 - Hanging backpacks with pocket, panel, zipper, and scale variation.
 
+### Electronic-board PDF Lesson Delivery
+
+- Teachers can select a local PDF from the running Windows player and present it directly on the classroom's 3D electronic board.
+- In-world controls provide previous/next navigation, a visible page counter, and five-second autoplay. Keyboard controls include `Ctrl+O`, arrow keys, `Page Up`, `Page Down`, and `Space`.
+- Each page is rendered on demand at up to 2048 pixels per axis, fitted without distortion, and faded into the display. A five-page cache prevents the full document from remaining rasterized in memory.
+- The active page title, number, and normalized text can be appended to both the student-response prompt and teacher-utterance rubric prompt, allowing dialogue to refer to the material currently shown.
+- The PDF file and rasterized pages remain local. Only up to 2,400 characters of active-page text enter the LLM context.
+- Import accepts PDF files up to 50 MB and 80 pages. Invalid, missing, oversized, and unsupported files produce an on-board status message.
+- The controls use the existing button motion and subtle click audio, and support both desktop pointers and XR ray interaction.
+- Local PDF selection and rendering are currently available on Windows. Meta Quest builds exclude the Windows PDF libraries; native Quest import requires Android Storage Access Framework plus an audited ARM64 renderer or secure rendering proxy.
+
 ### Student Avatars
 
 - Microsoft Rocketbox child avatars configured as Humanoid characters.
