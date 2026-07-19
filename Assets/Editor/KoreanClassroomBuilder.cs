@@ -6,6 +6,7 @@ using AdieLab.TeacherTraining;
 using TMPro;
 using UnityEditor;
 using UnityEditor.Animations;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -137,6 +138,42 @@ namespace AdieLab.TeacherTraining.Editor
                 }
 
                 Debug.Log($"WINDOWS_BUILD_OK bytes={report.summary.totalSize} output={output}");
+                EditorApplication.Exit(0);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                EditorApplication.Exit(1);
+            }
+        }
+
+        public static void BuildMetaQuestFromCommandLine()
+        {
+            try
+            {
+                MetaQuestProjectConfigurator.Configure();
+                BuildAll();
+                BuildCircleScene();
+                const string output = "Builds/TeacherResponseTrainingQuest/TeacherResponseTrainingQuest.apk";
+                Directory.CreateDirectory(Path.GetDirectoryName(output) ?? "Builds");
+                PlayerSettings.SetApplicationIdentifier(
+                    NamedBuildTarget.Android,
+                    "edu.adielab.teacherresponsetraining");
+                PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
+                PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+                BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+                {
+                    scenes = GetTrainingScenePaths(),
+                    locationPathName = output,
+                    target = BuildTarget.Android,
+                    options = BuildOptions.None
+                });
+                if (report.summary.result != BuildResult.Succeeded)
+                {
+                    throw new InvalidOperationException($"Meta Quest build failed: {report.summary.result}");
+                }
+
+                Debug.Log($"META_QUEST_BUILD_OK bytes={report.summary.totalSize} output={output}");
                 EditorApplication.Exit(0);
             }
             catch (Exception exception)
@@ -913,7 +950,11 @@ namespace AdieLab.TeacherTraining.Editor
             TMP_Text title = Label(topBar, "AppTitle", "정서·행동 지원 교사 대응 훈련", font, UiTokens.TitleSize, FontStyles.Bold, UiTokens.TextOnDark, TextAlignmentOptions.MidlineLeft);
             SetRect(title.rectTransform, new Vector2(0f, 0f), new Vector2(0.285f, 1f), new Vector2(32f, 0f), new Vector2(-10f, 0f));
             TMP_Text beat = Label(topBar, "BeatLabel", "상황 1/3", font, 19, FontStyles.Bold, UiTokens.AccentText, TextAlignmentOptions.MidlineRight);
-            SetRect(beat.rectTransform, new Vector2(0.76f, 0f), new Vector2(1f, 1f), new Vector2(10f, 0f), new Vector2(-32f, 0f));
+            SetRect(beat.rectTransform, new Vector2(0.83f, 0f), new Vector2(1f, 1f), new Vector2(8f, 0f), new Vector2(-32f, 0f));
+            beat.textWrappingMode = TextWrappingModes.NoWrap;
+            beat.enableAutoSizing = true;
+            beat.fontSizeMin = 14f;
+            beat.fontSizeMax = 19f;
 
             string[] modeNames = { "관찰", "대응", "대화", "디브리핑" };
             RectTransform sceneSwitch = Panel(
@@ -949,6 +990,16 @@ namespace AdieLab.TeacherTraining.Editor
                 SetRect(modeLabel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
                 modeButtons[i] = modeButton;
             }
+
+            RectTransform experienceRect = Panel(topBar, "ExperienceModeButton", UiTokens.Option, new Vector2(0.745f, 0.20f), new Vector2(0.825f, 0.80f), Vector2.zero, Vector2.zero);
+            Button experienceButton = experienceRect.gameObject.AddComponent<Button>();
+            experienceButton.targetGraphic = experienceRect.GetComponent<Image>();
+            experienceRect.gameObject.AddComponent<ButtonMotion>();
+            TMP_Text experienceLabel = Label(experienceRect, "Label", "DESKTOP", font, 12, FontStyles.Bold, UiTokens.AccentText, TextAlignmentOptions.Center);
+            SetRect(experienceLabel.rectTransform, Vector2.zero, Vector2.one, new Vector2(4f, 0f), new Vector2(-4f, 0f));
+            experienceLabel.enableAutoSizing = true;
+            experienceLabel.fontSizeMin = 9f;
+            experienceLabel.fontSizeMax = 12f;
 
             RectTransform leftPanel = Panel(canvasObject.transform, "SituationPanel", UiTokens.DarkSurface, new Vector2(0f, 0f), new Vector2(0.30f, 0f), new Vector2(24f, 20f), new Vector2(-10f, UiTokens.HudHeight));
             CanvasGroup observationGroup = leftPanel.gameObject.AddComponent<CanvasGroup>();
@@ -1109,6 +1160,14 @@ namespace AdieLab.TeacherTraining.Editor
             sceneSelectorSerialized.FindProperty(nameof(sceneToggleButton)).objectReferenceValue = sceneToggleButton;
             sceneSelectorSerialized.FindProperty(nameof(sceneToggleLabel)).objectReferenceValue = sceneToggleLabel;
             sceneSelectorSerialized.ApplyModifiedPropertiesWithoutUndo();
+
+            TrainingExperienceModeController experienceMode = canvasObject.AddComponent<TrainingExperienceModeController>();
+            SerializedObject experienceSerialized = new SerializedObject(experienceMode);
+            experienceSerialized.FindProperty("modeToggleButton").objectReferenceValue = experienceButton;
+            experienceSerialized.FindProperty("modeToggleLabel").objectReferenceValue = experienceLabel;
+            experienceSerialized.FindProperty("hudCanvas").objectReferenceValue = canvas;
+            experienceSerialized.FindProperty("teacherCamera").objectReferenceValue = worldCamera;
+            experienceSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             VoiceDialogueController voice = canvasObject.AddComponent<VoiceDialogueController>();
             SerializedObject voiceSerialized = new SerializedObject(voice);

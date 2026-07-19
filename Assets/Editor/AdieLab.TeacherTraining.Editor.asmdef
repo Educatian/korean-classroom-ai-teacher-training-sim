@@ -4,7 +4,14 @@
   "references": [
     "AdieLab.TeacherTraining",
     "Unity.ugui",
-    "Unity.TextMeshPro"
+    "Unity.TextMeshPro",
+    "Unity.XR.CoreUtils",
+    "Unity.XR.Interaction.Toolkit",
+    "Unity.XR.Management",
+    "Unity.XR.Management.Editor",
+    "Unity.XR.OpenXR",
+    "Unity.XR.OpenXR.Editor",
+    "Unity.XR.OpenXR.Features.MetaQuestSupport"
   ],
   "includePlatforms": [
     "Editor"

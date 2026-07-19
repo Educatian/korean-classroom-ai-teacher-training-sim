@@ -21,7 +21,8 @@ namespace AdieLab.TeacherTraining.Tests
             string json = GenerativeAiCoach.CreateRequestJson("system", "teacher", true);
 
             Assert.That(json, Does.Contain("response_format"));
-            Assert.That(json, Does.Contain("json_object"));
+            Assert.That(json, Does.Contain("json_schema"));
+            Assert.That(json, Does.Contain("strict"));
         }
 
         [Test]

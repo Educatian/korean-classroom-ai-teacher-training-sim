@@ -7,7 +7,7 @@ using UnityEngine.Networking;
 namespace AdieLab.TeacherTraining
 {
     [DisallowMultipleComponent]
-    public sealed class GenerativeAiCoach : MonoBehaviour
+    public sealed class GenerativeAiCoach : MonoBehaviour, ILlmGateway
     {
         [SerializeField] private bool enabledForSession = true;
         [SerializeField] private string endpoint = "https:" + "/" + "/openrouter.ai/api/v1/chat/completions";
@@ -15,107 +15,84 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private string apiKeyEnvironmentVariable = "OPENROUTER_API_KEY";
         [SerializeField, Range(1, 3)] private int requestAttempts = 2;
         [SerializeField, Range(10, 60)] private int requestTimeoutSeconds = 30;
+
         private OpenRouterRuntimeConfiguration runtimeConfiguration;
-        private static readonly string DefaultRequestModel = new string(new[]
-        {
-            'o', 'p', 'e', 'n', 'a', 'i', '/', 'g', 'p', 't', '-', '4', 'o', '-', 'm', 'i', 'n', 'i'
-        });
-
-        [Serializable]
-        private sealed class ChatMessage
-        {
-            public string role;
-            public string content;
-        }
-
-        [Serializable]
-        private sealed class PlainChatRequest
-        {
-            public string model;
-            public ChatMessage[] messages;
-            public int max_tokens;
-            public float temperature;
-            public RequestMetadata metadata;
-        }
-
-        [Serializable]
-        private sealed class JsonChatRequest
-        {
-            public string model;
-            public ChatMessage[] messages;
-            public ResponseFormat response_format;
-            public int max_tokens;
-            public float temperature;
-            public RequestMetadata metadata;
-        }
-
-        [Serializable]
-        private sealed class RequestMetadata
-        {
-            public int prompt_version;
-        }
-
-        [Serializable]
-        private sealed class ResponseFormat
-        {
-            public string type = "json_object";
-        }
-
-        [Serializable]
-        private sealed class ChatChoice
-        {
-            public ChatMessage message;
-        }
-
-        [Serializable]
-        private sealed class ChatResponse
-        {
-            public ChatChoice[] choices;
-        }
-
-        public bool IsConfigured => enabledForSession &&
-                                    !string.IsNullOrWhiteSpace(endpoint) &&
-                                    !string.IsNullOrWhiteSpace(model) &&
-                                    !string.IsNullOrWhiteSpace(ApiKey);
-
-        public string ConfigurationLabel => IsConfigured ? $"LLM 연결 · {model}" : "로컬 대화 모드 · OpenRouter 연결 대기";
-        public string ModelId => model;
-        public int PromptVersion => RuntimeConfiguration.PromptVersion;
+        private string ApiKey => Environment.GetEnvironmentVariable(apiKeyEnvironmentVariable);
         public OpenRouterRuntimeConfiguration RuntimeConfiguration =>
             runtimeConfiguration ??= OpenRouterRuntimeConfiguration.FromEnvironment();
-        private string ApiKey => Environment.GetEnvironmentVariable(apiKeyEnvironmentVariable);
+        public bool IsConfigured => enabledForSession && !string.IsNullOrWhiteSpace(endpoint) &&
+                                    !string.IsNullOrWhiteSpace(model) && !string.IsNullOrWhiteSpace(ApiKey);
+        public string ConfigurationLabel => IsConfigured ? $"LLM 연결 · {model}" : "로컬 대화 모드 · LLM 연결 대기";
+        public string ModelId => model;
+        public int PromptVersion => RuntimeConfiguration.PromptVersion;
 
         private void Awake()
         {
             runtimeConfiguration = OpenRouterRuntimeConfiguration.FromEnvironment();
-            string endpointOverride = Environment.GetEnvironmentVariable("OPENROUTER_ENDPOINT");
-            string modelOverride = Environment.GetEnvironmentVariable("OPENROUTER_MODEL");
-            if (!string.IsNullOrWhiteSpace(endpointOverride))
-            {
-                endpoint = endpointOverride;
-            }
-
-            if (!string.IsNullOrWhiteSpace(modelOverride))
-            {
-                model = modelOverride;
-            }
+            ApplyEnvironmentOverride("OPENROUTER_ENDPOINT", value => endpoint = value);
+            ApplyEnvironmentOverride("OPENROUTER_MODEL", value => model = value);
         }
 
-        public IEnumerator RequestFeedback(
-            ScenarioBeat beat,
-            TeacherResponseOption selected,
-            Action<string> completed)
+        public IEnumerator RequestFeedback(ScenarioBeat beat, TeacherResponseOption selected, Action<string> completed)
         {
             string prompt =
                 "한국 초등학교 고학년 정서행동 지원 교사 코치로서 아래 대응을 평가하세요. " +
-                "학생의 존엄, 낮은 자극, 감정 인정, 선택권, 안전, 수업 복귀를 기준으로 2문장 이내의 구체적인 피드백을 한국어로 작성하세요.\n" +
+                "학생 존엄, 낮은 자극, 감정 인정, 선택권, 안전, 수업 복귀를 기준으로 2문장 이내 한국어 피드백을 작성하세요.\n" +
                 $"상황: {beat.observation}\n학생 발화: {beat.studentLine}\n교사 대응: {selected.spokenResponse}";
             yield return Send(
-                "당신은 근거기반 교사 공동조절 코치입니다.",
-                prompt,
-                false,
-                completed,
-                error => Debug.LogWarning($"Generative AI coach request failed: {error}"));
+                "당신은 근거기반 교사 공동조절 코치입니다.", prompt, LlmResponseContract.PlainText,
+                completed, error => Debug.LogWarning($"Generative AI coach request failed: {error}"));
+        }
+
+        public IEnumerator RequestStudentTurn(
+            StudentTurnRequest request,
+            Action<StudentAgentTurn> completed,
+            Action<string> failed)
+        {
+            if (request == null)
+            {
+                failed?.Invoke("학생 대화 요청이 비어 있습니다.");
+                yield break;
+            }
+
+            StudentSafetyDecision inputSafety = StudentSafetyPolicy.Evaluate(request.teacherUtterance);
+            if (inputSafety.Route == StudentTurnRoute.LocalFallback)
+            {
+                failed?.Invoke(inputSafety.Category.ToString());
+                yield break;
+            }
+
+            const string system =
+                "당신은 한국 초등학교 고학년 교실 시뮬레이션의 학생 민준입니다. 정서·행동 위기를 현실적으로 연기하되 " +
+                "자해, 타해, 욕설을 과장하지 마세요. 교사의 말에 1~2문장 한국어로 답하세요. " +
+                "표정 AU, 제스처, 정서가 서로 일치해야 합니다. dialogueSignals는 학생 관점에서 이번 교사 발화가 " +
+                "경청, 압박, 선택권, 안전 우려, 수업 복귀 준비도에 미친 영향을 0~1로 나타냅니다.";
+            AffectVector current = request.currentAffect;
+            string prompt =
+                $"최근 대화 및 누적 상태:\n{request.conversationContext}\n" +
+                $"현재 정서: valence={current.valence:F2}, arousal={current.arousal:F2}, dominance={current.dominance:F2}\n" +
+                $"교사: {request.teacherUtterance}";
+
+            string raw = null;
+            string errorMessage = null;
+            yield return Send(system, prompt, LlmResponseContract.StudentTurn,
+                value => raw = value, error => errorMessage = error);
+            if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                failed?.Invoke(errorMessage);
+                yield break;
+            }
+
+            StudentTurnResolution resolution = StudentTurnBoundary.Normalize(raw);
+            if (resolution.Outcome != StudentTurnOutcome.Accepted || resolution.Turn == null)
+            {
+                failed?.Invoke(resolution.Outcome == StudentTurnOutcome.Unsafe
+                    ? resolution.SafetyCategory.ToString()
+                    : "LLM 응답을 학생 정서 데이터로 해석하지 못했습니다.");
+                yield break;
+            }
+
+            completed?.Invoke(resolution.Turn);
         }
 
         public IEnumerator RequestStudentTurn(
@@ -125,67 +102,66 @@ namespace AdieLab.TeacherTraining
             Action<StudentAgentTurn> completed,
             Action<string> failed)
         {
-            StudentSafetyDecision inputSafety = StudentSafetyPolicy.Evaluate(teacherUtterance);
-            if (inputSafety.Route == StudentTurnRoute.LocalFallback)
+            yield return RequestStudentTurn(new StudentTurnRequest
             {
-                failed?.Invoke(inputSafety.Category.ToString());
+                teacherUtterance = teacherUtterance,
+                conversationContext = conversationContext,
+                currentAffect = current
+            }, completed, failed);
+        }
+
+        public IEnumerator RequestTeacherRubric(
+            TeacherRubricRequest request,
+            Action<TeacherRubricResult> completed,
+            Action<string> failed)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.teacherUtterance))
+            {
+                failed?.Invoke("교사 발화 평가 요청이 비어 있습니다.");
                 yield break;
             }
 
-            string system =
-                "당신은 한국 초등학교 고학년 교실 시뮬레이션의 학생 민준입니다. 정서·행동 위기 상황을 사실적으로 연기하되 " +
-                "자해, 타해, 욕설을 과장하지 마세요. 교사의 말에 1~2문장 한국어로 답하고 현재 정서를 JSON 하나로만 반환하세요. " +
-                "JSON 객체만 반환하세요. 스키마: {\"studentReply\":\"...\",\"valence\":-1.0,\"arousal\":0.0," +
-                "\"dominance\":-1.0,\"gesture\":\"Neutral|AvoidGaze|Fidget|Withdraw|Protest|Defiant|DeskTap|Shield|Point|PushAway|Listen|Recover\"," +
-                "\"actionUnits\":{\"au1\":0.0,\"au2\":0.0,\"au4\":0.0,\"au5\":0.0,\"au6\":0.0,\"au7\":0.0,\"au9\":0.0," +
-                "\"au12\":0.0,\"au15\":0.0,\"au17\":0.0,\"au20\":0.0,\"au23\":0.0,\"au24\":0.0,\"au25\":0.0,\"au26\":0.0}}. " +
-                "모든 AU 수치는 0~1이며 표정과 제스처는 응답 정서에 일치해야 합니다.";
+            const string system =
+                "당신은 정서행동 위기 학생 대응 교사교육 평가자입니다. 단일 발화를 학생 존엄(0), 낮은 자극(1), " +
+                "감정 인정(2), 학생 선택권(3), 안전(4), 수업 복귀(5)의 여섯 차원에서 각각 0~3점으로 평가하세요. " +
+                "각 차원을 정확히 한 번 포함하고, 관찰 가능한 짧은 근거와 다음 발화 개선안을 한국어로 제시하세요.";
             string prompt =
-                $"최근 대화:\n{conversationContext}\n현재 정서: valence={current.valence:F2}, arousal={current.arousal:F2}, dominance={current.dominance:F2}\n" +
-                $"교사: {teacherUtterance}";
-
+                $"시나리오: {request.scenarioContext}\n교사 발화: {request.teacherUtterance}\n학생 응답: {request.studentReply}";
             string raw = null;
             string errorMessage = null;
-            yield return Send(system, prompt, true, value => raw = value, error => errorMessage = error);
+            yield return Send(system, prompt, LlmResponseContract.TeacherRubric,
+                value => raw = value, error => errorMessage = error);
             if (!string.IsNullOrWhiteSpace(errorMessage))
             {
                 failed?.Invoke(errorMessage);
                 yield break;
             }
 
-            StudentTurnResolution resolution = StudentTurnBoundary.Normalize(raw);
-            if (resolution.Outcome == StudentTurnOutcome.Unsafe)
+            TeacherRubricResult rubric = ParseTeacherRubric(raw);
+            if (rubric == null)
             {
-                failed?.Invoke(resolution.SafetyCategory.ToString());
+                failed?.Invoke("LLM 루브릭 응답이 검증 계약을 충족하지 못했습니다.");
                 yield break;
             }
 
-            StudentAgentTurn turn = resolution.Route == StudentTurnRoute.OpenRouter
-                ? resolution.Turn
-                : null;
-            if (turn == null)
-            {
-                failed?.Invoke("LLM 응답을 학생 정서 데이터로 해석하지 못했습니다.");
-                yield break;
-            }
-
-            turn.valence = Mathf.Clamp(turn.valence, -1f, 1f);
-            turn.arousal = Mathf.Clamp01(turn.arousal);
-            turn.dominance = Mathf.Clamp(turn.dominance, -1f, 1f);
-            ClampActionUnits(turn.actionUnits);
-            completed?.Invoke(turn);
+            completed?.Invoke(rubric);
         }
 
-        private IEnumerator Send(string system, string user, bool structuredOutput, Action<string> completed, Action<string> failed)
+        private IEnumerator Send(
+            string system,
+            string user,
+            LlmResponseContract contract,
+            Action<string> completed,
+            Action<string> failed)
         {
             if (!IsConfigured)
             {
-                failed?.Invoke("OPENROUTER_API_KEY가 설정되지 않았습니다.");
+                failed?.Invoke("LLM 연결 정보가 설정되지 않았습니다.");
                 yield break;
             }
 
             byte[] body = Encoding.UTF8.GetBytes(
-                CreateRequestJson(system, user, structuredOutput, model, RuntimeConfiguration));
+                OpenRouterRequestFactory.Create(system, user, contract, model, RuntimeConfiguration));
             string lastError = null;
             for (int attempt = 0; attempt < requestAttempts; attempt++)
             {
@@ -200,15 +176,14 @@ namespace AdieLab.TeacherTraining
 
                 if (request.result == UnityWebRequest.Result.Success)
                 {
-                    ChatResponse response = ParseChatResponse(request.downloadHandler.text);
-                    if (response?.choices == null || response.choices.Length == 0 ||
-                        response.choices[0] == null || response.choices[0].message == null)
+                    if (LlmResponseParser.TryExtractContent(request.downloadHandler.text, out string content))
+                    {
+                        completed?.Invoke(content);
+                    }
+                    else
                     {
                         failed?.Invoke("지원되지 않는 LLM 응답 형식입니다.");
-                        yield break;
                     }
-
-                    completed?.Invoke(response.choices[0].message.content);
                     yield break;
                 }
 
@@ -219,16 +194,14 @@ namespace AdieLab.TeacherTraining
                 {
                     break;
                 }
-
                 yield return new WaitForSecondsRealtime(0.5f * (attempt + 1));
             }
-
-            failed?.Invoke(lastError ?? "OpenRouter 요청을 완료하지 못했습니다.");
+            failed?.Invoke(lastError ?? "LLM 요청을 완료하지 못했습니다.");
         }
 
         public static string CreateRequestJson(string system, string user, bool structuredOutput)
         {
-            return CreateRequestJson(system, user, structuredOutput, "openai/gpt-4o-mini");
+            return CreateRequestJson(system, user, structuredOutput, null);
         }
 
         public static string CreateRequestJson(
@@ -237,131 +210,26 @@ namespace AdieLab.TeacherTraining
             bool structuredOutput,
             OpenRouterRuntimeConfiguration configuration)
         {
-            return CreateRequestJson(
-                system,
-                user,
-                structuredOutput,
-                DefaultRequestModel,
-                configuration);
-        }
-
-        private static string CreateRequestJson(
-            string system,
-            string user,
-            bool structuredOutput,
-            string requestModel,
-            OpenRouterRuntimeConfiguration configuration = null)
-        {
             configuration ??= new OpenRouterRuntimeConfiguration(
                 OpenRouterRuntimeConfiguration.DefaultMaxTokens,
                 OpenRouterRuntimeConfiguration.DefaultTemperature,
                 OpenRouterRuntimeConfiguration.DefaultPromptVersion);
-            ChatMessage[] messages =
-            {
-                new ChatMessage { role = "system", content = system },
-                new ChatMessage { role = "user", content = user }
-            };
-            if (!structuredOutput)
-            {
-                return JsonUtility.ToJson(new PlainChatRequest
-                {
-                    model = requestModel,
-                    messages = messages,
-                    max_tokens = configuration.MaxTokens,
-                    temperature = configuration.Temperature,
-                    metadata = new RequestMetadata { prompt_version = configuration.PromptVersion }
-                });
-            }
-
-            return JsonUtility.ToJson(new JsonChatRequest
-            {
-                model = requestModel,
-                messages = messages,
-                response_format = new ResponseFormat(),
-                max_tokens = configuration.MaxTokens,
-                temperature = configuration.Temperature,
-                metadata = new RequestMetadata { prompt_version = configuration.PromptVersion }
-            });
+            return OpenRouterRequestFactory.Create(
+                system, user,
+                structuredOutput ? LlmResponseContract.StudentTurn : LlmResponseContract.PlainText,
+                "openai/gpt-4o-mini", configuration);
         }
 
-        private static ChatResponse ParseChatResponse(string raw)
+        public static StudentAgentTurn ParseStudentTurn(string raw) => LlmResponseParser.ParseStudentTurn(raw);
+        public static TeacherRubricResult ParseTeacherRubric(string raw) => LlmResponseParser.ParseTeacherRubric(raw);
+
+        private static void ApplyEnvironmentOverride(string key, Action<string> assign)
         {
-            try
+            string value = Environment.GetEnvironmentVariable(key);
+            if (!string.IsNullOrWhiteSpace(value))
             {
-                return JsonUtility.FromJson<ChatResponse>(raw);
-            }
-            catch (ArgumentException)
-            {
-                return null;
+                assign(value);
             }
         }
-
-        public static StudentAgentTurn ParseStudentTurn(string raw)
-        {
-            if (string.IsNullOrWhiteSpace(raw))
-            {
-                return null;
-            }
-
-            int start = raw.IndexOf('{');
-            int end = raw.LastIndexOf('}');
-            if (start < 0 || end <= start)
-            {
-                return null;
-            }
-
-            string json = raw.Substring(start, end - start + 1);
-
-            try
-            {
-                StudentAgentTurn turn = new StudentAgentTurn
-                {
-                    valence = float.NaN,
-                    arousal = float.NaN,
-                    dominance = float.NaN
-                };
-                JsonUtility.FromJsonOverwrite(json, turn);
-                if (turn == null || string.IsNullOrWhiteSpace(turn.studentReply) ||
-                    string.IsNullOrWhiteSpace(turn.gesture) ||
-                    float.IsNaN(turn.valence) || float.IsInfinity(turn.valence) ||
-                    float.IsNaN(turn.arousal) || float.IsInfinity(turn.arousal) ||
-                    float.IsNaN(turn.dominance) || float.IsInfinity(turn.dominance) ||
-                    !Enum.TryParse(turn.gesture, true, out BehaviorGesture _))
-                {
-                    return null;
-                }
-
-                return turn;
-            }
-            catch (ArgumentException)
-            {
-                return null;
-            }
-        }
-
-        private static void ClampActionUnits(ActionUnitDirective units)
-        {
-            if (units == null)
-            {
-                return;
-            }
-
-            units.au1 = Mathf.Clamp01(units.au1);
-            units.au2 = Mathf.Clamp01(units.au2);
-            units.au4 = Mathf.Clamp01(units.au4);
-            units.au5 = Mathf.Clamp01(units.au5);
-            units.au6 = Mathf.Clamp01(units.au6);
-            units.au7 = Mathf.Clamp01(units.au7);
-            units.au9 = Mathf.Clamp01(units.au9);
-            units.au12 = Mathf.Clamp01(units.au12);
-            units.au15 = Mathf.Clamp01(units.au15);
-            units.au17 = Mathf.Clamp01(units.au17);
-            units.au20 = Mathf.Clamp01(units.au20);
-            units.au23 = Mathf.Clamp01(units.au23);
-            units.au24 = Mathf.Clamp01(units.au24);
-            units.au25 = Mathf.Clamp01(units.au25);
-            units.au26 = Mathf.Clamp01(units.au26);
-        }
-
     }
 }

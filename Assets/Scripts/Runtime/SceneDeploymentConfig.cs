@@ -83,6 +83,7 @@ namespace AdieLab.TeacherTraining
         public bool supportsEnvironmentSecret;
         public bool requiresXrProvider;
         public bool requiresWorldSpaceHud;
+        public bool requiresSecureLlmProxy;
 
         public static SceneDeploymentConfig For(TrainingDeploymentTarget target)
         {
@@ -96,7 +97,8 @@ namespace AdieLab.TeacherTraining
                     supportsLocalResearchLog = true,
                     supportsEnvironmentSecret = true,
                     requiresXrProvider = false,
-                    requiresWorldSpaceHud = false
+                    requiresWorldSpaceHud = false,
+                    requiresSecureLlmProxy = false
                 },
                 TrainingDeploymentTarget.WebGl => new SceneDeploymentConfig
                 {
@@ -106,7 +108,8 @@ namespace AdieLab.TeacherTraining
                     supportsLocalResearchLog = false,
                     supportsEnvironmentSecret = false,
                     requiresXrProvider = false,
-                    requiresWorldSpaceHud = false
+                    requiresWorldSpaceHud = false,
+                    requiresSecureLlmProxy = true
                 },
                 TrainingDeploymentTarget.ImmersiveVr => new SceneDeploymentConfig
                 {
@@ -114,9 +117,10 @@ namespace AdieLab.TeacherTraining
                     readiness = DeploymentReadiness.Constrained,
                     supportsMicrophone = true,
                     supportsLocalResearchLog = true,
-                    supportsEnvironmentSecret = true,
+                    supportsEnvironmentSecret = false,
                     requiresXrProvider = true,
-                    requiresWorldSpaceHud = true
+                    requiresWorldSpaceHud = true,
+                    requiresSecureLlmProxy = true
                 },
                 _ => throw new ArgumentOutOfRangeException(nameof(target), target, null)
             };

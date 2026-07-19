@@ -1,5 +1,6 @@
 using System.Linq;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace AdieLab.TeacherTraining.Tests
 {
@@ -26,6 +27,32 @@ namespace AdieLab.TeacherTraining.Tests
             Assert.That(paths.Distinct().Count(), Is.EqualTo(2));
             Assert.That(paths, Does.Contain(TrainingSceneRegistry.SceneAssetPath(TrainingSceneId.GeneralClassroom)));
             Assert.That(paths, Does.Contain(TrainingSceneRegistry.SceneAssetPath(TrainingSceneId.CircleDiscussion)));
+        }
+
+        [Test]
+        public void MetaQuestDeployment_RequiresSecureProxyInsteadOfEnvironmentSecret()
+        {
+            // Given / When
+            SceneDeploymentConfig immersive = SceneDeploymentConfig.For(TrainingDeploymentTarget.ImmersiveVr);
+
+            // Then
+            Assert.That(immersive.supportsEnvironmentSecret, Is.False);
+            Assert.That(immersive.requiresSecureLlmProxy, Is.True);
+            Assert.That(immersive.requiresWorldSpaceHud, Is.True);
+        }
+
+        [Test]
+        public void ExperienceMode_DefaultsToQuestOnAndroidAndDesktopElsewhere()
+        {
+            Assert.That(
+                TrainingExperienceModePolicy.DefaultFor(RuntimePlatform.Android),
+                Is.EqualTo(TrainingExperienceMode.ImmersiveVr));
+            Assert.That(
+                TrainingExperienceModePolicy.DefaultFor(RuntimePlatform.WindowsPlayer),
+                Is.EqualTo(TrainingExperienceMode.Desktop));
+            Assert.That(
+                TrainingExperienceModePolicy.DefaultFor(RuntimePlatform.WindowsEditor),
+                Is.EqualTo(TrainingExperienceMode.Desktop));
         }
 
         [Test]

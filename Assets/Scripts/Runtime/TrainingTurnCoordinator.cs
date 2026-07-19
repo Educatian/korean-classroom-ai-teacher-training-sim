@@ -40,6 +40,11 @@ namespace AdieLab.TeacherTraining
 
         public bool TryAdvance(out bool complete)
         {
+            return TryAdvanceTo(BeatIndex + 1, out complete);
+        }
+
+        public bool TryAdvanceTo(int targetBeatIndex, out bool complete)
+        {
             complete = false;
             if (state.CurrentPhase != TrainingPhase.ReviewingFeedback)
             {
@@ -47,10 +52,15 @@ namespace AdieLab.TeacherTraining
             }
 
             input.InvalidateActiveRequest();
-            if (BeatIndex + 1 >= beatCount)
+            if (targetBeatIndex >= beatCount)
             {
                 complete = state.TryTransitionTo(TrainingPhase.Complete);
                 return complete;
+            }
+
+            if (targetBeatIndex < 0)
+            {
+                return false;
             }
 
             if (!state.TryTransitionTo(TrainingPhase.PresentingScenario))
@@ -58,7 +68,7 @@ namespace AdieLab.TeacherTraining
                 return false;
             }
 
-            BeatIndex++;
+            BeatIndex = targetBeatIndex;
             return state.TryTransitionTo(TrainingPhase.AwaitingTeacherAction);
         }
 

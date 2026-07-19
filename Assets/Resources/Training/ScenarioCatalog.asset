@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8cddaa126d884d4d83a8bbb2495084c, type: 3}
+  m_Name: ScenarioCatalog
+  m_EditorClassIdentifier: AdieLab.TeacherTraining::AdieLab.TeacherTraining.TrainingScenarioCatalog
+  studentPersonas:
+  - {fileID: 11400000, guid: 1cb1c446b06c4714bafefac9ca51a1a5, type: 2}
+  - {fileID: 11400000, guid: f4a8add639795e14b8aeb9ff20ec000b, type: 2}
+  - {fileID: 11400000, guid: e63e73c2eae702f47adb928e3d854dff, type: 2}
+  - {fileID: 11400000, guid: 730ce778f98482345aed9deef3e81f5e, type: 2}
+  - {fileID: 11400000, guid: d7a6f52259749ea48a58e43483faf0a7, type: 2}
+  scenarios:
+  - {fileID: 11400000, guid: 77b861dc86fc51e418278e9f8661cb24, type: 2}
+  - {fileID: 11400000, guid: 10a8623e3503dad4da29350b06edcb23, type: 2}

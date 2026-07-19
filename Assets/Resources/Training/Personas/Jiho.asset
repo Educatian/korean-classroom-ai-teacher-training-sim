@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c51a453af999ee48b2d52668a415596, type: 3}
+  m_Name: Jiho
+  m_EditorClassIdentifier: AdieLab.TeacherTraining::AdieLab.TeacherTraining.StudentPersonaAsset
+  personaId: Jiho
+  displayName: "\uC9C0\uD638"
+  gradeBand: 0
+  strengths: 0300000004000000
+  supportNeeds: 0400000003000000

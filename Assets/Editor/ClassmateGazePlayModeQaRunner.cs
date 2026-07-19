@@ -171,6 +171,17 @@ namespace AdieLab.TeacherTraining.Editor
                     "Yawn idle behavior did not drive the jaw-drop action unit.");
                 Require(chinRestStudent != null && chinRestStudent.CurrentBehavior == NpcIdleBehavior.ChinRest,
                     "Chin-rest idle behavior did not remain active for the capture.");
+                ChinRestDeskContactController chinRestContact = chinRestStudent.ChinRestContact;
+                Require(chinRestContact != null && chinRestContact.HasDeskSurface,
+                    "Chin-rest pose did not resolve a supporting student desk.");
+                Require(chinRestContact.ContactWeight > 0.95f,
+                    $"Chin-rest desk contact did not blend in. weight={chinRestContact.ContactWeight:F3}");
+                Require(chinRestContact.HandChinGap < 0.12f,
+                    $"Chin-rest hand remains too far from the chin. gap={chinRestContact.HandChinGap:F3}");
+                Require(chinRestContact.ElbowDeskGap < 0.06f,
+                    $"Chin-rest elbow remains too far from the desk. gap={chinRestContact.ElbowDeskGap:F3} desktopLocal={chinRestContact.ElbowDesktopLocal}");
+                Require(chinRestContact.ElbowOverDesktop,
+                    $"Chin-rest elbow remains outside the usable desktop inset. desktopLocal={chinRestContact.ElbowDesktopLocal}");
 
                 Button modeButton = GameObject.Find("ModeButton_2")?.GetComponent<Button>();
                 TeacherFootstepAudio footsteps = teacherCamera.GetComponent<TeacherFootstepAudio>();
@@ -185,10 +196,6 @@ namespace AdieLab.TeacherTraining.Editor
                 RenderStudentFrame(teacherCamera, yawningStudent, FemaleYawnOutputPath);
                 NpcPerformance chinRestPerformance = chinRestStudent.GetComponent<NpcPerformance>();
                 Require(chinRestPerformance != null, "Chin-rest student performance component is missing.");
-                Animator chinRestAnimator = chinRestPerformance.GetComponentInChildren<Animator>();
-                Require(chinRestAnimator != null, "Chin-rest student animator is missing.");
-                chinRestAnimator.Play("AvoidGaze", 0, 0.42f);
-                chinRestAnimator.Update(0f);
                 RenderStudentFrame(teacherCamera, chinRestPerformance, ChinRestOutputPath);
 
                 yawningStudent.SetGesture(BehaviorGesture.PushAway, 0.78f);
@@ -198,7 +205,7 @@ namespace AdieLab.TeacherTraining.Editor
                 extremeAnimator.Update(0f);
                 RenderStudentFrame(teacherCamera, yawningStudent, ExtremeGestureOutputPath);
                 Debug.Log($"CLASSMATE_GAZE_QA_OK students={gazes.Length} attentive={observed.Length} gestures={gestureVariety} idleBehaviors={idleVariety} alignment={meanAlignment:F3} directionChange={meanDirectionChange:F2}");
-                Debug.Log("NPC_IDLE_BEHAVIOR_QA_OK yawn=AU26 chinRest=active concurrentFullBody<=1");
+                Debug.Log($"NPC_IDLE_BEHAVIOR_QA_OK yawn=AU26 chinRest=desk-contact handGap={chinRestContact.HandChinGap:F3} elbowGap={chinRestContact.ElbowDeskGap:F3} elbowLocal={chinRestContact.ElbowDesktopLocal} concurrentFullBody<=1");
                 Debug.Log("CLASSROOM_AUDIO_QA_OK buttonClick=playing footstep=playing movementBinding=keyboard");
                 Finish(true);
             }
@@ -289,6 +296,11 @@ namespace AdieLab.TeacherTraining.Editor
 
             Vector3 focus = student.transform.position + Vector3.up * 0.92f;
             Vector3 cameraPosition = Vector3.Lerp(focus, savedPosition, 0.52f);
+            Vector3 framingOffset = cameraPosition - focus;
+            if (framingOffset.magnitude > 3.2f)
+            {
+                cameraPosition = focus + framingOffset.normalized * 3.2f;
+            }
             cameraPosition.y = Mathf.Max(cameraPosition.y, focus.y + 0.85f);
             camera.transform.position = cameraPosition;
             camera.transform.rotation = Quaternion.LookRotation(focus - camera.transform.position, Vector3.up);

@@ -3,7 +3,12 @@
   "rootNamespace": "AdieLab.TeacherTraining.Tests",
   "references": [
     "AdieLab.TeacherTraining",
-    "Unity.TextMeshPro"
+    "Unity.TextMeshPro",
+    "Unity.XR.Management",
+    "Unity.XR.Management.Editor",
+    "Unity.XR.OpenXR",
+    "Unity.XR.OpenXR.Editor",
+    "Unity.XR.OpenXR.Features.MetaQuestSupport"
   ],
   "includePlatforms": [
     "Editor"

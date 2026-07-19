@@ -12,6 +12,7 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private NpcPerformance focalStudent;
         [SerializeField] private NpcPerformance[] classmates;
         [SerializeField] private GenerativeAiCoach aiCoach;
+        [SerializeField] private SecureProxyLlmGateway secureProxyCoach;
         [SerializeField] private TeacherCameraController teacherCamera;
         [SerializeField] private TrainingModeNavigator modeNavigator;
         [SerializeField] private bool circleDiscussionScenario;
@@ -24,8 +25,12 @@ namespace AdieLab.TeacherTraining
         private int telemetrySequence;
         private float studentTrust = 0.2f;
         private float studentEngagement = 0.2f;
+        private int turnsInCurrentBeat;
+        private int pendingNextBeatIndex = -1;
+        private ScenarioTransitionReason pendingTransitionReason = ScenarioTransitionReason.Hold;
+        private CrisisStage[] crisisStages;
         private TrainingTurnCoordinator turnCoordinator;
-        private readonly ConversationMemory conversationMemory = new ConversationMemory(5);
+        private readonly ConversationSessionState conversationState = new ConversationSessionState(8);
         private readonly List<TeacherResponseOption> selectedResponses = new List<TeacherResponseOption>();
         private readonly List<TrainingTelemetryEvent> telemetryEvents = new List<TrainingTelemetryEvent>();
         private NpcSpeechPerformance speechPerformance;
@@ -38,13 +43,31 @@ namespace AdieLab.TeacherTraining
         private TrainingSceneId ActiveSceneId => circleDiscussionScenario
             ? TrainingSceneId.CircleDiscussion
             : TrainingSceneId.GeneralClassroom;
+        private ILlmGateway LlmGateway =>
+            LlmDeploymentPolicy.TransportFor(Application.platform) == LlmTransportMode.SecureProxy
+                ? secureProxyCoach
+                : aiCoach;
 
         private void Awake()
         {
             sessionId = Guid.NewGuid().ToString("N");
-            beats = circleDiscussionScenario
-                ? TrainingScenarioLibrary.BuildCircleDiscussionScenario()
-                : TrainingScenarioLibrary.BuildDefaultScenario();
+            if (secureProxyCoach == null)
+            {
+                secureProxyCoach = GetComponent<SecureProxyLlmGateway>();
+                if (secureProxyCoach == null)
+                {
+                    secureProxyCoach = gameObject.AddComponent<SecureProxyLlmGateway>();
+                }
+            }
+            TrainingScenarioAsset scenarioAsset = TrainingScenarioCatalog
+                .LoadDefault()
+                .ScenarioFor(ActiveSceneId);
+            beats = scenarioAsset.BuildRuntimeBeats();
+            crisisStages = new CrisisStage[scenarioAsset.AuthoredBeats.Count];
+            for (int index = 0; index < crisisStages.Length; index++)
+            {
+                crisisStages[index] = scenarioAsset.AuthoredBeats[index].Stage;
+            }
             turnCoordinator = new TrainingTurnCoordinator(beats.Length);
             speechPerformance = focalStudent.GetComponent<NpcSpeechPerformance>();
             if (speechPerformance == null)
@@ -93,7 +116,7 @@ namespace AdieLab.TeacherTraining
                 TrainingEventKind.SessionStarted,
                 TrainingPhase.PresentingScenario,
                 turnCoordinator.Phase);
-            hud.SetDialogueState(false, aiCoach == null ? "로컬 대화 모드" : aiCoach.ConfigurationLabel);
+            hud.SetDialogueState(false, LlmGateway == null ? "로컬 대화 모드" : LlmGateway.ConfigurationLabel);
         }
 
         private void OnDestroy()
@@ -136,14 +159,18 @@ namespace AdieLab.TeacherTraining
 
             teacherCamera?.EnterConversationFocus();
             focalStudent.SetGesture(BehaviorGesture.Listen, 0.55f);
-            hud.SetDialogueState(true, aiCoach != null && aiCoach.IsConfigured ? "학생이 답을 생각하고 있습니다…" : "로컬 학생 반응 생성 중…");
-            if (aiCoach != null && aiCoach.IsConfigured)
+            ILlmGateway gateway = LlmGateway;
+            hud.SetDialogueState(true, gateway != null && gateway.IsConfigured ? "학생이 답을 생각하고 있습니다…" : "로컬 학생 반응 생성 중…");
+            if (gateway != null && gateway.IsConfigured)
             {
                 int requestId = ++dialogueRequestId;
-                StartCoroutine(aiCoach.RequestStudentTurn(
-                    utterance,
-                    conversationMemory.BuildContext(),
-                    focalStudent.CurrentVector,
+                StartCoroutine(gateway.RequestStudentTurn(
+                    new StudentTurnRequest
+                    {
+                        teacherUtterance = utterance,
+                        conversationContext = conversationState.BuildPromptContext(),
+                        currentAffect = focalStudent.CurrentVector
+                    },
                     turn =>
                     {
                         if (requestId == dialogueRequestId && turnCoordinator.TryResolve(token))
@@ -196,6 +223,11 @@ namespace AdieLab.TeacherTraining
             string error = null)
         {
             TeacherResponseOption assessment = TeacherActionEvidenceEvaluator.ForUtterance(utterance);
+            DialogueSignals signals = LlmContractValidator.TryAcceptSignals(
+                turn.dialogueSignals,
+                out DialogueSignals acceptedSignals)
+                ? acceptedSignals
+                : DialogueSignals.Neutral;
             BehaviorGesture gesture = Enum.TryParse(turn.gesture, true, out BehaviorGesture parsed)
                 ? parsed
                 : BehaviorGesture.Fidget;
@@ -209,14 +241,24 @@ namespace AdieLab.TeacherTraining
                 classmate.SetAffect(
                     assessment.quality >= 2 ? StudentAffect.Recovering : StudentAffect.Uneasy);
             }
-            conversationMemory.Add(utterance, turn.studentReply);
+            conversationState.AddTurn(utterance, turn.studentReply, signals);
+            turnsInCurrentBeat++;
+            if (fromLlm)
+            {
+                ScenarioTransitionDecision decision = ScenarioTransitionEngine.Select(
+                    new ScenarioTransitionContext(beatIndex, turnsInCurrentBeat, crisisStages, signals));
+                pendingNextBeatIndex = decision.NextBeatIndex;
+                pendingTransitionReason = decision.Reason;
+            }
             speechPerformance.Speak(turn.studentReply, turn.actionUnits);
             bool conversationalEyeContact = gesture == BehaviorGesture.Recover || gesture == BehaviorGesture.Listen;
             focalStudent.SetUprightEyeContact(conversationalEyeContact);
             teacherCamera?.SetUprightFocus(conversationalEyeContact);
             hud.SetSpeechBubbleAvoidsFace(conversationalEyeContact);
             hud.ShowStudentTurn(utterance, turn.studentReply, affect);
-            string source = fromLlm ? "LLM 학생 응답 · 계속 말하기 가능 · F: 교실 시점" : "로컬 학생 응답 · 계속 말하기 가능 · F: 교실 시점";
+            string source = fromLlm
+                ? $"LLM 학생 응답 · 동적 전환 {TransitionLabel(pendingTransitionReason)} · F: 교실 시점"
+                : "로컬 학생 응답 · 계속 말하기 가능 · F: 교실 시점";
             if (!string.IsNullOrWhiteSpace(error))
             {
                 source += " · LLM 연결 실패 후 대체됨";
@@ -237,6 +279,10 @@ namespace AdieLab.TeacherTraining
                 requestStartedUtc,
                 error);
             AppendRecord(-1, assessment);
+            if (fromLlm && LlmGateway != null && LlmGateway.IsConfigured)
+            {
+                RequestRubricEvaluation(utterance, turn.studentReply, assessment, beatIndex);
+            }
         }
 
         private StudentAgentTurn BuildLocalTurn(string utterance)
@@ -253,7 +299,14 @@ namespace AdieLab.TeacherTraining
                     valence = Mathf.MoveTowards(current.valence, 0.18f, 0.35f),
                     arousal = Mathf.MoveTowards(current.arousal, 0.28f, 0.34f),
                     dominance = Mathf.MoveTowards(current.dominance, 0.05f, 0.24f),
-                    gesture = BehaviorGesture.Recover.ToString()
+                    gesture = BehaviorGesture.Recover.ToString(),
+                    dialogueSignals = new DialogueSignals
+                    {
+                        feltHeard = 0.82f,
+                        perceivedPressure = 0.12f,
+                        choiceOffered = 0.62f,
+                        readyForReentry = 0.68f
+                    }
                 }
                 : new StudentAgentTurn
                 {
@@ -261,7 +314,14 @@ namespace AdieLab.TeacherTraining
                     valence = Mathf.MoveTowards(current.valence, -0.72f, 0.18f),
                     arousal = Mathf.MoveTowards(current.arousal, 0.82f, 0.16f),
                     dominance = Mathf.MoveTowards(current.dominance, 0.24f, 0.14f),
-                    gesture = BehaviorGesture.Protest.ToString()
+                    gesture = BehaviorGesture.Protest.ToString(),
+                    dialogueSignals = new DialogueSignals
+                    {
+                        feltHeard = 0.12f,
+                        perceivedPressure = 0.78f,
+                        choiceOffered = 0.05f,
+                        readyForReentry = 0.08f
+                    }
                 };
         }
 
@@ -322,7 +382,11 @@ namespace AdieLab.TeacherTraining
 
         private void HandleContinue()
         {
-            if (!turnCoordinator.TryAdvance(out bool complete))
+            int previousBeatIndex = beatIndex;
+            int targetBeatIndex = pendingNextBeatIndex >= 0
+                ? pendingNextBeatIndex
+                : beatIndex + 1;
+            if (!turnCoordinator.TryAdvanceTo(targetBeatIndex, out bool complete))
             {
                 return;
             }
@@ -330,6 +394,12 @@ namespace AdieLab.TeacherTraining
             dialogueRequestId++;
             speechPerformance?.StopSpeaking();
             beatIndex = turnCoordinator.BeatIndex;
+            pendingNextBeatIndex = -1;
+            pendingTransitionReason = ScenarioTransitionReason.Hold;
+            if (beatIndex != previousBeatIndex)
+            {
+                turnsInCurrentBeat = 0;
+            }
             if (complete)
             {
                 focalStudent.SetAffect(StudentAffect.Recovering);
@@ -349,7 +419,7 @@ namespace AdieLab.TeacherTraining
                 TrainingEventKind.BeatPresented,
                 TrainingPhase.PresentingScenario,
                 TrainingPhase.AwaitingTeacherAction);
-            hud.SetDialogueState(false, aiCoach == null ? "로컬 대화 모드" : aiCoach.ConfigurationLabel);
+            hud.SetDialogueState(false, LlmGateway == null ? "로컬 대화 모드" : LlmGateway.ConfigurationLabel);
         }
 
         private void PresentBeat()
@@ -360,6 +430,46 @@ namespace AdieLab.TeacherTraining
                 focalStudent.SetGesture(beat.entryGesture, beat.gestureIntensity);
             }
             hud.ShowBeat(beatIndex, beats.Length, beat, score, beatIndex);
+        }
+
+        private void RequestRubricEvaluation(
+            string teacherUtterance,
+            string studentReply,
+            TeacherResponseOption provisionalAssessment,
+            int requestBeatIndex)
+        {
+            var request = new TeacherRubricRequest
+            {
+                teacherUtterance = teacherUtterance,
+                studentReply = studentReply,
+                scenarioContext = beats[requestBeatIndex].observation
+            };
+            StartCoroutine(LlmGateway.RequestTeacherRubric(
+                request,
+                rubric =>
+                {
+                    provisionalAssessment.competencyEvidence = rubric.ToEvidence();
+                    provisionalAssessment.rationale = rubric.improvementSuggestion;
+                    if (beatIndex == requestBeatIndex && awaitingContinue && !sessionComplete)
+                    {
+                        hud.AppendAiCoachFeedback(
+                            $"LLM 루브릭(검증 신뢰도 {rubric.confidence:P0}) · {rubric.improvementSuggestion}");
+                    }
+                },
+                error => Debug.LogWarning($"Teacher rubric request failed: {error}")));
+        }
+
+        private static string TransitionLabel(ScenarioTransitionReason reason)
+        {
+            return reason switch
+            {
+                ScenarioTransitionReason.SafetyOverride => "안전 우선",
+                ScenarioTransitionReason.SupportiveDeescalation => "진정 단계",
+                ScenarioTransitionReason.PressureEscalation => "긴장 상승",
+                ScenarioTransitionReason.ReadyForReentry => "수업 복귀",
+                ScenarioTransitionReason.MaximumTurnsReached => "다음 단계",
+                _ => "현재 단계 유지"
+            };
         }
 
         private void UpdateResearchProgress(int quality)
@@ -412,9 +522,9 @@ namespace AdieLab.TeacherTraining
             string replyHash = TextHash(studentReply);
             var inference = new ModelPromptProvenance
             {
-                modelId = aiCoach == null ? string.Empty : aiCoach.ModelId,
+                modelId = LlmGateway == null ? string.Empty : LlmGateway.ModelId,
                 promptTemplateId = nameof(GenerativeAiCoach),
-                promptVersion = aiCoach == null ? 0 : aiCoach.PromptVersion,
+                promptVersion = LlmGateway == null ? 0 : LlmGateway.PromptVersion,
                 promptHash = TextHash(string.Concat(scenario.id, beatIndex.ToString(), teacherHash)),
                 fallbackUsed = teacherSource == TrainingActionSource.TeacherUtterance && !fromLlm,
                 fallbackReason = error ?? string.Empty,
@@ -558,64 +668,5 @@ namespace AdieLab.TeacherTraining
             File.AppendAllText(path, JsonUtility.ToJson(record) + Environment.NewLine);
         }
 
-        private static ScenarioBeat[] BuildScenario()
-        {
-            return new[]
-            {
-                new ScenarioBeat
-                {
-                    title = "초기 정서 신호 포착",
-                    studentLine = "문제 너무 많아요. 더는 못 하겠어요.",
-                    observation = "민준은 주먹을 쥐고 시선을 피합니다.\n호흡이 가빠지고 목소리가 커졌습니다.",
-                    options = new[]
-                    {
-                        Option("낮은 목소리로 공간과 시간을 제공한다", "민준아, 지금 많이 벅찬 것 같아. 잠깐 멈추고 여기서 쉬거나 뒤쪽 자리로 이동해도 괜찮아.", 3, "행동을 지적하기 전에 정서 신호를 인정하고 자극을 낮췄습니다. 선택권은 통제감을 회복시키는 데 도움이 됩니다.", StudentAffect.Uneasy),
-                        Option("즉시 과제 완료를 요구한다", "수업 중이야. 다른 학생들처럼 지금 끝내.", 0, "공개적 요구와 비교는 위협감을 높여 정서 강도를 키울 수 있습니다.", StudentAffect.Angry),
-                        Option("왜 화가 났는지 여러 질문을 한다", "왜 그래? 무슨 일이야? 아침에 무슨 일 있었어?", 1, "관심은 전달되지만 높은 각성 상태에서 연속 질문은 인지 부담을 더할 수 있습니다.", StudentAffect.Distressed)
-                    }
-                },
-                new ScenarioBeat
-                {
-                    title = "감정 인정과 선택권",
-                    studentLine = "그냥 저 좀 내버려 두세요.",
-                    observation = "민준의 목소리는 여전히 날카롭지만 교사를 바라보기 시작합니다. 대응의 길이를 짧게 유지해야 합니다.",
-                    options = new[]
-                    {
-                        Option("감정을 인정하고 두 가지 안전한 선택을 제시한다", "알겠어. 지금은 말하지 않아도 돼. 여기서 2분 쉬거나 복도 앞 안정 공간에서 쉬는 것 중 골라도 돼.", 3, "감정을 논박하지 않고 선택 범위를 명확히 제시해 자율성과 안전을 함께 지켰습니다.", StudentAffect.Recovering),
-                        Option("교실 밖으로 나가라고 지시한다", "그럴 거면 당장 나가.", 0, "배제처럼 들리는 지시는 수치심과 대립을 강화할 수 있습니다. 이동이 필요해도 지원 목적과 복귀 경로를 함께 말해야 합니다.", StudentAffect.Angry),
-                        Option("반 친구들에게 이해해 달라고 설명한다", "얘들아, 민준이가 지금 힘드니까 이해해 줘.", 1, "선의가 있어도 학생의 상태를 공개적으로 드러내 사생활과 존엄을 해칠 수 있습니다.", StudentAffect.Distressed)
-                    }
-                },
-                new ScenarioBeat
-                {
-                    title = "복귀와 후속 지원 연결",
-                    studentLine = "조금 쉬면 다시 할 수 있을 것 같아요.",
-                    observation = "어깨 긴장이 낮아지고 손이 펴졌습니다. 짧은 성공 경험과 이후의 비공개 점검이 필요합니다.",
-                    options = new[]
-                    {
-                        Option("작은 복귀 과제와 비공개 후속 점검을 약속한다", "좋아. 돌아오면 첫 두 문제만 같이 시작하자. 수업 뒤에 네가 편한 방식도 잠깐 상의하자.", 3, "복귀 문턱을 낮추고 예측 가능한 후속 지원을 연결했습니다. 학생의 역량과 존엄을 모두 보존합니다.", StudentAffect.Recovering),
-                        Option("진정했으니 원래 분량을 모두 하게 한다", "이제 괜찮아졌으니 남은 문제를 전부 해.", 1, "즉시 원래 요구량으로 돌아가면 회복 중인 학생에게 다시 과부하가 생길 수 있습니다.", StudentAffect.Uneasy),
-                        Option("오늘 과제를 전부 면제한다", "오늘은 아무것도 안 해도 돼.", 2, "단기 자극은 낮추지만 복귀 구조가 없으면 회피를 강화할 수 있습니다. 작고 달성 가능한 참여 단계를 남기는 편이 좋습니다.", StudentAffect.Recovering)
-                    }
-                }
-            };
-        }
-
-        private static TeacherResponseOption Option(
-            string label,
-            string spoken,
-            int quality,
-            string rationale,
-            StudentAffect affect)
-        {
-            return new TeacherResponseOption
-            {
-                label = label,
-                spokenResponse = spoken,
-                quality = quality,
-                rationale = rationale,
-                resultingAffect = affect
-            };
-        }
     }
 }

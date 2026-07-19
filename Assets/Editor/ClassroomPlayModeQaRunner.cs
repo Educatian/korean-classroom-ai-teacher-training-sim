@@ -104,6 +104,10 @@ namespace AdieLab.TeacherTraining.Editor
                         Advance(QaPhase.AwaitDialogue);
                         return;
                     case QaPhase.AwaitDialogue:
+                        if (focal.CurrentGesture != BehaviorGesture.Recover && elapsed < 15d)
+                        {
+                            return;
+                        }
                         Require(focal.CurrentGesture == BehaviorGesture.Recover, "Supportive direct dialogue did not select Recover gesture.");
                         Require(focal.CurrentVector.valence > -0.7f, "Dynamic valence did not move toward recovery.");
                         Require(focal.GetActionUnit(FacialActionUnit.AU1InnerBrowRaiser) < 0.4f, "AU1 did not relax as valence improved.");

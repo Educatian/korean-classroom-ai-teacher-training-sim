@@ -100,6 +100,7 @@ namespace AdieLab.TeacherTraining
         public float dominance;
         public string gesture;
         public ActionUnitDirective actionUnits;
+        public DialogueSignals dialogueSignals;
     }
 
     [Serializable]

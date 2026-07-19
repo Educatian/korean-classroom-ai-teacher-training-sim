@@ -46,6 +46,7 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private int behaviorVariant;
 
         private NpcPerformance performance;
+        private Animator animator;
         private System.Random random;
         private int sequenceIndex;
         private float nextBehaviorTime;
@@ -53,12 +54,24 @@ namespace AdieLab.TeacherTraining
 
         public NpcIdleBehavior CurrentBehavior { get; private set; }
         public bool IsAttentiveProfile => attentive;
+        public ChinRestDeskContactController ChinRestContact { get; private set; }
 
         private void Awake()
         {
             performance = GetComponent<NpcPerformance>();
             random = new System.Random(StableHash(gameObject.name));
             sequenceIndex = Mathf.Abs(behaviorVariant);
+            animator = GetComponentInChildren<Animator>();
+            if (animator != null)
+            {
+                ChinRestContact = animator.GetComponent<ChinRestDeskContactController>();
+                if (ChinRestContact == null)
+                {
+                    ChinRestContact = animator.gameObject.AddComponent<ChinRestDeskContactController>();
+                }
+
+                ChinRestContact.Configure(this);
+            }
         }
 
         private void Start()
@@ -123,6 +136,12 @@ namespace AdieLab.TeacherTraining
                     break;
                 case NpcIdleBehavior.ChinRest:
                     performance.SetAmbientGesture(BehaviorGesture.AvoidGaze, 0.36f, holdSeconds);
+                    if (animator != null && animator.runtimeAnimatorController != null)
+                    {
+                        animator.Play("AvoidGaze", 0, 0.42f);
+                        animator.Update(0f);
+                        animator.speed = 0f;
+                    }
                     performance.SetActionUnit(FacialActionUnit.AU4BrowLowerer, 0.12f);
                     performance.SetActionUnit(FacialActionUnit.AU17ChinRaiser, 0.10f);
                     break;

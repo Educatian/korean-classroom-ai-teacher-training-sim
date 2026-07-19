@@ -1,0 +1,81 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using UnityEngine;
+
+namespace AdieLab.TeacherTraining
+{
+    public sealed class ConversationSessionState
+    {
+        private readonly int recentCapacity;
+        private readonly Queue<ConversationTurn> recentTurns = new Queue<ConversationTurn>();
+
+        public ConversationSessionState(int recentCapacity)
+        {
+            if (recentCapacity < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(recentCapacity));
+            }
+
+            this.recentCapacity = recentCapacity;
+        }
+
+        public int RecentTurnCount => recentTurns.Count;
+        public int TotalTurnCount { get; private set; }
+        public float Trust { get; private set; } = 0.35f;
+        public float DemandPressure { get; private set; } = 0.5f;
+        public float Readiness { get; private set; } = 0.2f;
+        public DialogueSignals LatestSignals { get; private set; } = DialogueSignals.Neutral;
+
+        public void AddTurn(string teacher, string student, DialogueSignals signals)
+        {
+            if (!LlmContractValidator.TryAcceptSignals(signals, out DialogueSignals accepted))
+            {
+                accepted = DialogueSignals.Neutral;
+            }
+
+            recentTurns.Enqueue(new ConversationTurn(teacher, student));
+            while (recentTurns.Count > recentCapacity)
+            {
+                recentTurns.Dequeue();
+            }
+
+            TotalTurnCount++;
+            LatestSignals = accepted;
+            Trust = Mathf.Clamp01(
+                Trust + accepted.feltHeard * 0.18f + accepted.choiceOffered * 0.1f -
+                accepted.perceivedPressure * 0.12f);
+            DemandPressure = Mathf.Lerp(DemandPressure, accepted.perceivedPressure, 0.55f);
+            Readiness = Mathf.Lerp(
+                Readiness,
+                Mathf.Max(accepted.readyForReentry, accepted.feltHeard * 0.75f),
+                0.65f);
+        }
+
+        public string BuildPromptContext()
+        {
+            var builder = new StringBuilder();
+            builder.Append("session_state: trust=").Append(Trust.ToString("F2"));
+            builder.Append(", pressure=").Append(DemandPressure.ToString("F2"));
+            builder.Append(", readiness=").AppendLine(Readiness.ToString("F2"));
+            foreach (ConversationTurn turn in recentTurns)
+            {
+                builder.Append("teacher: ").AppendLine(turn.Teacher);
+                builder.Append("student: ").AppendLine(turn.Student);
+            }
+            return builder.ToString().TrimEnd();
+        }
+
+        private readonly struct ConversationTurn
+        {
+            public ConversationTurn(string teacher, string student)
+            {
+                Teacher = teacher ?? string.Empty;
+                Student = student ?? string.Empty;
+            }
+
+            public string Teacher { get; }
+            public string Student { get; }
+        }
+    }
+}

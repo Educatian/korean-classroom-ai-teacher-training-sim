@@ -3,7 +3,11 @@
   "rootNamespace": "AdieLab.TeacherTraining",
   "references": [
     "Unity.ugui",
-    "Unity.TextMeshPro"
+    "Unity.TextMeshPro",
+    "Unity.InputSystem",
+    "Unity.XR.CoreUtils",
+    "Unity.XR.Interaction.Toolkit",
+    "Unity.XR.Management"
   ],
   "autoReferenced": true
 }
