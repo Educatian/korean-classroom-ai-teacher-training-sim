@@ -180,7 +180,7 @@ File: [`Assets/Scenes/KoreanClassroomCircleTraining.unity`](Assets/Scenes/Korean
 
 This scene adds peer gaze pressure, public exposure, turn-taking order, movement safety, and supported re-entry into the classroom activity.
 
-The scenario source is implemented in [`TrainingScenarioLibrary.cs`](Assets/Scripts/Runtime/TrainingScenarioLibrary.cs).
+The scenario source is stored as researcher-editable ScriptableObject assets under [`Assets/Resources/Training`](Assets/Resources/Training). [`TrainingScenarioLibrary.cs`](Assets/Scripts/Runtime/TrainingScenarioLibrary.cs) is now only the runtime loader. See the [scenario authoring guide](Docs/SCENARIO_AUTHORING.md) for creating or revising personas, triggers, crisis stages, and teacher goals without editing C#.
 
 ## Evidence-Centered Telemetry
 
@@ -203,7 +203,7 @@ flowchart LR
     A["Teacher observes, speaks, or selects"] --> B["Training input arbiter"]
     B --> C["Turn coordinator"]
     C --> D{"Interaction route"}
-    D -->|"Choice"| E["Scenario library"]
+    D -->|"Choice"| E["Scenario assets"]
     D -->|"Free text"| F{"OpenRouter configured"}
     F -->|"Yes"| G["Structured LLM student turn"]
     F -->|"No or unsafe"| H["Local fallback student turn"]
@@ -224,12 +224,21 @@ flowchart LR
 | [`TrainingSessionState.cs`](Assets/Scripts/Runtime/TrainingSessionState.cs) | Training phase and beat lifecycle |
 | [`TrainingTelemetryModels.cs`](Assets/Scripts/Runtime/TrainingTelemetryModels.cs) | Research telemetry event schema |
 | [`TrainingResearchCatalog.cs`](Assets/Scripts/Runtime/TrainingResearchCatalog.cs) | Persona and scenario metadata for research use |
-| [`GenerativeAiCoach.cs`](Assets/Scripts/Runtime/GenerativeAiCoach.cs) | OpenRouter request construction, retry, parsing, and validation |
+| [`TrainingScenarioCatalog.cs`](Assets/Scripts/Runtime/TrainingScenarioCatalog.cs) | Resources catalog and scene-to-scenario lookup |
+| [`TrainingScenarioAsset.cs`](Assets/Scripts/Runtime/TrainingScenarioAsset.cs) | Researcher-authored scenario sequence and runtime conversion |
+| [`StudentPersonaAsset.cs`](Assets/Scripts/Runtime/StudentPersonaAsset.cs) | Reusable student strengths and support-needs profile |
+| [`GenerativeAiCoach.cs`](Assets/Scripts/Runtime/GenerativeAiCoach.cs) | Desktop OpenRouter `ILlmGateway` and strict student/rubric requests |
+| [`DialogueContracts.cs`](Assets/Scripts/Runtime/DialogueContracts.cs) | Typed student-turn, transition-signal, and six-dimension rubric contracts |
+| [`ConversationSessionState.cs`](Assets/Scripts/Runtime/ConversationSessionState.cs) | Bounded transcript and accumulated relational state |
+| [`ScenarioTransitionEngine.cs`](Assets/Scripts/Runtime/ScenarioTransitionEngine.cs) | Auditable signal-to-crisis-stage transition rules |
+| [`SecureProxyLlmGateway.cs`](Assets/Scripts/Runtime/SecureProxyLlmGateway.cs) | Provider-key-free Quest/WebGL proxy client boundary |
 | [`OpenRouterRuntimePolicy.cs`](Assets/Scripts/Runtime/OpenRouterRuntimePolicy.cs) | LLM runtime settings, safety policy, and structured output normalization |
 | [`FacialActionUnitController.cs`](Assets/Scripts/Runtime/FacialActionUnitController.cs) | AU profile, explicit overrides, and Rocketbox blendshape mapping |
 | [`NpcPerformance.cs`](Assets/Scripts/Runtime/NpcPerformance.cs) | Affect, gesture, animation, gaze, and procedural upper-body integration |
 | [`TrainingHud.cs`](Assets/Scripts/Runtime/TrainingHud.cs) | Response UI, speech bubble, dialogue, and feedback panels |
 | [`TrainingSceneSelector.cs`](Assets/Scripts/Runtime/TrainingSceneSelector.cs) | Scene 1 and Scene 2 switching |
+| [`TrainingExperienceModeController.cs`](Assets/Scripts/Runtime/TrainingExperienceModeController.cs) | Desktop/IVR mode policy and OpenXR subsystem lifecycle |
+| [`XrTeacherRigAdapter.cs`](Assets/Scripts/Runtime/XrTeacherRigAdapter.cs) | Transient XR Origin, tracked controllers, ray UI, and world-space HUD adaptation |
 
 ## Running the Project
 
@@ -348,6 +357,8 @@ ProjectSettings/                # Unity project settings
 
 - [Korean README](README.ko.md)
 - [`Docs/PROJECT_GUIDE.md`](Docs/PROJECT_GUIDE.md)
+- [`Docs/SCENARIO_AUTHORING.md`](Docs/SCENARIO_AUTHORING.md)
+- [`Docs/META_QUEST_READINESS.md`](Docs/META_QUEST_READINESS.md)
 - [`Docs/SCENE_CONTRACT.md`](Docs/SCENE_CONTRACT.md)
 - [`Docs/ACTION_UNIT_CONTROL.md`](Docs/ACTION_UNIT_CONTROL.md)
 - [`Docs/IMAGEGEN_ASSET_PIPELINE.md`](Docs/IMAGEGEN_ASSET_PIPELINE.md)

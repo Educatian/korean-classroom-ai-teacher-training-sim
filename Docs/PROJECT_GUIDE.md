@@ -31,10 +31,32 @@ The command-line entry points are implemented in `Assets/Editor/KoreanClassroomB
 
 1. The teacher observes the focal student's affect, gaze, breathing, and gesture cues.
 2. The teacher selects a response or enters a direct Korean utterance.
-3. The local scenario model or OpenRouter returns a student turn and affect targets.
-4. `AffectDynamics` interpolates valence, arousal, dominance, and distress.
-5. `FacialActionUnitController`, `NpcPerformance`, and the gesture planner update face and body behavior.
-6. Response quality and the final debrief are written to a JSON Lines session log under `Application.persistentDataPath`.
+3. The active `ILlmGateway` returns a strictly validated student turn, affect targets, action units, gesture, and relational dialogue signals.
+4. `ConversationSessionState` retains a bounded recent transcript plus trust, pressure, and re-entry readiness.
+5. `ScenarioTransitionEngine` deterministically selects hold, escalation, de-escalation, safety override, or instructional re-entry from validated signals.
+6. `AffectDynamics`, `FacialActionUnitController`, `NpcPerformance`, and the gesture planner update face and body behavior.
+7. A second structured LLM call evaluates the teacher utterance against all six research competencies. It currently runs as a visible shadow rubric while the established local score remains the study-safe primary score.
+8. Response quality and the final debrief are written to a JSON Lines session log under `Application.persistentDataPath`.
+
+## Bounded-generative dialogue architecture
+
+`GenerativeAiCoach` is the desktop development implementation of `ILlmGateway`. It requests OpenRouter `json_schema` output with `strict=true`; malformed student turns, invalid signal ranges, incomplete rubrics, unsafe text, and unsupported gestures are rejected at the runtime boundary. Prompt context contains only the bounded recent conversation and derived session state.
+
+Student output includes five normalized transition signals: felt heard, perceived pressure, choice offered, safety concern, and readiness for instructional re-entry. These signals do not directly mutate the authored scenario. `ScenarioTransitionEngine` converts them into an auditable deterministic next-beat decision against the ScriptableObject crisis stages.
+
+`SecureProxyLlmGateway` is the Quest/WebGL client boundary. It accepts only HTTPS endpoints that are not the direct OpenRouter host, sends provider-key-free versioned envelopes, and requires a short-lived bearer session token held only in memory. The server URL belongs in a `SecureLlmProxySettings` Resources asset for a deployment environment; provider credentials remain server-side.
+
+## Researcher-authored scenarios
+
+Personas and scenario beats are ScriptableObject assets under `Assets/Resources/Training`. Each beat explicitly records its trigger, crisis stage, focal student, scenario type, teacher competency goals, and safety/context flags. Researchers can edit or add these assets in the Unity Inspector without changing runtime code. Follow `Docs/SCENARIO_AUTHORING.md` for the complete authoring and catalog-registration workflow.
+
+`TrainingScenarioLibrary` remains as a compatibility-facing runtime loader; it no longer owns hardcoded scenario content.
+
+## Meta Quest / immersive VR status
+
+The training scenes now expose a top-bar `DESKTOP` / `IVR` toggle. XR Plug-in Management, OpenXR, Meta OpenXR, and XR Interaction Toolkit are installed. IVR activation creates a transient XR Origin, tracked head and two controller-ray inputs, and a world-space version of the existing HUD; returning to desktop restores the original camera, input module, footstep behavior, and screen-space HUD. Android defaults to IVR while Windows and the Editor default to desktop. A release Quest APK is produced by `KoreanClassroomBuilder.BuildMetaQuestFromCommandLine`.
+
+The local XR rig and APK build are validated, but physical-headset acceptance remains outstanding. The Quest client contract and transport policy are implemented; a deployed relay URL, participant authentication/session issuance, and server-side OpenRouter credential are still required for live headset dialogue. Package versions, build commands, security boundaries, and the headset QA checklist are documented in `Docs/META_QUEST_READINESS.md`.
 
 ## OpenRouter setup
 

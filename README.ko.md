@@ -275,7 +275,11 @@ flowchart LR
 |---|---|
 | [`SimulationController.cs`](Assets/Scripts/Runtime/SimulationController.cs) | 세션, 선택, 직접 대화, fallback, 로그 orchestration |
 | [`TrainingScenarioLibrary.cs`](Assets/Scripts/Runtime/TrainingScenarioLibrary.cs) | 두 씬의 6단계 상황과 authored response |
-| [`GenerativeAiCoach.cs`](Assets/Scripts/Runtime/GenerativeAiCoach.cs) | OpenRouter 요청, JSON parsing, retry, validation |
+| [`GenerativeAiCoach.cs`](Assets/Scripts/Runtime/GenerativeAiCoach.cs) | 데스크톱 OpenRouter `ILlmGateway`와 엄격한 학생·루브릭 요청 |
+| [`DialogueContracts.cs`](Assets/Scripts/Runtime/DialogueContracts.cs) | 학생 turn, 전환 신호, 6차원 루브릭 형식 계약 |
+| [`ConversationSessionState.cs`](Assets/Scripts/Runtime/ConversationSessionState.cs) | 제한된 최근 대화와 누적 관계 상태 |
+| [`ScenarioTransitionEngine.cs`](Assets/Scripts/Runtime/ScenarioTransitionEngine.cs) | 검증 신호를 위기 단계로 연결하는 결정론적 규칙 |
+| [`SecureProxyLlmGateway.cs`](Assets/Scripts/Runtime/SecureProxyLlmGateway.cs) | provider key를 포함하지 않는 Quest/WebGL 프록시 경계 |
 | [`AffectDynamics.cs`](Assets/Scripts/Runtime/AffectDynamics.cs) | 정서 변화량 제한과 연속 보간 |
 | [`FacialActionUnitController.cs`](Assets/Scripts/Runtime/FacialActionUnitController.cs) | AU profile, override, Rocketbox blendshape 매핑 |
 | [`NpcPerformance.cs`](Assets/Scripts/Runtime/NpcPerformance.cs) | 정서·gesture·animation·상체 procedural motion 통합 |
