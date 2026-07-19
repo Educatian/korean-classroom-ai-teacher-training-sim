@@ -55,7 +55,6 @@ Meta Quest is now an implemented build target. `Docs/META_QUEST_READINESS.md` re
 - Raised the female Rocketbox chest-graphic origin from 0.430 to 0.455 while preserving the male origin.
 - Replaced the top-left letter-like apparel mark with a rounded three-pebble orbit generated through imagegen.
 - Added a skin-protection mask so torso fallback tinting does not recolor skin-like hand UV islands.
-- Recorded a continuous built-player interaction covering free dialogue, upright eye contact, mode changes, response choices, and debrief. The delivered H.264 MP4 is 2560x1080 at 30 fps for 36.2 seconds and decodes without errors.
 
 ## Final manual visual sign-off (2026-07-18)
 

@@ -26,14 +26,6 @@
 |---|---|
 | ![원형 토론 교실](Assets/Reference/CircleDiscussionReference.png) | ![머리 위 말풍선](Assets/Reference/Unity_SpeechBubble_HeadAnchored.png) |
 
-### 실제 연속 게임플레이 영상
-
-[36.2초 Windows 플레이어 게임플레이 영상 보기·다운로드](Assets/Reference/Video/TeacherResponseTraining_RealGameplay_HQ.mp4)
-
-![실제 게임플레이 타임라인 콘택트시트](Assets/Reference/Video/TeacherResponseTraining_RealGameplay_ContactSheet.png)
-
-슬라이드쇼가 아니라 Windows 플레이어를 연속 녹화한 영상입니다. 자유 교사 발화, 학생의 상체를 세운 정면 아이컨택, 모드 전환, 선택형 대응, 디브리핑을 2560×1080·30fps로 담았습니다.
-
 ## 프로젝트 목표
 
 이 프로토타입은 교사가 학생의 행동만 통제하는 연습이 아니라, 행동 전후의 정서 신호와 교실 맥락을 함께 읽고 공동조절(co-regulation) 중심의 대응을 선택하도록 설계했습니다.
@@ -399,8 +391,7 @@ ProjectSettings/                # Unity project settings
 - 여성 Rocketbox 상의 graphic 중심을 남학생보다 높게 분리
 - 글자처럼 보이던 첫 모티프를 imagegen 기반 비문자형 세 원 궤도 모티프로 교체
 - 손 UV island에 피부 보호 mask를 적용해 의상 tint 침범 차단
-- 자유 발화, 정면 아이컨택, 모드 전환, 선택형 대응, 디브리핑이 이어지는 실제 Windows 플레이어 영상 재녹화
-- Unity EditMode `67/67` 통과, Windows build 성공, 2560×1080·30fps·36.2초 MP4 전체 decode 확인
+- Unity EditMode 테스트 및 Windows build 검증
 
 여성 상의 전신 자세, 하품·턱 괴기·극단 제스처의 손 UV와 의자 충돌, 새 모티프의 gameplay 거리 인지까지 최종 육안 확인을 완료했습니다. 최신 근거는 [`Docs/VALIDATION.md`](Docs/VALIDATION.md)와 `Assets/Reference/Unity_VisualPolish_*` 캡처에 기록되어 있습니다.
 
