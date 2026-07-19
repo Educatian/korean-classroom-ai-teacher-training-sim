@@ -96,7 +96,7 @@ Run EditMode tests through Unity Test Runner or the command in `Docs/VALIDATION.
 - `Assets/Generated`: project-specific generated face and clothing textures.
 - `Assets/Art`: classroom textures, UI surfaces, audio, and reference-driven art.
 - `Assets/ThirdParty/MicrosoftRocketbox`: Microsoft Rocketbox source avatars and license.
-- `Logs/VisualQa`: local-only QA captures excluded from source control.
+- `Assets/Reference`: selected visual QA and storyboard artifacts.
 - `Docs`: architecture, asset pipeline, validation, and visual-improvement notes.
 
 ## Development rules

@@ -44,6 +44,17 @@ tmp/
 ExternalAssetReview/
 FinGripLabUnity/
 
+# Local recording intermediates and superseded QA batches
+Assets/Reference/Autoplay/
+Assets/Reference/Autoplay.meta
+Assets/Reference/Diagnostics/
+Assets/Reference/Diagnostics.meta
+Assets/Reference/Video/Frames/
+Assets/Reference/Video/Frames.meta
+Assets/Reference/Video/*.raw.mkv*
+Assets/Reference/Unity_Npc_IdleBehaviors_ClassroomView_v*.png*
+Assets/Reference/IdlePose_*.png*
+
 # OS files
 .DS_Store
 Thumbs.db

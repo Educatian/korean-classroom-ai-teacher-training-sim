@@ -5,7 +5,7 @@ namespace AdieLab.TeacherTraining.Editor
 {
     public static partial class KoreanClassroomBuilder
     {
-        private const string BackpackPreviewPath = "Logs/VisualQa/Unity_HangingBackpacks_Preview.png";
+        private const string BackpackPreviewPath = "Assets/Reference/Unity_HangingBackpacks_Preview.png";
 
         private readonly struct StrapSpec
         {

@@ -16,7 +16,7 @@ namespace AdieLab.TeacherTraining.Editor
         private const string ArmedKey = "AdieLab.TeacherTraining.QaArmed";
         private const string QuitKey = "AdieLab.TeacherTraining.QaQuit";
         private const string ScenePath = "Assets/Scenes/KoreanClassroomTraining.unity";
-        private const string OutputPath = "Logs/VisualQa/Unity_PlayMode_Preview.png";
+        private const string OutputPath = "Assets/Reference/Unity_PlayMode_Preview.png";
         private static double phaseStartedAt;
         private static QaPhase phase;
         private static string recordPath;
@@ -96,7 +96,7 @@ namespace AdieLab.TeacherTraining.Editor
                         CanvasGroup dialogueMode = GameObject.Find("DialoguePanel")?.GetComponent<CanvasGroup>();
                         Require(dialogueMode != null && dialogueMode.alpha > 0.99f && dialogueMode.interactable, "Dialogue mode button did not activate the dialogue panel.");
                         CaptureCurrentFrame(OutputPath);
-                        CaptureAvatarFrame(focal, "Logs/VisualQa/Unity_Distressed_Closeup.png");
+                        CaptureAvatarFrame(focal, "Assets/Reference/Unity_Distressed_Closeup.png");
                         TMP_InputField dialogue = GameObject.Find("DialogueInput")?.GetComponent<TMP_InputField>();
                         Require(dialogue != null && dialogue.interactable, "Direct dialogue input is unavailable.");
                         dialogue.text = "지금 많이 답답해 보이는구나. 잠깐 쉬어도 괜찮아.";
@@ -124,7 +124,7 @@ namespace AdieLab.TeacherTraining.Editor
                         Require(Vector3.Distance(dialogueCamera.transform.position, focal.transform.position) < 2.55f, "Conversation camera is too far from the student.");
                         Light faceLight = dialogueCamera.GetComponent<Light>();
                         Require(faceLight != null && faceLight.enabled && faceLight.intensity >= 0.8f, "Conversation face key light is missing or too dim.");
-                        CaptureCurrentFrame("Logs/VisualQa/Unity_FaceToFace_Dialogue.png");
+                        CaptureCurrentFrame("Assets/Reference/Unity_FaceToFace_Dialogue.png");
                         focal.SetGesture(BehaviorGesture.Listen, 0.18f);
                         Advance(QaPhase.AwaitEyeContact);
                         return;
@@ -138,7 +138,7 @@ namespace AdieLab.TeacherTraining.Editor
                         float eyeAlignment = Vector3.Dot(head.up, lensDirection);
                         Require(eyeAlignment > 0.96f, $"Student face is not aligned to the camera lens. alignment={eyeAlignment:F3}");
                         Debug.Log($"EYE_CONTACT_ALIGNMENT faceAxis={eyeAlignment:F3} forward={Vector3.Dot(head.forward, lensDirection):F3} up={Vector3.Dot(head.up, lensDirection):F3}");
-                        CaptureCurrentFrame("Logs/VisualQa/Unity_EyeContact_Moment.png");
+                        CaptureCurrentFrame("Assets/Reference/Unity_EyeContact_Moment.png");
                         focal.SetUprightEyeContact(true);
                         eyeCamera.GetComponent<TeacherCameraController>()?.SetUprightFocus(true);
                         UnityEngine.Object.FindAnyObjectByType<TrainingHud>()?.SetSpeechBubbleAvoidsFace(true);
@@ -146,8 +146,8 @@ namespace AdieLab.TeacherTraining.Editor
                         return;
                     case QaPhase.AwaitUprightEyeContact:
                         Require(focal.CurrentGesture == BehaviorGesture.Listen && focal.UprightEyeContact, "Upright eye-contact pose is not active.");
-                        CaptureCurrentFrame("Logs/VisualQa/Unity_Upright_EyeContact.png");
-                        CaptureAvatarFrame(focal, "Logs/VisualQa/Unity_Upright_EyeContact_Closeup.png");
+                        CaptureCurrentFrame("Assets/Reference/Unity_Upright_EyeContact.png");
+                        CaptureAvatarFrame(focal, "Assets/Reference/Unity_Upright_EyeContact_Closeup.png");
                         focal.SetUprightEyeContact(false);
                         UnityEngine.Object.FindAnyObjectByType<TeacherCameraController>()?.SetUprightFocus(false);
                         UnityEngine.Object.FindAnyObjectByType<TrainingHud>()?.SetSpeechBubbleAvoidsFace(false);
@@ -163,7 +163,7 @@ namespace AdieLab.TeacherTraining.Editor
                         Require(focal.CurrentAffect == StudentAffect.Angry, "Poor first response did not drive Angry affect.");
                         float angryWeight = focal.GetMaxBlendShapeWeight("browdown", "brow_down", "browlower");
                         Require(angryWeight > 20f, $"Angry brow blendshape did not animate. weight={angryWeight:F1}");
-                        CaptureAvatarFrame(focal, "Logs/VisualQa/Unity_Angry_Closeup.png");
+                        CaptureAvatarFrame(focal, "Assets/Reference/Unity_Angry_Closeup.png");
                         ClickButton("ContinueButton");
                         ClickButton("OptionButton_1");
                         Advance(QaPhase.AwaitRecovering);
@@ -172,7 +172,7 @@ namespace AdieLab.TeacherTraining.Editor
                         Require(focal.CurrentAffect == StudentAffect.Recovering, "Effective second response did not drive Recovering affect.");
                         float smileWeight = focal.GetMaxBlendShapeWeight("mouthsmile", "mouth_smile", "lipcornerpull");
                         Require(smileWeight > 3f, $"Recovering smile blendshape did not animate. weight={smileWeight:F1}");
-                        CaptureAvatarFrame(focal, "Logs/VisualQa/Unity_Recovering_Closeup.png");
+                        CaptureAvatarFrame(focal, "Assets/Reference/Unity_Recovering_Closeup.png");
                         for (int beat = 3; beat < 6; beat++)
                         {
                             ClickButton("ContinueButton");
@@ -188,7 +188,7 @@ namespace AdieLab.TeacherTraining.Editor
                         Require(writtenRecords == 6, $"Expected 6 session records, wrote {writtenRecords}.");
                         RectTransform debrief = GameObject.Find("DebriefPanel")?.GetComponent<RectTransform>();
                         Require(debrief != null && debrief.gameObject.activeInHierarchy, "Completion did not activate the debrief mode panel.");
-                        CaptureCurrentFrame("Logs/VisualQa/Unity_Completion_Preview.png");
+                        CaptureCurrentFrame("Assets/Reference/Unity_Completion_Preview.png");
                         Debug.Log("PLAYMODE_FLOW_OK beats=6 modes=4 buttons=verified persistenceRecords=6");
                         FinishSuccessfully();
                         return;
@@ -355,7 +355,6 @@ namespace AdieLab.TeacherTraining.Editor
                 image = new Texture2D(width, height, TextureFormat.RGB24, false);
                 image.ReadPixels(new Rect(0, 0, width, height), 0, 0);
                 image.Apply();
-                Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? "Logs/VisualQa");
                 File.WriteAllBytes(outputPath, image.EncodeToPNG());
             }
             finally

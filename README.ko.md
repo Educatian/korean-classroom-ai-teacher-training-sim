@@ -13,8 +13,18 @@
 | 훈련 씬 | 일반 교실 1개, 원형 토론·발표 교실 1개 |
 | 학생 NPC | 교실당 15명, Microsoft Rocketbox 기반 |
 | 대화 | 로컬 결정론적 fallback + 선택적 OpenRouter 연동 |
-| 자동 검증 | EditMode 테스트 통과, PlayMode QA 로그 확인, Windows player build 성공 |
+| 자동 검증 | EditMode `67/67` 통과, PlayMode QA 캡처 9종 생성, Windows player build 성공 |
 | 프로젝트 상태 | Active research prototype |
+
+## 화면 미리보기
+
+| 한국 초등학교 일반 교실 | 학생 정면 아이컨택 |
+|---|---|
+| ![한국 초등학교 일반 교실](Assets/Reference/ClassroomReference_ChairBagGameplayFinal.png) | ![학생 아이컨택](Assets/Reference/StudentEyeContact_ChairBagGameplayFinal.png) |
+
+| 원형 토론·발표 교실 | 얼굴을 가리지 않는 머리 위 말풍선 |
+|---|---|
+| ![원형 토론 교실](Assets/Reference/CircleDiscussionReference.png) | ![머리 위 말풍선](Assets/Reference/Unity_SpeechBubble_HeadAnchored.png) |
 
 ## 프로젝트 목표
 
@@ -360,7 +370,7 @@ ProjectSettings/                # Unity project settings
 - `NotoSansKR-VF.ttf`는 [`Assets/Art/Fonts/OFL.txt`](Assets/Art/Fonts/OFL.txt)의 SIL Open Font License 1.1 고지를 유지합니다.
 - 생성형 얼굴·의상·교실 재질은 프로젝트 전용 에셋이며 제작 원칙은 [`Docs/IMAGEGEN_ASSET_PIPELINE.md`](Docs/IMAGEGEN_ASSET_PIPELINE.md)에 기록합니다.
 - 실제 학생 개인정보, 승인되지 않은 원본 교실 사진, API 키는 저장소에 포함하지 않습니다.
-- `Library`, `Temp`, `Builds`, `Logs`, QA clone, 로컬 QA 산출물은 [`.gitignore`](.gitignore)로 제외합니다.
+- `Library`, `Temp`, `Builds`, `Logs`, QA clone, raw recording, diagnostic frame은 [`.gitignore`](.gitignore)로 제외합니다.
 - 바이너리 에셋과 Unity YAML 파일의 처리 규칙은 [`.gitattributes`](.gitattributes)에 정의합니다.
 
 자세한 내용은 [`Docs/ASSET_AND_LICENSE_GUIDE.md`](Docs/ASSET_AND_LICENSE_GUIDE.md)를 확인하세요.
@@ -383,7 +393,7 @@ ProjectSettings/                # Unity project settings
 - 손 UV island에 피부 보호 mask를 적용해 의상 tint 침범 차단
 - Unity EditMode 테스트 및 Windows build 검증
 
-여성 상의 전신 자세, 하품·턱 괴기·극단 제스처의 손 UV와 의자 충돌, 새 모티프의 gameplay 거리 인지까지 최종 육안 확인을 완료했습니다. 검증 절차와 결과는 [`Docs/VALIDATION.md`](Docs/VALIDATION.md)에 기록되어 있습니다.
+여성 상의 전신 자세, 하품·턱 괴기·극단 제스처의 손 UV와 의자 충돌, 새 모티프의 gameplay 거리 인지까지 최종 육안 확인을 완료했습니다. 최신 근거는 [`Docs/VALIDATION.md`](Docs/VALIDATION.md)와 `Assets/Reference/Unity_VisualPolish_*` 캡처에 기록되어 있습니다.
 
 ## 문서 모음
 

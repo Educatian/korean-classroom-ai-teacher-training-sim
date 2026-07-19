@@ -58,18 +58,18 @@ Meta Quest is now an implemented build target. `Docs/META_QUEST_READINESS.md` re
 
 ## Final manual visual sign-off (2026-07-18)
 
-- The raised female chest graphic remains on the shirt and both hands retain their skin material during the yawn pose.
-- The full seated silhouette remains readable during the chin-rest/thoughtful pose without clothing, desk, or chair penetration.
-- Both open hands remain skin-toned during the strong two-arm gesture, and neither sleeve nor torso is masked by the chair.
-- The rounded three-pebble orbit motif remains visibly abstract and non-letter-like at normal gameplay distance.
+- `Unity_VisualPolish_FemaleYawn_FullBody.png` confirms the raised female chest graphic remains on the shirt and both hands retain their skin material during the yawn pose.
+- `Unity_VisualPolish_ChinRest_FullBody.png` confirms the full seated silhouette remains readable during the chin-rest/thoughtful pose, without clothing, desk, or chair penetration.
+- `Unity_VisualPolish_ExtremePushAway_FullBody.png` confirms both open hands remain skin-toned during the strong two-arm gesture and neither sleeve nor torso is masked by the chair.
+- The rounded three-pebble orbit motif remains visibly abstract and non-letter-like in both the close pose captures and normal-distance classroom captures.
 
-The final PlayMode run logged `CLASSMATE_GAZE_QA_OK`, `NPC_IDLE_BEHAVIOR_QA_OK`, and `CLASSROOM_AUDIO_QA_OK`. Automated scene contracts, the EditMode suite, player build, and the required human visual checks are complete.
+The final PlayMode run logged `CLASSMATE_GAZE_QA_OK`, `NPC_IDLE_BEHAVIOR_QA_OK`, and `CLASSROOM_AUDIO_QA_OK`. Automated scene contracts, the `67/67` EditMode suite, player build, MP4 decode, timeline contact-sheet generation, and the required human visual checks are complete.
 
 ## Chin-rest desk-contact correction (2026-07-18)
 
 - Added a runtime humanoid IK contact controller that resolves the nearest student desktop, blends the supporting hand to the chin, keeps the supporting elbow inside the usable desktop inset, and places the free hand separately on the desk.
 - The fresh PlayMode gate measured `handGap=0.008 m`, `elbowGap=0.010 m`, and desktop-local elbow position `(0.18, 0.04, -0.26)`. It also revalidated 14/14 teacher-facing classmates, seven gesture/idle behavior variants, button audio, and movement-bound footsteps.
-- Manual inspection confirmed a supported chin, an elbow over the tabletop rather than outside its edge, a separated free arm, and no visible desk/chair/clothing penetration.
+- `Unity_VisualPolish_ChinRest_FullBody.png` is the fresh full-body visual artifact. The pose shows a supported chin, an elbow over the tabletop rather than outside its edge, a separated free arm, and no visible desk/chair/clothing penetration.
 - The final EditMode regression suite passed `71/71` with no compile errors.
 
 ## Release checklist
@@ -79,4 +79,5 @@ The final PlayMode run logged `CLASSMATE_GAZE_QA_OK`, `NPC_IDLE_BEHAVIOR_QA_OK`,
 3. Build the Windows player and confirm the Unity build result is `Succeeded`.
 4. Exercise response, dialogue, observation, and debrief modes in the built player.
 5. Inspect focal and classmate faces, hands, clothing, desk collision, and chair masking.
-6. Scan tracked files for secrets, presentation media, and files above GitHub's size limit.
+6. Decode any delivered MP4 from start to finish and inspect a timeline contact sheet.
+7. Scan tracked files for secrets and files above GitHub's size limit.

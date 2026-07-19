@@ -15,12 +15,12 @@ namespace AdieLab.TeacherTraining.Editor
         private const string ArmedKey = "AdieLab.TeacherTraining.ClassmateGazeQaArmed";
         private const string QuitKey = "AdieLab.TeacherTraining.ClassmateGazeQaQuit";
         private const string ScenePath = "Assets/Scenes/KoreanClassroomTraining.unity";
-        private const string OutputPath = "Logs/VisualQa/Unity_Classmates_Tracking_Teacher.png";
-        private const string IdleBehaviorOutputPath = "Logs/VisualQa/Unity_Npc_IdleBehaviors.png";
-        private const string ClassroomIdleOutputPath = "Logs/VisualQa/Unity_Npc_IdleBehaviors_ClassroomView.png";
-        private const string FemaleYawnOutputPath = "Logs/VisualQa/Unity_VisualPolish_FemaleYawn_FullBody.png";
-        private const string ChinRestOutputPath = "Logs/VisualQa/Unity_VisualPolish_ChinRest_FullBody.png";
-        private const string ExtremeGestureOutputPath = "Logs/VisualQa/Unity_VisualPolish_ExtremePushAway_FullBody.png";
+        private const string OutputPath = "Assets/Reference/Unity_Classmates_Tracking_Teacher.png";
+        private const string IdleBehaviorOutputPath = "Assets/Reference/Unity_Npc_IdleBehaviors.png";
+        private const string ClassroomIdleOutputPath = "Assets/Reference/Unity_Npc_IdleBehaviors_ClassroomView.png";
+        private const string FemaleYawnOutputPath = "Assets/Reference/Unity_VisualPolish_FemaleYawn_FullBody.png";
+        private const string ChinRestOutputPath = "Assets/Reference/Unity_VisualPolish_ChinRest_FullBody.png";
+        private const string ExtremeGestureOutputPath = "Assets/Reference/Unity_VisualPolish_ExtremePushAway_FullBody.png";
         private static double startedAt;
         private static bool cameraMoved;
         private static Vector3[] directionsBeforeMove;
@@ -265,7 +265,6 @@ namespace AdieLab.TeacherTraining.Editor
             Texture2D image = new Texture2D(width, height, TextureFormat.RGB24, false);
             image.ReadPixels(new Rect(0, 0, width, height), 0, 0);
             image.Apply();
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? "Logs/VisualQa");
             File.WriteAllBytes(outputPath, image.EncodeToPNG());
             camera.targetTexture = null;
             RenderTexture.active = previous;
