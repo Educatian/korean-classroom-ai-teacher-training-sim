@@ -14,7 +14,7 @@ This project is a research and teacher-education prototype. It does not replace 
 | Student NPCs | 15 Rocketbox-based students per classroom |
 | Dialogue | Deterministic local fallback plus optional OpenRouter LLM integration |
 | Assessment | Authored response scoring plus evidence-centered telemetry events |
-| Validation | EditMode `91/91` passed, rendered PlayMode QA passed, Windows player build passed |
+| Validation | EditMode `95/95` passed, rendered PlayMode QA passed, Windows player build passed |
 | Status | Active research prototype |
 
 ## Screenshots
@@ -33,6 +33,15 @@ The general classroom scene is modeled around a contemporary Korean elementary c
 
 The environment upgrade keeps each asset reusable: a detailed electronic board, teacher podium, air purifier, desk props, and school backpack are authored as separate Blender meshes. Generated vinyl, birch-laminate, and painted-wall surfaces are connected through the procedural Unity builder. See [`Docs/VISUAL_UPGRADE_AUDIT.md`](Docs/VISUAL_UPGRADE_AUDIT.md) for the gap list and acceptance checks.
 
+### Electronic-board PDF Presentation
+
+![PDF presentation page 1 on the classroom electronic board](Assets/Reference/Unity_PdfPresentation_Page01.png)
+
+Teachers can import a local PDF into the in-world electronic board, navigate pages manually, or run a five-second slideshow. Rendering preserves the source aspect ratio and keeps only a bounded page cache. The active page text can inform both the student-response and teacher-rubric LLM prompts without uploading the PDF raster.
+
+![PDF presentation page 2 after an in-player page transition](Assets/Reference/Unity_PdfPresentation_Page02.png)
+
+The built Windows player evidence loaded a real three-page Korean lesson PDF and transitioned from page 1 to page 2. Usage, privacy limits, plugin licensing, and the Meta Quest extension boundary are documented in [`Docs/PDF_PRESENTATION.md`](Docs/PDF_PRESENTATION.md).
 ### Face-to-Face Dialogue
 
 ![Face-to-face student dialogue with head-anchored speech bubble](Assets/Reference/Unity_FaceToFace_Dialogue.png)

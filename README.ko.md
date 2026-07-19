@@ -13,7 +13,7 @@
 | 훈련 씬 | 일반 교실 1개, 원형 토론·발표 교실 1개 |
 | 학생 NPC | 교실당 15명, Microsoft Rocketbox 기반 |
 | 대화 | 로컬 결정론적 fallback + 선택적 OpenRouter 연동 |
-| 자동 검증 | EditMode `67/67` 통과, PlayMode QA 캡처 9종 생성, Windows player build 성공 |
+| 자동 검증 | EditMode `95/95` 통과, Windows player와 Meta Quest APK build 성공 |
 | 프로젝트 상태 | Active research prototype |
 
 ## 화면 미리보기
@@ -26,6 +26,13 @@
 |---|---|
 | ![원형 토론 교실](Assets/Reference/CircleDiscussionReference.png) | ![머리 위 말풍선](Assets/Reference/Unity_SpeechBubble_HeadAnchored.png) |
 
+### 전자칠판 PDF 프레젠테이션
+
+| PDF 1페이지 | 실제 플레이 중 2페이지 전환 |
+|---|---|
+| ![전자칠판 PDF 1페이지](Assets/Reference/Unity_PdfPresentation_Page01.png) | ![전자칠판 PDF 2페이지](Assets/Reference/Unity_PdfPresentation_Page02.png) |
+
+Windows 플레이어에서 교사가 로컬 PDF를 불러와 이전·다음 페이지 이동과 5초 자동 재생을 사용할 수 있습니다. 현재 페이지 텍스트는 길이를 제한해 학생 응답과 교사 발화 평가 LLM의 수업 맥락으로 전달됩니다. PDF 원본과 렌더 이미지는 로컬에 유지됩니다. 자세한 사용법과 Quest 확장 경계는 [`Docs/PDF_PRESENTATION.md`](Docs/PDF_PRESENTATION.md)를 참고하세요.
 ## 프로젝트 목표
 
 이 프로토타입은 교사가 학생의 행동만 통제하는 연습이 아니라, 행동 전후의 정서 신호와 교실 맥락을 함께 읽고 공동조절(co-regulation) 중심의 대응을 선택하도록 설계했습니다.

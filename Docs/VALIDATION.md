@@ -110,3 +110,13 @@ The final PlayMode run logged `CLASSMATE_GAZE_QA_OK`, `NPC_IDLE_BEHAVIOR_QA_OK`,
 - The final Windows player evidence passed with `ELECTRONIC_BOARD_EVIDENCE_OK renderers=43 meshes=43 vertices=26491` and produced `Assets/Reference/Unity_ElectronicBoard_Applied.png` plus `Assets/Reference/Unity_ElectronicBoard_Detail.png`.
 - The final EditMode regression suite passed `91/91`. The Windows build succeeded with `WINDOWS_BUILD_OK bytes=326098822`.
 - Desktop validation emitted expected non-fatal OpenXR runtime discovery warnings because no headset runtime was active; rendering and evidence capture completed successfully.
+## Electronic-board PDF presentation (2026-07-19)
+
+- Added user-selected local PDF import, previous/next navigation, five-second autoplay, keyboard shortcuts, world-space desktop/XR controls, page transitions, and aspect-preserving display on the Blender-authored electronic board.
+- Current-page text is normalized and bounded before it is appended to the student dialogue and teacher-rubric LLM prompts. The PDF raster remains local.
+- The Windows-only Docnet.Core/PDFium plugins are disabled for Android and other unsupported targets, preserving the Meta Quest build boundary.
+- The full EditMode suite passed `95/95`, including a real three-page PDF open, text extraction, and raster-render test.
+- The final Windows build emitted `WINDOWS_BUILD_OK bytes=331207394`.
+- The final Meta Quest build emitted `META_QUEST_BUILD_OK bytes=941446479`; the APK is 124,082,840 bytes on disk and excludes the Windows-only PDF plugins.
+- The built player loaded the sample, rendered pages 1 and 2, and emitted `BOARD_PRESENTATION_EVIDENCE_OK title=BoardPresentationDemo pages=3 current=2`.
+- Visual review confirmed upright, non-mirrored Korean text, correct 16:9 fitting, visible page controls, and successful page transition in `Unity_PdfPresentation_Page01.png` and `Unity_PdfPresentation_Page02.png`.

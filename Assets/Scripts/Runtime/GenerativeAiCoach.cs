@@ -75,6 +75,11 @@ namespace AdieLab.TeacherTraining
                 $"최근 대화 및 누적 상태:\n{request.conversationContext}\n" +
                 $"현재 정서: valence={current.valence:F2}, arousal={current.arousal:F2}, dominance={current.dominance:F2}\n" +
                 $"교사: {request.teacherUtterance}";
+            string boardContext = BoardPresentationContext.BuildLlmContext();
+            if (!string.IsNullOrWhiteSpace(boardContext))
+            {
+                prompt += $"\n{boardContext}";
+            }
 
             string raw = null;
             string errorMessage = null;
@@ -130,6 +135,11 @@ namespace AdieLab.TeacherTraining
                 "각 차원을 정확히 한 번 포함하고, 관찰 가능한 짧은 근거와 다음 발화 개선안을 한국어로 제시하세요.";
             string prompt =
                 $"시나리오: {request.scenarioContext}\n교사 발화: {request.teacherUtterance}\n학생 응답: {request.studentReply}";
+            string boardContext = BoardPresentationContext.BuildLlmContext();
+            if (!string.IsNullOrWhiteSpace(boardContext))
+            {
+                prompt += $"\n{boardContext}";
+            }
             string raw = null;
             string errorMessage = null;
             yield return Send(system, prompt, LlmResponseContract.TeacherRubric,

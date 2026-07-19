@@ -58,10 +58,96 @@ namespace AdieLab.TeacherTraining
                 StartCoroutine(CaptureElectronicBoardEvidence(arguments));
                 return;
             }
+            if (Array.IndexOf(arguments, "--presentation-evidence") >= 0)
+            {
+                StartCoroutine(CapturePresentationEvidence(arguments));
+                return;
+            }
 
             StartCoroutine(PlayDemo(arguments, circleSceneLoaded));
         }
 
+        private IEnumerator CapturePresentationEvidence(string[] arguments)
+        {
+            float deadline = Time.realtimeSinceStartup + 40f;
+            BoardPresentationController presentation = null;
+            while (Time.realtimeSinceStartup < deadline)
+            {
+                presentation = FindAnyObjectByType<BoardPresentationController>();
+                if (presentation != null && presentation.IsDocumentLoaded && !presentation.IsBusy)
+                {
+                    break;
+                }
+                if (presentation != null && !string.IsNullOrWhiteSpace(presentation.LastError))
+                {
+                    FailEvidence($"presentation load failed: {presentation.LastError}", 11);
+                    yield break;
+                }
+                yield return new WaitForSecondsRealtime(0.25f);
+            }
+            if (presentation == null || !presentation.IsDocumentLoaded)
+            {
+                FailEvidence("presentation did not become ready", 12);
+                yield break;
+            }
+
+            Camera camera = FindAnyObjectByType<Camera>();
+            if (camera == null || string.IsNullOrWhiteSpace(captureDirectory))
+            {
+                FailEvidence("presentation capture prerequisites unavailable", 13);
+                yield break;
+            }
+            TeacherCameraController teacherCamera = camera.GetComponent<TeacherCameraController>();
+            if (teacherCamera != null)
+            {
+                teacherCamera.enabled = false;
+            }
+            Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+            bool[] canvasStates = canvases.Select(canvas => canvas.enabled).ToArray();
+            foreach (Canvas canvas in canvases)
+            {
+                canvas.enabled = canvas.GetComponentInParent<BoardPresentationController>() != null;
+            }
+
+            Vector3 savedPosition = camera.transform.position;
+            Quaternion savedRotation = camera.transform.rotation;
+            float savedFieldOfView = camera.fieldOfView;
+            camera.transform.position = new Vector3(0.20f, 1.58f, -2.80f);
+            camera.transform.rotation = Quaternion.LookRotation(new Vector3(-0.75f, 1.86f, 4.50f) - camera.transform.position);
+            camera.fieldOfView = 40f;
+            yield return new WaitForSecondsRealtime(0.5f);
+            Capture("Unity_PdfPresentation_Page01.png");
+            yield return new WaitForSecondsRealtime(1f);
+
+            if (presentation.PageCount > 1)
+            {
+                presentation.NextPage();
+                deadline = Time.realtimeSinceStartup + 20f;
+                while ((presentation.IsBusy || presentation.CurrentPageIndex < 1) && Time.realtimeSinceStartup < deadline)
+                {
+                    yield return new WaitForSecondsRealtime(0.2f);
+                }
+                yield return new WaitForSecondsRealtime(0.5f);
+                Capture("Unity_PdfPresentation_Page02.png");
+                yield return new WaitForSecondsRealtime(1f);
+            }
+
+            camera.transform.SetPositionAndRotation(savedPosition, savedRotation);
+            camera.fieldOfView = savedFieldOfView;
+            for (int index = 0; index < canvases.Length; index++)
+            {
+                canvases[index].enabled = canvasStates[index];
+            }
+            if (teacherCamera != null)
+            {
+                teacherCamera.enabled = true;
+            }
+            Debug.Log($"BOARD_PRESENTATION_EVIDENCE_OK title={presentation.DocumentTitle} pages={presentation.PageCount} current={presentation.CurrentPageIndex + 1}");
+            if (Array.IndexOf(arguments, "--autoplay-exit") >= 0)
+            {
+                Application.Quit();
+            }
+        }
         private IEnumerator CaptureElectronicBoardEvidence(string[] arguments)
         {
             yield return new WaitForSecondsRealtime(6f);

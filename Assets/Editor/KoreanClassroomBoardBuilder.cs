@@ -61,9 +61,9 @@ namespace AdieLab.TeacherTraining.Editor
 
             GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(model, parent);
             instance.name = "ElectronicBoardAssembly_Blender";
-            instance.transform.localPosition = new Vector3(-0.75f, 0.45f, 4.55f);
+            instance.transform.localPosition = new Vector3(-0.75f, 0.15f, 4.55f);
             instance.transform.localRotation = Quaternion.identity;
-            instance.transform.localScale = Vector3.one;
+            instance.transform.localScale = new Vector3(1f, 1.20f, 1f);
 
             BuildGeneratedElectronicBoardHardware(instance.transform);
 
