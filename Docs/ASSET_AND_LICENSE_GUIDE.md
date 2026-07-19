@@ -12,9 +12,9 @@ Textures under `Assets/Generated/StudentFaces` and `Assets/Generated/StudentClot
 
 Do not replace the generated atlas with real school emblems, commercial apparel marks, student photographs, or recognizable copyrighted characters.
 
-## Classroom reference media
+## Local QA media
 
-`Assets/Reference` contains selected development screenshots and generated storyboard material. Local attachment directories, raw user photographs, diagnostic crops, duplicated QA projects, and recording intermediates are excluded through `.gitignore`.
+Development screenshots, storyboards, diagnostic frames, and recordings are local-only evidence. QA tools write captures under `Logs/VisualQa`, which is excluded from source control. Do not commit classroom photographs, screenshots, contact sheets, or recordings to this repository.
 
 ## Fonts and Unity packages
 

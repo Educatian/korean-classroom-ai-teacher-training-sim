@@ -17,46 +17,6 @@ This project is a research and teacher-education prototype. It does not replace 
 | Validation | EditMode `67/67` passed, rendered PlayMode QA passed, Windows player build passed |
 | Status | Active research prototype |
 
-## Screenshots
-
-The screenshots below are captured from the current Unity scene/player QA loop and are kept in [`Assets/Reference`](Assets/Reference).
-
-### General Korean Classroom
-
-![General Korean classroom gameplay preview](Assets/Reference/Unity_PlayMode_Preview.png)
-
-The general classroom scene is modeled around a contemporary Korean elementary classroom: front storage cabinets, desks and green chairs at elementary proportions, fluorescent ceiling lights, an electronic board, window views, backpacks, and a rear bulletin board assembled from individual poster, worksheet, notice, and student-art assets.
-
-### Face-to-Face Dialogue
-
-![Face-to-face student dialogue with head-anchored speech bubble](Assets/Reference/Unity_FaceToFace_Dialogue.png)
-
-The focal student can be addressed directly from the teacher's viewpoint. The translucent speech bubble is anchored above the student's head and adjusted to avoid covering the face during eye contact. The lower HUD preserves the recent teacher utterance, student reply, and affect vector.
-
-### Upright Eye Contact
-
-![Upright eye-contact close-up](Assets/Reference/Unity_Upright_EyeContact_Closeup.png)
-
-The face-to-face camera supports an upright posture and teacher-facing gaze. This is used for moments when the student has re-engaged enough to respond directly without looking down.
-
-### Circle Discussion Scene
-
-![Circle discussion and presentation scene](Assets/Reference/CircleDiscussionReference.png)
-
-Scene 2 separates the same training system into a circle discussion and presentation arrangement. It focuses on peer attention pressure, public exposure, turn-taking conflict, leaving-seat attempts, private recontact, and supported return to a small speaking task.
-
-### Scene 2 Eye Contact
-
-![Circle scene eye-contact dialogue](Assets/Reference/CircleStudentEyeContact.png)
-
-The circle scene uses the same direct-dialogue and speech-bubble system, allowing teacher response practice when the student is surrounded by classmates.
-
-### Debrief
-
-![Training debrief screen](Assets/Reference/TrainingDebrief.png)
-
-After the six-beat session, the simulation produces a local debrief and stores structured session records for later analysis.
-
 ## Research Purpose
 
 The prototype is designed to help teachers practice co-regulation-oriented responses, not merely behavior control. It emphasizes reading emotional signals before, during, and after visible behavior, then choosing low-escalation language that preserves student dignity, safety, and agency.
@@ -335,7 +295,7 @@ ProjectSettings/                # Unity project settings
 - `NotoSansKR-VF.ttf` retains the SIL Open Font License notice in [`Assets/Art/Fonts/OFL.txt`](Assets/Art/Fonts/OFL.txt).
 - Generated classroom, clothing, and face textures are project-specific assets. The production rules are documented in [`Docs/IMAGEGEN_ASSET_PIPELINE.md`](Docs/IMAGEGEN_ASSET_PIPELINE.md).
 - Real student records, unapproved source classroom photos, and API keys are not stored in the repository.
-- `Library`, `Temp`, `Builds`, `Logs`, raw recordings, and local diagnostic frames are intentionally ignored.
+- `Library`, `Temp`, `Builds`, `Logs`, and local QA artifacts are intentionally ignored.
 
 ## Known Limitations
 

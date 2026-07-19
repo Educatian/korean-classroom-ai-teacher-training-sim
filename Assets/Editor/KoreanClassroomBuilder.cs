@@ -22,9 +22,9 @@ namespace AdieLab.TeacherTraining.Editor
     public static partial class KoreanClassroomBuilder
     {
         private const string ScenePath = "Assets/Scenes/KoreanClassroomTraining.unity";
-        private const string PreviewPath = "Assets/Reference/Unity_KoreanClassroom_Preview.png";
-        private const string SceneOnlyPreviewPath = "Assets/Reference/Unity_SceneOnly_Preview.png";
-        private const string ElectronicBoardPreviewPath = "Assets/Reference/Unity_ElectronicBoard_Preview.png";
+        private const string PreviewPath = "Logs/VisualQa/Unity_KoreanClassroom_Preview.png";
+        private const string SceneOnlyPreviewPath = "Logs/VisualQa/Unity_SceneOnly_Preview.png";
+        private const string ElectronicBoardPreviewPath = "Logs/VisualQa/Unity_ElectronicBoard_Preview.png";
         private const string MaterialRoot = "Assets/Materials";
         private const string ControllerRoot = "Assets/Animations/Controllers";
         private const string MeshRoot = "Assets/Meshes";
@@ -211,9 +211,6 @@ namespace AdieLab.TeacherTraining.Editor
                 canvas.enabled = canvasWasEnabled;
             }
             RenderCamera(camera, PreviewPath);
-            AssetDatabase.ImportAsset(PreviewPath, ImportAssetOptions.ForceUpdate);
-            AssetDatabase.ImportAsset(SceneOnlyPreviewPath, ImportAssetOptions.ForceUpdate);
-            AssetDatabase.ImportAsset(ElectronicBoardPreviewPath, ImportAssetOptions.ForceUpdate);
             Debug.Log($"KOREAN_CLASSROOM_PREVIEW_OK {scene.name} 1600x900");
         }
 
@@ -1327,6 +1324,7 @@ namespace AdieLab.TeacherTraining.Editor
             Texture2D image = new Texture2D(width, height, TextureFormat.RGB24, false);
             image.ReadPixels(new Rect(0, 0, width, height), 0, 0);
             image.Apply();
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? "Logs/VisualQa");
             File.WriteAllBytes(outputPath, image.EncodeToPNG());
             camera.targetTexture = null;
             RenderTexture.active = previous;

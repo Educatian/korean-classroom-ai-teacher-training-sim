@@ -8,9 +8,6 @@
 - 말풍선에 청록색 외곽선, 아이보리 내부, 그림자, 꼬리, 0.18초 페이드·스케일 전환을 적용했습니다.
 - UI Canvas 깊이를 카메라 가까이 조정해 정면 대화 중 교실 메시가 선택지 위를 가리는 현상을 제거했습니다.
 
-## 비교 스크린샷
+## 검증
 
-- 개선 전: `Assets/Reference/Unity_FaceToFace_Before.png`
-- 개선 후: `Assets/Reference/Unity_FaceToFace_After.png`
-- 좌우 비교: `Assets/Reference/Unity_FaceToFace_Comparison.png`
-- 최신 자동 QA 캡처: `Assets/Reference/Unity_FaceToFace_Dialogue.png`
+정면 카메라, 얼굴 조명, 말풍선 위치, HUD 깊이는 PlayMode QA와 상호작용 로그로 검증합니다. 로컬 캡처는 `Logs/VisualQa`에 생성되며 저장소에는 커밋하지 않습니다.

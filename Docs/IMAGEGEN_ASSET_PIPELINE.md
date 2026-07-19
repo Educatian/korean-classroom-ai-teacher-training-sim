@@ -1,12 +1,11 @@
 # ImageGen 에셋 제작 및 Unity 반영 루프
 
-이 프로젝트는 스토리보드 이미지를 시각 기준으로 삼고, 반복 가능한 순서로 교실을 개선합니다.
+이 프로젝트는 로컬 스토리보드와 반복 가능한 절차를 사용해 교실을 개선합니다. 스토리보드와 QA 캡처는 저장소에 커밋하지 않습니다.
 
 ## 현재 생성 에셋
 
 | 역할 | 파일 | Unity 사용 위치 |
 |---|---|---|
-| 교실 스토리보드 | `Assets/Reference/Storyboard_KoreanClassroom.png` | 구도, 채광, 책상 배치, 한국 교실 단서의 기준 |
 | 밝은 자작나무 책상 표면 | `Assets/Art/Textures/BirchDesk_Albedo.png` | 학생 책상과 교사용 책상 재질 |
 | 회색·베이지 비닐 타일 바닥 | `Assets/Art/Textures/ClassroomFloor_Albedo.png` | 교실 바닥 재질 |
 | 한국 학교 운동장과 교사동 | `Assets/Art/Textures/WindowBackdrop_KoreanSchool.png` | 오른쪽 창문 밖 배경 |
@@ -15,12 +14,12 @@
 
 ## 반복 루프
 
-1. `Assets/Reference/Storyboard_KoreanClassroom.png`에서 바꾸려는 한 가지 시각 목표를 정합니다.
+1. 저장소 밖의 로컬 스토리보드에서 바꾸려는 한 가지 시각 목표를 정합니다.
 2. ImageGen에서 정사각형 또는 와이드 에셋을 생성합니다. 재질이면 `seamless, tileable, flat albedo, no perspective, no text, no objects` 조건을 포함합니다.
-3. 결과를 `Assets/Art/Textures` 또는 `Assets/Reference`에 PNG로 저장합니다.
+3. 런타임에 사용하는 재질만 `Assets/Art/Textures`에 PNG로 저장합니다. 참고 이미지와 QA 캡처는 `Logs/VisualQa`에 둡니다.
 4. 동일한 목적의 기존 파일을 교체할 때는 파일명을 유지해 Unity 참조를 보존합니다.
 5. Unity 메뉴 `Tools > Teacher Training > Build Korean Classroom`으로 씬을 다시 만듭니다.
-6. `Tools > Teacher Training > Capture Classroom Preview`와 PlayMode QA 캡처를 생성합니다.
+6. `Tools > Teacher Training > Capture Classroom Preview`와 PlayMode QA를 실행합니다. 결과 이미지는 `Logs/VisualQa`에 생성됩니다.
 7. 스토리보드와 Unity 캡처를 1600×900으로 맞춰 구도, 가시성, 한국 교실 단서, 캐릭터 초점, UI 방해 정도를 비교합니다.
 8. 한 번에 한 범주만 수정하고 3단계부터 반복합니다.
 
