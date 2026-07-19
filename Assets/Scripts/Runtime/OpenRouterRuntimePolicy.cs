@@ -202,10 +202,7 @@ namespace AdieLab.TeacherTraining
                 return Fallback(StudentTurnOutcome.Unsafe, safety.Category);
             }
 
-            turn.valence = Mathf.Clamp(turn.valence, -1f, 1f);
-            turn.arousal = Mathf.Clamp01(turn.arousal);
-            turn.dominance = Mathf.Clamp(turn.dominance, -1f, 1f);
-            ClampActionUnits(turn.actionUnits);
+            StudentTurnPerformanceNormalizer.Normalize(turn);
             return new StudentTurnResolution(
                 StudentTurnOutcome.Accepted,
                 StudentTurnRoute.OpenRouter,
@@ -229,28 +226,5 @@ namespace AdieLab.TeacherTraining
             return new StudentTurnResolution(outcome, StudentTurnRoute.LocalFallback, turn, category);
         }
 
-        private static void ClampActionUnits(ActionUnitDirective units)
-        {
-            if (units == null)
-            {
-                return;
-            }
-
-            units.au1 = Mathf.Clamp01(units.au1);
-            units.au2 = Mathf.Clamp01(units.au2);
-            units.au4 = Mathf.Clamp01(units.au4);
-            units.au5 = Mathf.Clamp01(units.au5);
-            units.au6 = Mathf.Clamp01(units.au6);
-            units.au7 = Mathf.Clamp01(units.au7);
-            units.au9 = Mathf.Clamp01(units.au9);
-            units.au12 = Mathf.Clamp01(units.au12);
-            units.au15 = Mathf.Clamp01(units.au15);
-            units.au17 = Mathf.Clamp01(units.au17);
-            units.au20 = Mathf.Clamp01(units.au20);
-            units.au23 = Mathf.Clamp01(units.au23);
-            units.au24 = Mathf.Clamp01(units.au24);
-            units.au25 = Mathf.Clamp01(units.au25);
-            units.au26 = Mathf.Clamp01(units.au26);
-        }
     }
 }

@@ -10,7 +10,7 @@ namespace AdieLab.TeacherTraining.Tests
     public sealed class CircleSceneLayoutTests
     {
         [Test]
-        public void CircleScene_UsesChairAnchorsAndAnObliqueRingOverview()
+        public void CircleScene_UsesChairAnchorsAndAStandingTeacherEyeLevel()
         {
             EditorSceneManager.OpenScene("Assets/Scenes/KoreanClassroomCircleTraining.unity", OpenSceneMode.Single);
             Transform furniture = GameObject.Find("00_ENVIRONMENT/Furniture").transform;
@@ -41,9 +41,10 @@ namespace AdieLab.TeacherTraining.Tests
 
             Camera teacherCamera = GameObject.Find("20_SYSTEMS/TeacherCamera").GetComponent<Camera>();
             Assert.That(teacherCamera.transform.position.x, Is.LessThan(-5.2f));
-            Assert.That(teacherCamera.transform.position.y, Is.GreaterThan(2.5f));
+            Assert.That(teacherCamera.transform.position.y, Is.InRange(1.55f, 1.70f));
             Assert.That(teacherCamera.transform.position.z, Is.GreaterThan(4.0f));
             Assert.That(teacherCamera.fieldOfView, Is.GreaterThanOrEqualTo(59f));
+            Assert.That(teacherCamera.transform.forward.y, Is.InRange(-0.16f, -0.04f));
         }
     }
 }

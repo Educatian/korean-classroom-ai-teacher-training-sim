@@ -390,6 +390,7 @@ namespace AdieLab.TeacherTraining.Editor
             BuildLockers(furniture, wood, metal);
             BuildWallPoster(props);
             BuildClassroomProps(props);
+            BuildGeneratedClassroomProps(props);
         }
 
         private static void CreateStudentDesk(Transform parent, float x, float z, int index, Material wood, Material metal, Material chair)
@@ -1173,6 +1174,8 @@ namespace AdieLab.TeacherTraining.Editor
             SerializedObject voiceSerialized = new SerializedObject(voice);
             voiceSerialized.FindProperty("input").objectReferenceValue = dialogueInput;
             voiceSerialized.FindProperty("microphoneButton").objectReferenceValue = microphoneButton;
+            voiceSerialized.FindProperty("dialogueSendButton").objectReferenceValue = dialogueSend;
+            voiceSerialized.FindProperty("microphoneLabel").objectReferenceValue = microphoneLabel;
             voiceSerialized.FindProperty("status").objectReferenceValue = dialogueStatus;
             voiceSerialized.ApplyModifiedPropertiesWithoutUndo();
             return hud;
@@ -1197,9 +1200,9 @@ namespace AdieLab.TeacherTraining.Editor
 
         private static void CreateMaterials()
         {
-            CreateMaterial("M_Wall", Color.white, 0f, 0.20f, "Assets/Art/Textures/ClassroomWall_Eggshell_HQ_v2.png", new Vector2(3.5f, 2.2f), false, false, "Assets/Art/Textures/ClassroomWall_Eggshell_HQ_v2_Normal.png");
+            CreateMaterial("M_Wall", Color.white, 0f, 0.24f, "Assets/Art/GeneratedMaterials/TX_WallPaint_BaseColor.png", new Vector2(3.5f, 2.2f));
             CreateMaterial("M_Ceiling", new Color(0.88f, 0.88f, 0.84f), 0f, 0.18f);
-            CreateMaterial("M_Floor", Color.white, 0f, 0.27f, "Assets/Art/Textures/ClassroomFloor_Terrazzo_HQ_v2.png", new Vector2(5f, 3.5f), false, false, "Assets/Art/Textures/ClassroomFloor_Terrazzo_HQ_v2_Normal.png");
+            CreateMaterial("M_Floor", Color.white, 0f, 0.30f, "Assets/Art/GeneratedMaterials/TX_ClassroomVinyl_BaseColor.png", new Vector2(5f, 3.5f), false, false, "Assets/Art/Textures/ClassroomFloor_Terrazzo_HQ_v2_Normal.png");
             CreateMaterial("M_Chalkboard", new Color(0.035f, 0.20f, 0.16f), 0f, 0.12f);
             CreateMaterial("M_Whiteboard", new Color(0.90f, 0.92f, 0.90f), 0.02f, 0.38f);
             CreateMaterial("M_ElectronicFrame", new Color(0.025f, 0.035f, 0.045f), 0.55f, 0.42f);
@@ -1209,7 +1212,7 @@ namespace AdieLab.TeacherTraining.Editor
             CreateMaterial("M_TrimWood", new Color(0.32f, 0.17f, 0.08f), 0f, 0.28f);
             CreateMaterial("M_Metal", new Color(0.48f, 0.52f, 0.54f), 0.72f, 0.56f);
             CreateMaterial("M_DeskMetal", new Color(0.30f, 0.32f, 0.32f), 0.76f, 0.40f);
-            CreateMaterial("M_DeskWood", Color.white, 0f, 0.40f, "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2.png", new Vector2(1.8f, 1f), false, false, "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2_Normal.png");
+            CreateMaterial("M_DeskWood", Color.white, 0f, 0.42f, "Assets/Art/GeneratedMaterials/TX_DeskBirch_BaseColor.png", new Vector2(1.8f, 1f), false, false, "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2_Normal.png");
             CreateMaterial("M_ChairWood", new Color(0.58f, 0.40f, 0.24f), 0f, 0.36f, "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2.png", Vector2.one, false, false, "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2_Normal.png");
             CreateMaterial("M_ChairPlastic", new Color(0.44f, 0.62f, 0.18f), 0f, 0.46f);
             CreateMaterial("M_DeskEdge", new Color(0.17f, 0.12f, 0.08f), 0.05f, 0.24f);

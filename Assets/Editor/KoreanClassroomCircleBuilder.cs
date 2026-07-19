@@ -76,9 +76,10 @@ namespace AdieLab.TeacherTraining.Editor
                 participants[i].SetPositionAndRotation(chair.position, chair.rotation);
             }
 
+            Vector3 teacherEyePosition = new Vector3(-5.40f, 1.62f, 4.15f);
             camera.SetPositionAndRotation(
-                new Vector3(-5.40f, 2.65f, 4.15f),
-                Quaternion.LookRotation(new Vector3(0f, 0.90f, 0f) - new Vector3(-5.40f, 2.65f, 4.15f)));
+                teacherEyePosition,
+                Quaternion.LookRotation(new Vector3(0f, 1.08f, 0f) - teacherEyePosition));
             Camera sceneCamera = camera.GetComponent<Camera>();
             if (sceneCamera != null)
             {

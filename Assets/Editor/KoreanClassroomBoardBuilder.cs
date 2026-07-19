@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 namespace AdieLab.TeacherTraining.Editor
@@ -18,6 +19,11 @@ namespace AdieLab.TeacherTraining.Editor
 
         private static void BuildElectronicBoard(Transform parent)
         {
+            if (TryBuildGeneratedElectronicBoard(parent))
+            {
+                return;
+            }
+
             GameObject board = RootObject("ElectronicBoardAssembly", parent, Vector3.zero);
             RoundedBox("Housing", board.transform, new Vector3(-0.75f, 2.08f, 4.60f), new Vector3(4.58f, 1.80f, 0.18f), 0.055f, "ElectronicBoardHousing", Mat("M_ElectronicFrame"));
             RoundedBox("Display", board.transform, new Vector3(-0.75f, 2.08f, 4.49f), new Vector3(4.28f, 1.50f, 0.035f), 0.025f, "ElectronicBoardDisplay", Mat("M_ElectronicScreen"));
@@ -40,6 +46,51 @@ namespace AdieLab.TeacherTraining.Editor
             }
         }
 
+        private static bool TryBuildGeneratedElectronicBoard(Transform parent)
+        {
+            const string modelPath = "Assets/Models/Generated/SM_ElectronicBoard_Realistic.obj";
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
+            if (model == null)
+            {
+                return false;
+            }
+
+            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(model, parent);
+            instance.name = "ElectronicBoardAssembly_Blender";
+            instance.transform.localPosition = new Vector3(-0.75f, 0.45f, 4.55f);
+            instance.transform.localRotation = Quaternion.identity;
+            instance.transform.localScale = Vector3.one;
+
+            Cube("Header", instance.transform, new Vector3(0f, 2.06f, -0.18f), new Vector3(2.55f, 0.10f, 0.018f), Mat("M_WorkMint"));
+            Cube("CardA", instance.transform, new Vector3(-1.15f, 1.58f, -0.18f), new Vector3(0.92f, 0.62f, 0.018f), Mat("M_WorkBlue"));
+            Cube("CardB", instance.transform, new Vector3(0f, 1.58f, -0.18f), new Vector3(0.92f, 0.62f, 0.018f), Mat("M_WorkMint"));
+            Cube("CardC", instance.transform, new Vector3(1.15f, 1.58f, -0.18f), new Vector3(0.92f, 0.62f, 0.018f), Mat("M_Paper"));
+            Cube("Footer", instance.transform, new Vector3(0f, 1.10f, -0.18f), new Vector3(3.15f, 0.08f, 0.018f), Mat("M_LockerYellow"));
+            return true;
+        }
+
+        private static void BuildGeneratedClassroomProps(Transform parent)
+        {
+            InstantiateGeneratedModel("SM_AirPurifier_Realistic.obj", "AirPurifier_Blender", parent, new Vector3(5.75f, 0f, 4.35f), Quaternion.identity);
+            InstantiateGeneratedModel("SM_TeacherPodium_Realistic.obj", "TeacherPodium_Blender", parent, new Vector3(-3.25f, 0f, 3.85f), Quaternion.identity);
+            InstantiateGeneratedModel("SM_DeskProps_Realistic.obj", "TeacherDeskProps_Blender", parent, new Vector3(-4.90f, 0.91f, 3.18f), Quaternion.identity);
+            InstantiateGeneratedModel("SM_SchoolBackpack_Realistic.obj", "SchoolBackpack_Blender", parent, new Vector3(4.55f, 0f, -4.28f), Quaternion.Euler(0f, -18f, 0f));
+        }
+
+        private static void InstantiateGeneratedModel(string fileName, string objectName, Transform parent, Vector3 position, Quaternion rotation)
+        {
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/Models/Generated/{fileName}");
+            if (model == null)
+            {
+                return;
+            }
+
+            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(model, parent);
+            instance.name = objectName;
+            instance.transform.localPosition = position;
+            instance.transform.localRotation = rotation;
+            instance.transform.localScale = Vector3.one;
+        }
         private static void BuildFrontCabinets(Transform parent)
         {
             for (int index = 0; index < 8; index++)

@@ -53,5 +53,20 @@ namespace AdieLab.TeacherTraining.Tests
             Assert.That(second[0].title, Is.Not.EqualTo("mutated"));
             Assert.That(second[0].options[0].quality, Is.EqualTo(3));
         }
+
+        [Test]
+        public void CircleScenario_AuthorsPeerAudienceAndPresentationAvoidanceAcrossTheSequence()
+        {
+            TrainingScenarioAsset circle = TrainingScenarioCatalog.LoadDefault()
+                .ScenarioFor(TrainingSceneId.CircleDiscussion);
+
+            Assert.That(circle.AuthoredBeats.Count, Is.EqualTo(6));
+            Assert.That(circle.AuthoredBeats.Any(item =>
+                item.PeerAttention == PeerAttentionPattern.PresentationAudience), Is.True);
+            Assert.That(circle.AuthoredBeats.Count(item => item.PresentationAvoidance),
+                Is.GreaterThanOrEqualTo(3));
+            Assert.That(circle.AuthoredBeats.Any(item => item.Stage == CrisisStage.Reconnection), Is.True);
+            Assert.That(circle.AuthoredBeats.Last().Stage, Is.EqualTo(CrisisStage.InstructionalReentry));
+        }
     }
 }

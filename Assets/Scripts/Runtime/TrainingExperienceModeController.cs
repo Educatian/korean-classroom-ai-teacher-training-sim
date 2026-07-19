@@ -55,7 +55,7 @@ namespace AdieLab.TeacherTraining
             }
 
             transitionInProgress = true;
-            modeToggleButton.interactable = false;
+            SetToggleInteractable(false);
             if (requested == TrainingExperienceMode.ImmersiveVr)
             {
                 SetStatus("IVR 연결 중");
@@ -76,8 +76,16 @@ namespace AdieLab.TeacherTraining
 
             CurrentMode = requested;
             TrainingExperienceModePolicy.Save(CurrentMode);
-            modeToggleButton.interactable = true;
+            SetToggleInteractable(true);
             transitionInProgress = false;
+        }
+
+        private void SetToggleInteractable(bool interactable)
+        {
+            if (modeToggleButton != null)
+            {
+                modeToggleButton.interactable = interactable;
+            }
         }
 
         private bool TryStartXr()

@@ -18,6 +18,7 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private bool circleDiscussionScenario;
 
         private ScenarioBeat[] beats;
+        private TrainingScenarioAsset scenarioAsset;
         private string sessionId;
         private int beatIndex;
         private int score;
@@ -59,7 +60,7 @@ namespace AdieLab.TeacherTraining
                     secureProxyCoach = gameObject.AddComponent<SecureProxyLlmGateway>();
                 }
             }
-            TrainingScenarioAsset scenarioAsset = TrainingScenarioCatalog
+            scenarioAsset = TrainingScenarioCatalog
                 .LoadDefault()
                 .ScenarioFor(ActiveSceneId);
             beats = scenarioAsset.BuildRuntimeBeats();
@@ -169,6 +170,9 @@ namespace AdieLab.TeacherTraining
                     {
                         teacherUtterance = utterance,
                         conversationContext = conversationState.BuildPromptContext(),
+                        scenarioContext = BuildScenarioContext(),
+                        crisisStage = scenarioAsset.AuthoredBeats[beatIndex].Stage.ToString(),
+                        personaId = scenarioAsset.AuthoredBeats[beatIndex].StudentPersona?.PersonaId ?? string.Empty,
                         currentAffect = focalStudent.CurrentVector
                     },
                     turn =>
@@ -222,6 +226,7 @@ namespace AdieLab.TeacherTraining
             DateTime requestStartedUtc,
             string error = null)
         {
+            StudentTurnPerformanceNormalizer.Normalize(turn);
             TeacherResponseOption assessment = TeacherActionEvidenceEvaluator.ForUtterance(utterance);
             DialogueSignals signals = LlmContractValidator.TryAcceptSignals(
                 turn.dialogueSignals,
@@ -243,13 +248,12 @@ namespace AdieLab.TeacherTraining
             }
             conversationState.AddTurn(utterance, turn.studentReply, signals);
             turnsInCurrentBeat++;
-            if (fromLlm)
-            {
-                ScenarioTransitionDecision decision = ScenarioTransitionEngine.Select(
-                    new ScenarioTransitionContext(beatIndex, turnsInCurrentBeat, crisisStages, signals));
-                pendingNextBeatIndex = decision.NextBeatIndex;
-                pendingTransitionReason = decision.Reason;
-            }
+            ScenarioTransitionDecision decision = ScenarioTransitionEngine.Select(
+                new ScenarioTransitionContext(beatIndex, turnsInCurrentBeat, crisisStages, signals));
+            pendingNextBeatIndex = decision.Reason == ScenarioTransitionReason.Hold
+                ? -1
+                : decision.NextBeatIndex;
+            pendingTransitionReason = decision.Reason;
             speechPerformance.Speak(turn.studentReply, turn.actionUnits);
             bool conversationalEyeContact = gesture == BehaviorGesture.Recover || gesture == BehaviorGesture.Listen;
             focalStudent.SetUprightEyeContact(conversationalEyeContact);
@@ -258,7 +262,7 @@ namespace AdieLab.TeacherTraining
             hud.ShowStudentTurn(utterance, turn.studentReply, affect);
             string source = fromLlm
                 ? $"LLM 학생 응답 · 동적 전환 {TransitionLabel(pendingTransitionReason)} · F: 교실 시점"
-                : "로컬 학생 응답 · 계속 말하기 가능 · F: 교실 시점";
+                : $"로컬 학생 응답 · 동적 전환 {TransitionLabel(pendingTransitionReason)} · F: 교실 시점";
             if (!string.IsNullOrWhiteSpace(error))
             {
                 source += " · LLM 연결 실패 후 대체됨";
@@ -281,8 +285,19 @@ namespace AdieLab.TeacherTraining
             AppendRecord(-1, assessment);
             if (fromLlm && LlmGateway != null && LlmGateway.IsConfigured)
             {
-                RequestRubricEvaluation(utterance, turn.studentReply, assessment, beatIndex);
+                RequestRubricEvaluation(utterance, turn.studentReply, assessment, beatIndex, token);
             }
+        }
+
+        private string BuildScenarioContext()
+        {
+            ScenarioBeatAuthoringData authored = scenarioAsset.AuthoredBeats[beatIndex];
+            return string.Concat(
+                beats[beatIndex].observation,
+                "\ntrigger: ", authored.Trigger,
+                "\nscene: ", ActiveSceneId,
+                "\npeer_attention: ", authored.PeerAttention,
+                "\npresentation_avoidance: ", authored.PresentationAvoidance);
         }
 
         private StudentAgentTurn BuildLocalTurn(string utterance)
@@ -436,7 +451,8 @@ namespace AdieLab.TeacherTraining
             string teacherUtterance,
             string studentReply,
             TeacherResponseOption provisionalAssessment,
-            int requestBeatIndex)
+            int requestBeatIndex,
+            TrainingRequestToken token)
         {
             var request = new TeacherRubricRequest
             {
@@ -450,13 +466,54 @@ namespace AdieLab.TeacherTraining
                 {
                     provisionalAssessment.competencyEvidence = rubric.ToEvidence();
                     provisionalAssessment.rationale = rubric.improvementSuggestion;
+                    RecordRubricEvaluation(requestBeatIndex, token, rubric);
                     if (beatIndex == requestBeatIndex && awaitingContinue && !sessionComplete)
                     {
                         hud.AppendAiCoachFeedback(
                             $"LLM 루브릭(검증 신뢰도 {rubric.confidence:P0}) · {rubric.improvementSuggestion}");
                     }
+                    else if (sessionComplete)
+                    {
+                        modeNavigator?.ShowDebrief(TeacherRubricEvaluator.Evaluate(telemetryEvents));
+                    }
                 },
                 error => Debug.LogWarning($"Teacher rubric request failed: {error}")));
+        }
+
+        private void RecordRubricEvaluation(
+            int requestBeatIndex,
+            TrainingRequestToken token,
+            TeacherRubricResult rubric)
+        {
+            CrisisScenarioProfile scenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, requestBeatIndex);
+            StudentStateSnapshot state = CaptureStudentState();
+            AppendTelemetry(new TrainingTelemetryEvent
+            {
+                eventId = Guid.NewGuid().ToString(),
+                sessionId = sessionId,
+                sequence = telemetrySequence++,
+                timestampUtc = DateTime.UtcNow.ToString(new string(new[] { 'O' })),
+                scenarioId = scenario.id,
+                beatIndex = requestBeatIndex,
+                kind = TrainingEventKind.RubricEvaluation,
+                phaseBefore = TrainingPhase.ReviewingFeedback,
+                phaseAfter = TrainingPhase.ReviewingFeedback,
+                actionId = token.Value.ToString(),
+                actionSource = TrainingActionSource.GenerativeModel,
+                turnRoute = StudentTurnRoute.OpenRouter,
+                turnOutcome = StudentTurnOutcome.Accepted,
+                studentStateBefore = state,
+                studentStateAfter = state,
+                inference = new ModelPromptProvenance
+                {
+                    modelId = LlmGateway?.ModelId ?? string.Empty,
+                    promptTemplateId = nameof(TeacherRubricResult),
+                    promptVersion = LlmGateway?.PromptVersion ?? 0,
+                    promptHash = TextHash(string.Concat(scenario.id, token.Value.ToString())),
+                    fallbackUsed = false
+                },
+                competencyEvidence = rubric.ToEvidence()
+            });
         }
 
         private static string TransitionLabel(ScenarioTransitionReason reason)

@@ -9,6 +9,8 @@ namespace AdieLab.TeacherTraining
     {
         private readonly int recentCapacity;
         private readonly Queue<ConversationTurn> recentTurns = new Queue<ConversationTurn>();
+        private readonly Queue<string> durableTeacherCommitments = new Queue<string>();
+        private const int DurableCommitmentCapacity = 4;
 
         public ConversationSessionState(int recentCapacity)
         {
@@ -21,6 +23,7 @@ namespace AdieLab.TeacherTraining
         }
 
         public int RecentTurnCount => recentTurns.Count;
+        public int DurableCommitmentCount => durableTeacherCommitments.Count;
         public int TotalTurnCount { get; private set; }
         public float Trust { get; private set; } = 0.35f;
         public float DemandPressure { get; private set; } = 0.5f;
@@ -41,6 +44,7 @@ namespace AdieLab.TeacherTraining
             }
 
             TotalTurnCount++;
+            RememberCommitment(teacher);
             LatestSignals = accepted;
             Trust = Mathf.Clamp01(
                 Trust + accepted.feltHeard * 0.18f + accepted.choiceOffered * 0.1f -
@@ -58,12 +62,58 @@ namespace AdieLab.TeacherTraining
             builder.Append("session_state: trust=").Append(Trust.ToString("F2"));
             builder.Append(", pressure=").Append(DemandPressure.ToString("F2"));
             builder.Append(", readiness=").AppendLine(Readiness.ToString("F2"));
+            if (durableTeacherCommitments.Count > 0)
+            {
+                builder.AppendLine("durable_teacher_commitments:");
+                foreach (string commitment in durableTeacherCommitments)
+                {
+                    builder.Append("- ").AppendLine(commitment);
+                }
+            }
             foreach (ConversationTurn turn in recentTurns)
             {
                 builder.Append("teacher: ").AppendLine(turn.Teacher);
                 builder.Append("student: ").AppendLine(turn.Student);
             }
             return builder.ToString().TrimEnd();
+        }
+
+        private void RememberCommitment(string teacher)
+        {
+            string value = teacher?.Trim();
+            if (string.IsNullOrWhiteSpace(value) || !ContainsCommitmentMarker(value))
+            {
+                return;
+            }
+
+            if (value.Length > 120)
+            {
+                value = value.Substring(0, 120);
+            }
+
+            foreach (string existing in durableTeacherCommitments)
+            {
+                if (string.Equals(existing, value, StringComparison.Ordinal))
+                {
+                    return;
+                }
+            }
+
+            durableTeacherCommitments.Enqueue(value);
+            while (durableTeacherCommitments.Count > DurableCommitmentCapacity)
+            {
+                durableTeacherCommitments.Dequeue();
+            }
+        }
+
+        private static bool ContainsCommitmentMarker(string value)
+        {
+            string normalized = value.ToLowerInvariant();
+            return normalized.Contains("약속") || normalized.Contains("기다") ||
+                   normalized.Contains("함께") || normalized.Contains("도와") ||
+                   normalized.Contains("선택") || normalized.Contains("promise") ||
+                   normalized.Contains("wait") || normalized.Contains("together") ||
+                   normalized.Contains("help") || normalized.Contains("choice");
         }
 
         private readonly struct ConversationTurn

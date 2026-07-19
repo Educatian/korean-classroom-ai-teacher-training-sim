@@ -34,6 +34,9 @@ namespace AdieLab.TeacherTraining
     {
         public string teacherUtterance;
         public string conversationContext;
+        public string scenarioContext;
+        public string crisisStage;
+        public string personaId;
         public AffectVector currentAffect;
     }
 

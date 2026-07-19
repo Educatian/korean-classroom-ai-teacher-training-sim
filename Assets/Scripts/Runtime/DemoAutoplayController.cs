@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -45,7 +47,131 @@ namespace AdieLab.TeacherTraining
                 return;
             }
 
+            if (Array.IndexOf(arguments, "--llm-dialogue-evidence") >= 0)
+            {
+                StartCoroutine(CaptureLiveDialogueEvidence(arguments, circleSceneLoaded));
+                return;
+            }
+
             StartCoroutine(PlayDemo(arguments, circleSceneLoaded));
+        }
+
+        private IEnumerator CaptureLiveDialogueEvidence(string[] arguments, bool circleScene)
+        {
+            yield return new WaitForSecondsRealtime(7f);
+            if (string.IsNullOrWhiteSpace(captureDirectory))
+            {
+                FailEvidence("capture directory unavailable", 2);
+                yield break;
+            }
+
+            GenerativeAiCoach coach = FindAnyObjectByType<GenerativeAiCoach>();
+            if (coach == null || !coach.IsConfigured)
+            {
+                FailEvidence("OpenRouter is not configured", 3);
+                yield break;
+            }
+
+            Click("ModeButton_2");
+            TeacherCameraController teacherCamera = FindAnyObjectByType<TeacherCameraController>();
+            NpcPerformance focalStudent = GameObject.Find("FocalStudent_Minjun")?.GetComponent<NpcPerformance>();
+            teacherCamera?.EnterConversationFocus();
+            teacherCamera?.SetUprightFocus(true);
+            focalStudent?.SetUprightEyeContact(true);
+            yield return new WaitForSecondsRealtime(1f);
+
+            TMP_InputField input = GameObject.Find("DialogueInput")?.GetComponent<TMP_InputField>();
+            TMP_Text status = GameObject.Find("DialogueStatus")?.GetComponent<TMP_Text>();
+            TMP_Text studentReply = FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .FirstOrDefault(label => label.name == "StudentReply");
+            if (input == null || status == null || studentReply == null)
+            {
+                FailEvidence("dialogue HUD bindings unavailable", 4);
+                yield break;
+            }
+
+            string[] teacherUtterances =
+            {
+                "민준아, 지금 많이 답답해 보이네. 무엇이 가장 힘든지 네 말로 들려줄래?",
+                "과제가 한꺼번에 밀려서 막막했구나. 지금은 잠깐 쉬기와 첫 문제를 같이 시작하기 중 무엇이 더 괜찮을까?",
+                "좋아, 네가 선택한 속도로 하자. 선생님이 옆에서 첫 단계만 같이 해도 괜찮을까?"
+            };
+            StringBuilder transcript = new StringBuilder();
+            transcript.AppendLine("# Live OpenRouter dialogue evidence");
+            transcript.AppendLine();
+            transcript.AppendLine($"- Scene: {(circleScene ? "CircleDiscussion" : "GeneralClassroom")}");
+            transcript.AppendLine($"- Model: `{coach.ModelId}`");
+            transcript.AppendLine("- Source: OpenRouter structured student-turn response");
+            transcript.AppendLine();
+
+            for (int turn = 0; turn < teacherUtterances.Length; turn++)
+            {
+                input.text = teacherUtterances[turn];
+                Click("DialogueSendButton");
+                yield return null;
+                float startedAt = Time.realtimeSinceStartup;
+                while (!input.interactable && Time.realtimeSinceStartup - startedAt < 60f)
+                {
+                    yield return null;
+                }
+
+                if (!input.interactable)
+                {
+                    FailEvidence($"turn {turn + 1} timed out", 5);
+                    yield break;
+                }
+
+                yield return new WaitForSecondsRealtime(1.2f);
+                if (!status.text.Contains("LLM 학생 응답", StringComparison.Ordinal) ||
+                    status.text.Contains("대체됨", StringComparison.Ordinal))
+                {
+                    FailEvidence($"turn {turn + 1} did not resolve from OpenRouter: {status.text}", 6);
+                    yield break;
+                }
+
+                string reply = studentReply.text.Trim();
+                if (string.IsNullOrWhiteSpace(reply))
+                {
+                    FailEvidence($"turn {turn + 1} returned an empty student reply", 7);
+                    yield break;
+                }
+
+                string fileName = $"LLM_FreeDialogue_Turn_{turn + 1:00}.png";
+                Capture(fileName);
+                yield return new WaitForSecondsRealtime(1f);
+                transcript.AppendLine($"## Turn {turn + 1}");
+                transcript.AppendLine();
+                transcript.AppendLine($"- Teacher: {teacherUtterances[turn]}");
+                transcript.AppendLine($"- Student: {reply}");
+                transcript.AppendLine($"- Screenshot: `{fileName}`");
+                transcript.AppendLine();
+                Debug.Log($"LIVE_LLM_DIALOGUE_TURN_OK turn={turn + 1} model={coach.ModelId} screenshot={fileName}");
+
+                if (turn < teacherUtterances.Length - 1)
+                {
+                    Click("ContinueButton");
+                    yield return new WaitForSecondsRealtime(1f);
+                    Click("ModeButton_2");
+                }
+            }
+
+            Directory.CreateDirectory(captureDirectory);
+            File.WriteAllText(
+                Path.Combine(captureDirectory, "LLM_FreeDialogue_Evidence.md"),
+                transcript.ToString(),
+                new UTF8Encoding(false));
+            Debug.Log($"LIVE_LLM_DIALOGUE_EVIDENCE_OK turns={teacherUtterances.Length} model={coach.ModelId}");
+            if (Array.IndexOf(arguments, "--autoplay-exit") >= 0)
+            {
+                yield return new WaitForSecondsRealtime(1f);
+                Application.Quit();
+            }
+        }
+
+        private static void FailEvidence(string message, int exitCode)
+        {
+            Debug.LogError($"LIVE_LLM_DIALOGUE_EVIDENCE_FAILED {message}");
+            Application.Quit(exitCode);
         }
 
         private IEnumerator CaptureFaceRoster(string[] arguments)

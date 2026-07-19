@@ -121,6 +121,31 @@ namespace AdieLab.TeacherTraining.Tests
             Assert.That(summary.averageScore, Is.EqualTo(1.75f).Within(0.001f));
         }
 
+        [Test]
+        public void RubricEvaluationEvent_ContributesValidatedLlmEvidenceToDebrief()
+        {
+            var item = new TrainingTelemetryEvent
+            {
+                kind = TrainingEventKind.RubricEvaluation,
+                actionSource = TrainingActionSource.GenerativeModel,
+                competencyEvidence = new[]
+                {
+                    Evidence(TeacherCompetency.StudentDignity, 2.8f),
+                    Evidence(TeacherCompetency.LowStimulusResponse, 2.4f),
+                    Evidence(TeacherCompetency.EmotionAcknowledgement, 2.6f),
+                    Evidence(TeacherCompetency.StudentAgency, 2.2f),
+                    Evidence(TeacherCompetency.Safety, 2.5f),
+                    Evidence(TeacherCompetency.InstructionalReentry, 2.1f)
+                }
+            };
+
+            RubricSummary summary = TeacherRubricEvaluator.Evaluate(new[] { item });
+
+            Assert.That(summary.dimensions, Has.Length.EqualTo(6));
+            Assert.That(summary.averageScore, Is.EqualTo(2.4333f).Within(0.001f));
+            Assert.That(summary.dimensions[0].score, Is.EqualTo(2.8f).Within(0.001f));
+        }
+
         private static StudentStateSnapshot Snapshot(float valence, float arousal, float progress)
         {
             return new StudentStateSnapshot

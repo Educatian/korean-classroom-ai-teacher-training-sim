@@ -69,6 +69,9 @@ namespace AdieLab.TeacherTraining
                 "경청, 압박, 선택권, 안전 우려, 수업 복귀 준비도에 미친 영향을 0~1로 나타냅니다.";
             AffectVector current = request.currentAffect;
             string prompt =
+                $"시나리오 맥락: {request.scenarioContext}\n" +
+                $"현재 위기 단계: {request.crisisStage}\n" +
+                $"학생 페르소나 ID: {request.personaId}\n" +
                 $"최근 대화 및 누적 상태:\n{request.conversationContext}\n" +
                 $"현재 정서: valence={current.valence:F2}, arousal={current.arousal:F2}, dominance={current.dominance:F2}\n" +
                 $"교사: {request.teacherUtterance}";

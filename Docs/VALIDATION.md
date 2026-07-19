@@ -1,5 +1,17 @@
 # Validation record
 
+## Full dialogue, performance, and scenario regression (2026-07-19)
+
+- The free-dialogue request now carries authored scenario context, crisis stage, and persona identity. Conversation state keeps a bounded recent-turn window plus four durable teacher commitments so promises survive short-term history eviction.
+- Student turns are normalized as one performance unit: emotional valence/arousal/dominance, dialogue signals, gesture, and facial action units remain coherent. Strong negative arousal suppresses smiling and adds protest tension; felt-heard and re-entry signals select recovery gestures and relaxed facial movement.
+- Dynamic scenario transitions now preserve instructional pacing. Immediate safety escalation remains available, while de-escalation and re-entry jumps require relational momentum; a hold decision no longer pins the current beat and block normal sequential continuation.
+- LLM teacher-rubric results replace provisional scoring evidence, retain model provenance in telemetry, and refresh the debrief when an evaluation arrives after scenario completion.
+- The full EditMode suite passed `91/91` with zero failures, skips, or inconclusive tests. The classroom PlayMode flow passed all six beats and all four modes with six persisted records.
+- NPC PlayMode QA passed for 14 classmates: all tracked teacher movement, gesture and idle pools each exposed seven variants, yawn drove AU26, chin-rest measured `handGap=0.008 m` and `elbowGap=0.010 m`, and button/footstep audio played. Windows batch-mode capture is skipped to avoid a Unity 6 native D3D11 `Camera.Render` crash; interactive-editor visual capture remains enabled.
+- Both ScriptableObject scenes passed the scenario surface gate with six beats and three response choices. The circle-discussion asset includes audience pressure, presentation avoidance, relational reconnection, and instructional re-entry.
+- The XR rig gate passed with two controller rays, world-space HUD conversion, and clean desktop restoration. The Windows player built successfully at `327082700` bytes. The Quest Android ARM64/Vulkan build produced an APK of `123680411` bytes and logged `META_QUEST_BUILD_OK bytes=937435283`.
+- OpenXR `1.16.1` still emits a non-fatal Meta Quest validation-hook `NullReferenceException`, and Gradle warm-up emits a non-fatal initialization diagnostic before the real `assembleRelease` succeeds. Physical-headset controller, microphone, comfort, readability, and sustained frame-rate acceptance remain outstanding.
+
 ## Bounded-generative dialogue and secure proxy validation (2026-07-19)
 
 - The full EditMode suite passed `85/85` with no failures, skips, or inconclusive tests. New coverage verifies bounded conversation state, strict student and teacher-rubric JSON contracts, non-finite score rejection, deterministic crisis-stage transitions, exact coordinator jumps, Android secure-proxy selection, direct-provider endpoint rejection, and provider-key-free proxy envelopes.
@@ -40,7 +52,7 @@ Meta Quest is now an implemented build target. `Docs/META_QUEST_READINESS.md` re
 - The XR rig PlayMode surface logged `XR_RIG_STRUCTURE_QA_OK controllers=2 hud=world-space cleanup=desktop-restored`.
 - The full EditMode regression suite passed `74/74` with zero failures or skips.
 - The Windows player build succeeded at `327117816` bytes.
-- The Quest Android Vulkan release build logged `META_QUEST_BUILD_OK` and produced `Builds/TeacherResponseTrainingQuest/TeacherResponseTrainingQuest.apk` (`123656631` bytes on disk). The final log contains no OpenXR build error, XR Simulation asset-move collision, or Gamma/OpenGLES validation error.
+- The Quest Android Vulkan release build logged `META_QUEST_BUILD_OK` and produced `Builds/TeacherResponseTrainingQuest/TeacherResponseTrainingQuest.apk` (`123656631` bytes on disk). No XR Simulation asset-move collision or Gamma/OpenGLES validation error was observed in that run.
 - Physical Quest controller, comfort, visual-angle readability, microphone, and sustained performance testing remain required; no claim of headset acceptance is made.
 
 ## Manual QA completed
@@ -81,3 +93,11 @@ The final PlayMode run logged `CLASSMATE_GAZE_QA_OK`, `NPC_IDLE_BEHAVIOR_QA_OK`,
 5. Inspect focal and classmate faces, hands, clothing, desk collision, and chair masking.
 6. Decode any delivered MP4 from start to finish and inspect a timeline contact sheet.
 7. Scan tracked files for secrets and files above GitHub's size limit.
+## 2026-07-19 visual, voice, and live-dialogue validation
+
+- EditMode: `91/91` passed (`Logs/visual-upgrade-editmode.xml`).
+- Windows build: passed (`WINDOWS_BUILD_OK`, `325950338` bytes).
+- Windows autoplay: captured `ClassroomReference.png`, `StudentEyeContact.png`, and `TrainingDebrief.png` at 1920x1080.
+- Live OpenRouter evidence: three consecutive turns passed with `openai/gpt-4o-mini`; log markers `LIVE_LLM_DIALOGUE_TURN_OK` x3 and `LIVE_LLM_DIALOGUE_EVIDENCE_OK`.
+- Visual inspection: speech bubble remained above the focal student's head, HUD text was readable, and the new floor/desk/wall surfaces and Blender-authored air purifier appeared at teacher eye height.
+- Known tooling issue: the headless editor-only preview camera crashed in native shadow rendering after writing no new preview; Windows-player captures succeeded and are the authoritative evidence for this pass.

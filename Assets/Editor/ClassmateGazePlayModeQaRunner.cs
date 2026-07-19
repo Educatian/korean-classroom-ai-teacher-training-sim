@@ -255,6 +255,11 @@ namespace AdieLab.TeacherTraining.Editor
 
         private static void Render(Camera camera, string outputPath)
         {
+            if (Application.isBatchMode)
+            {
+                return;
+            }
+
             const int width = 2560;
             const int height = 1440;
             RenderTexture target = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);

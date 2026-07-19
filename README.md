@@ -14,7 +14,7 @@ This project is a research and teacher-education prototype. It does not replace 
 | Student NPCs | 15 Rocketbox-based students per classroom |
 | Dialogue | Deterministic local fallback plus optional OpenRouter LLM integration |
 | Assessment | Authored response scoring plus evidence-centered telemetry events |
-| Validation | EditMode `67/67` passed, rendered PlayMode QA passed, Windows player build passed |
+| Validation | EditMode `91/91` passed, rendered PlayMode QA passed, Windows player build passed |
 | Status | Active research prototype |
 
 ## Screenshots
@@ -27,11 +27,23 @@ The screenshots below are captured from the current Unity scene/player QA loop a
 
 The general classroom scene is modeled around a contemporary Korean elementary classroom: front storage cabinets, desks and green chairs at elementary proportions, fluorescent ceiling lights, an electronic board, window views, backpacks, and a rear bulletin board assembled from individual poster, worksheet, notice, and student-art assets.
 
+### Blender-authored Environment Upgrade
+
+![Blender classroom upgrade kit](Assets/Reference/Blender_ClassroomUpgrade_Preview.png)
+
+The environment upgrade keeps each asset reusable: a detailed electronic board, teacher podium, air purifier, desk props, and school backpack are authored as separate Blender meshes. Generated vinyl, birch-laminate, and painted-wall surfaces are connected through the procedural Unity builder. See [`Docs/VISUAL_UPGRADE_AUDIT.md`](Docs/VISUAL_UPGRADE_AUDIT.md) for the gap list and acceptance checks.
+
 ### Face-to-Face Dialogue
 
 ![Face-to-face student dialogue with head-anchored speech bubble](Assets/Reference/Unity_FaceToFace_Dialogue.png)
 
 The focal student can be addressed directly from the teacher's viewpoint. The translucent speech bubble is anchored above the student's head and adjusted to avoid covering the face during eye contact. The lower HUD preserves the recent teacher utterance, student reply, and affect vector.
+
+### Live Three-Turn OpenRouter Dialogue
+
+![Live OpenRouter dialogue turn 3](Assets/Reference/LLM_FreeDialogue_Turn_03.png)
+
+A Windows-player evidence run completed three consecutive teacher-student turns through OpenRouter (`openai/gpt-4o-mini`) with no deterministic fallback. Each turn preserves the conversation state, updates the student response/performance, and captures the head-anchored bubble and teacher HUD. The full transcript and screenshot index are in [`Assets/Reference/LLM_FreeDialogue_Evidence.md`](Assets/Reference/LLM_FreeDialogue_Evidence.md).
 
 ### Upright Eye Contact
 

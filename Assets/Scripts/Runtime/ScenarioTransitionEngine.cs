@@ -61,7 +61,10 @@ namespace AdieLab.TeacherTraining
                 return DecisionForStage(context, CrisisStage.Peak, ScenarioTransitionReason.SafetyOverride);
             }
 
-            if (signals.readyForReentry >= 0.65f && signals.perceivedPressure <= 0.45f)
+            bool relationalMomentum = context.TurnsInCurrentBeat >= 2 ||
+                                      context.Stages[context.CurrentBeatIndex] != CrisisStage.Trigger;
+            if (relationalMomentum &&
+                signals.readyForReentry >= 0.65f && signals.perceivedPressure <= 0.45f)
             {
                 int reentry = FindForwardStage(context, CrisisStage.InstructionalReentry);
                 if (reentry >= 0)
@@ -70,7 +73,8 @@ namespace AdieLab.TeacherTraining
                 }
             }
 
-            if (signals.feltHeard >= 0.65f &&
+            if (relationalMomentum &&
+                signals.feltHeard >= 0.65f &&
                 signals.choiceOffered >= 0.55f &&
                 signals.perceivedPressure <= 0.4f)
             {

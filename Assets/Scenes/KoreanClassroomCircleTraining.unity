@@ -62176,7 +62176,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: AdieLab.TeacherTraining::AdieLab.TeacherTraining.VoiceDialogueController
   input: {fileID: 1665283421}
   microphoneButton: {fileID: 923950273}
+  dialogueSendButton: {fileID: 1247664433}
+  microphoneLabel: {fileID: 1303343346}
   status: {fileID: 1175482915}
+  inactiveColor: {r: 0.12, g: 0.18, b: 0.28, a: 0.96}
+  activeColor: {r: 0.02, g: 0.64, b: 0.58, a: 1}
 --- !u!114 &1465275330
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -37,6 +37,68 @@ namespace AdieLab.TeacherTraining.Tests
         }
 
         [Test]
+        public void ConversationState_RetainsTeacherCommitmentsBeyondTheRecentTurnWindow()
+        {
+            var state = new ConversationSessionState(1);
+            state.AddTurn("잠깐 기다릴게. 함께 다시 시작하자.", "네.", DialogueSignals.Neutral);
+            state.AddTurn("지금 기분은 어때?", "조금 나아요.", DialogueSignals.Neutral);
+
+            string context = state.BuildPromptContext();
+
+            Assert.That(state.RecentTurnCount, Is.EqualTo(1));
+            Assert.That(state.DurableCommitmentCount, Is.EqualTo(1));
+            Assert.That(context, Does.Contain("잠깐 기다릴게"));
+            Assert.That(context, Does.Contain("durable_teacher_commitments"));
+        }
+
+        [Test]
+        public void PerformanceNormalizer_AlignsNegativeHighArousalWithGestureAndFacialUnits()
+        {
+            var turn = new StudentAgentTurn
+            {
+                studentReply = "지금은 싫어요.",
+                valence = -0.8f,
+                arousal = 0.9f,
+                dominance = 0.45f,
+                gesture = BehaviorGesture.Recover.ToString(),
+                actionUnits = new ActionUnitDirective { au12 = 0.9f },
+                dialogueSignals = new DialogueSignals { perceivedPressure = 0.85f }
+            };
+
+            StudentTurnPerformanceNormalizer.Normalize(turn);
+
+            Assert.That(turn.gesture, Is.EqualTo(BehaviorGesture.Protest.ToString()));
+            Assert.That(turn.actionUnits.au4, Is.GreaterThanOrEqualTo(0.58f));
+            Assert.That(turn.actionUnits.au7, Is.GreaterThanOrEqualTo(0.48f));
+            Assert.That(turn.actionUnits.au12, Is.LessThanOrEqualTo(0.18f));
+        }
+
+        [Test]
+        public void PerformanceNormalizer_UsesReentrySignalsForRecoveryEyeContactPose()
+        {
+            var turn = new StudentAgentTurn
+            {
+                studentReply = "다시 해 볼게요.",
+                valence = 0.2f,
+                arousal = 0.3f,
+                dominance = 0.05f,
+                gesture = BehaviorGesture.Withdraw.ToString(),
+                dialogueSignals = new DialogueSignals
+                {
+                    feltHeard = 0.8f,
+                    perceivedPressure = 0.1f,
+                    readyForReentry = 0.8f
+                }
+            };
+
+            StudentTurnPerformanceNormalizer.Normalize(turn);
+
+            Assert.That(turn.gesture, Is.EqualTo(BehaviorGesture.Recover.ToString()));
+            Assert.That(turn.actionUnits, Is.Not.Null);
+            Assert.That(turn.actionUnits.au12, Is.GreaterThanOrEqualTo(0.28f));
+        }
+
+        [Test]
         public void TransitionEngine_RoutesSafetyConcernToTheAuthoredPeakStage()
         {
             var context = new ScenarioTransitionContext(
@@ -69,6 +131,27 @@ namespace AdieLab.TeacherTraining.Tests
 
             Assert.That(result.NextBeatIndex, Is.EqualTo(3));
             Assert.That(result.Reason, Is.EqualTo(ScenarioTransitionReason.SupportiveDeescalation));
+        }
+
+        [Test]
+        public void TransitionEngine_HoldsAfterOnlyOneSupportiveTurnAtTheTrigger()
+        {
+            var context = new ScenarioTransitionContext(
+                0,
+                1,
+                new[] { CrisisStage.Trigger, CrisisStage.Escalation, CrisisStage.Deescalation, CrisisStage.InstructionalReentry },
+                new DialogueSignals
+                {
+                    feltHeard = 0.85f,
+                    choiceOffered = 0.7f,
+                    perceivedPressure = 0.1f,
+                    readyForReentry = 0.8f
+                });
+
+            ScenarioTransitionDecision result = ScenarioTransitionEngine.Select(context);
+
+            Assert.That(result.NextBeatIndex, Is.EqualTo(0));
+            Assert.That(result.Reason, Is.EqualTo(ScenarioTransitionReason.Hold));
         }
 
         [Test]

@@ -52,6 +52,8 @@ namespace AdieLab.TeacherTraining
         public StudentPersonaAsset StudentPersona => studentPersona;
         public CrisisScenarioType CrisisType => crisisType;
         public IReadOnlyList<TeacherCompetency> TeacherGoals => teacherGoals;
+        public PeerAttentionPattern PeerAttention => peerAttention;
+        public bool PresentationAvoidance => presentationAvoidance;
         public ScenarioBeat Beat => beat;
 
         public ScenarioBeat ToRuntimeBeat()

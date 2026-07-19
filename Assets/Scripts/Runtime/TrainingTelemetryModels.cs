@@ -12,7 +12,8 @@ namespace AdieLab.TeacherTraining
         SessionCompleted = 4,
         SessionPaused = 5,
         SessionResumed = 6,
-        SessionAborted = 7
+        SessionAborted = 7,
+        RubricEvaluation = 8
     }
 
     public enum TrainingActionSource
