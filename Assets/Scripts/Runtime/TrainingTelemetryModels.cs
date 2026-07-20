@@ -60,9 +60,24 @@ namespace AdieLab.TeacherTraining
     }
 
     [Serializable]
+    public sealed class StudentSpeechTelemetry
+    {
+        public bool requested;
+        public string providerRoute;
+        public float rate;
+        public float pitchSemitones;
+        public float volume;
+        public int commaPauseMilliseconds;
+        public int sentencePauseMilliseconds;
+        public string disclosure;
+    }
+
+    [Serializable]
     public sealed class CompetencyEvidence
     {
         public string evidenceId;
+        public string observableId;
+        public string rationale;
         public TeacherCompetency dimension;
         [Range(0f, 3f)] public float score;
     }
@@ -70,7 +85,7 @@ namespace AdieLab.TeacherTraining
     [Serializable]
     public sealed class TrainingTelemetryEvent
     {
-        public const int CurrentSchemaVersion = 1;
+        public const int CurrentSchemaVersion = 2;
 
         public int schemaVersion = CurrentSchemaVersion;
         public string eventId;
@@ -93,5 +108,6 @@ namespace AdieLab.TeacherTraining
         public StudentStateSnapshot studentStateAfter = new StudentStateSnapshot();
         public ModelPromptProvenance inference = new ModelPromptProvenance();
         public CompetencyEvidence[] competencyEvidence = Array.Empty<CompetencyEvidence>();
+        public StudentSpeechTelemetry studentSpeech = new StudentSpeechTelemetry();
     }
 }

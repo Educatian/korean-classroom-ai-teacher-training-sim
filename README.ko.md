@@ -394,6 +394,17 @@ ProjectSettings/                # Unity project settings
 
 자세한 내용은 [`Docs/ASSET_AND_LICENSE_GUIDE.md`](Docs/ASSET_AND_LICENSE_GUIDE.md)를 확인하세요.
 
+## 학생 합성음성·ECD·연구용 디브리핑
+
+학생의 자유대화 응답은 정서가·각성·주도성에 따라 말하기 속도, 음높이, 음량, 쉼표·문장 휴지를 계획합니다. Windows에서는 OPENAI_API_KEY 환경변수가 있을 때 한국어 합성음성을 생성하고, 학생 위치의 공간 음원으로 재생하면서 실제 음량 파형으로 AU25 입술 벌림과 AU26 턱 내림을 구동합니다. 키가 없거나 합성에 실패하면 Windows 시스템 음성과 휴지 연동 무음 립싱크 순서로 전환합니다. 합성음성임을 HUD에 표시하며 API 키는 Unity 자산이나 빌드에 저장하지 않습니다.
+
+연구진이 코드 수정 없이 평가 틀을 바꿀 수 있도록 ECD 모델을 [TeacherResponseEcdModel.asset](Assets/Resources/Training/ECD/TeacherResponseEcdModel.asset)로 분리했습니다. 각 역량에는 관찰행동, 근거 식별 규칙, 가중치, 기대점수, 놓친 신호 피드백, 점수 구간이 연결됩니다.
+
+훈련 완료 후 디브리핑에는 정서 변화곡선, 개입 타임라인, 역량별 점수와 근거 수, 놓친 신호, 같은 상황 재시도, 익명화 JSON·CSV 내보내기가 표시됩니다.
+
+![연구용 디브리핑 대시보드](Assets/Reference/ResearchDebriefDashboard.png)
+
+설정과 연구 데이터 구조는 [학생 음성·ECD·디브리핑 가이드](Docs/STUDENT_SPEECH_ECD_DEBRIEF.md)를 확인하세요.
 ## 현재 검증 상태와 알려진 한계
 
 완료된 기준:

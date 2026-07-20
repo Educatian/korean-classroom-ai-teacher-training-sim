@@ -97,6 +97,8 @@ namespace AdieLab.TeacherTraining
             return new CompetencyEvidence
             {
                 evidenceId = evidenceId,
+                observableId = dimension.ToString(),
+                rationale = string.Empty,
                 dimension = dimension,
                 score = score
             };

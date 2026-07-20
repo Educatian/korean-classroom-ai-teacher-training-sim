@@ -74,9 +74,9 @@ The circle scene uses the same direct-dialogue and speech-bubble system, allowin
 
 ### Debrief
 
-![Training debrief screen](Assets/Reference/TrainingDebrief.png)
+![Research debrief dashboard](Assets/Reference/ResearchDebriefDashboard.png)
 
-After the six-beat session, the simulation produces a local debrief and stores structured session records for later analysis.
+After the six-beat session, the simulation opens a research debrief dashboard with affect trajectories, an intervention timeline, competency evidence counts, missed-signal prompts, anonymized JSON/CSV export, and a same-scenario retry control.
 
 ## Research Purpose
 
@@ -216,9 +216,10 @@ The runtime separates raw text from research telemetry. Session events include:
 - pre/post affect state;
 - gesture, gaze, trust, engagement, and target vector signals;
 - scoring evidence and rubric dimensions;
+- student synthetic-voice route, speaking rate, pitch, volume, and punctuation-pause plan;
 - LLM route, model, prompt version, fallback state, and latency metadata when applicable.
 
-Replay validation checks event sequence order and schema compatibility. This makes the prototype more useful for future learning analytics and evidence-centered design work while reducing unnecessary sensitive text retention.
+Replay validation checks event sequence order and schema compatibility. The editable ECD model at [TeacherResponseEcdModel.asset](Assets/Resources/Training/ECD/TeacherResponseEcdModel.asset) links competencies to observable behaviors, event evidence, weights, expected scores, and missed-signal feedback without requiring C# edits. This makes the prototype more useful for future learning analytics and evidence-centered design work while reducing unnecessary sensitive text retention.
 
 ## Architecture
 
@@ -372,14 +373,15 @@ ProjectSettings/                # Unity project settings
 ## Known Limitations
 
 - The current validated deployment target is Windows desktop. WebGL and VR are represented as constrained deployment paths rather than finished production builds.
-- Direct student speech synthesis is not yet implemented.
-- Windows dictation is available for teacher input, but a full Korean STT/TTS research pipeline remains future work.
+- Student TTS is implemented for Windows through an environment-scoped OpenAI Audio API key, with Windows system speech and timed lip-sync fallbacks. Korean system voice quality depends on the installed Windows voice pack.
+- Meta Quest student TTS must use the secure proxy boundary; direct provider keys are intentionally not packaged in the APK.
 - Rubric scores are authored research heuristics, not validated teacher evaluation instruments.
 - Some Unity 6 obsolete API warnings remain around `FindObjectsByType` overloads; these do not block the current build or tests.
 
 ## Documentation
 
 - [Korean README](README.ko.md)
+- [Student speech, ECD, and research debrief guide](Docs/STUDENT_SPEECH_ECD_DEBRIEF.md)
 - [`Docs/PROJECT_GUIDE.md`](Docs/PROJECT_GUIDE.md)
 - [`Docs/SCENARIO_AUTHORING.md`](Docs/SCENARIO_AUTHORING.md)
 - [`Docs/META_QUEST_READINESS.md`](Docs/META_QUEST_READINESS.md)

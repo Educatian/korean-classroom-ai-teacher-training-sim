@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,7 @@ namespace AdieLab.TeacherTraining
 
         private int selectedMode = 1;
         private bool debriefUnlocked;
+        private ResearchDebriefDashboard researchDashboard;
 
         public bool DebriefUnlocked => debriefUnlocked;
 
@@ -26,6 +28,8 @@ namespace AdieLab.TeacherTraining
                 modeButtons[i].onClick.AddListener(() => SelectMode(captured));
             }
 
+            researchDashboard = gameObject.AddComponent<ResearchDebriefDashboard>();
+            researchDashboard.Initialize(debriefPanel, debriefText);
             SelectMode(selectedMode);
         }
 
@@ -72,6 +76,18 @@ namespace AdieLab.TeacherTraining
             }
 
             debriefText.text = text;
+            debriefUnlocked = true;
+            SelectMode(3);
+        }
+
+        public void ShowResearchDebrief(ResearchDebriefReport report, Action retry)
+        {
+            if (report == null)
+            {
+                return;
+            }
+
+            researchDashboard.Show(report, retry);
             debriefUnlocked = true;
             SelectMode(3);
         }

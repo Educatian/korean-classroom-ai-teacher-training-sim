@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace AdieLab.TeacherTraining
 {
@@ -16,6 +17,7 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private TeacherCameraController teacherCamera;
         [SerializeField] private TrainingModeNavigator modeNavigator;
         [SerializeField] private bool circleDiscussionScenario;
+        [SerializeField] private EcdAssessmentModel ecdAssessmentModel;
 
         private ScenarioBeat[] beats;
         private TrainingScenarioAsset scenarioAsset;
@@ -59,6 +61,10 @@ namespace AdieLab.TeacherTraining
                 {
                     secureProxyCoach = gameObject.AddComponent<SecureProxyLlmGateway>();
                 }
+            }
+            if (ecdAssessmentModel == null)
+            {
+                ecdAssessmentModel = EcdAssessmentModel.LoadDefault();
             }
             scenarioAsset = TrainingScenarioCatalog
                 .LoadDefault()
@@ -254,7 +260,7 @@ namespace AdieLab.TeacherTraining
                 ? -1
                 : decision.NextBeatIndex;
             pendingTransitionReason = decision.Reason;
-            speechPerformance.Speak(turn.studentReply, turn.actionUnits);
+            speechPerformance.Speak(turn.studentReply, turn.actionUnits, affect);
             bool conversationalEyeContact = gesture == BehaviorGesture.Recover || gesture == BehaviorGesture.Listen;
             focalStudent.SetUprightEyeContact(conversationalEyeContact);
             teacherCamera?.SetUprightFocus(conversationalEyeContact);
@@ -269,6 +275,7 @@ namespace AdieLab.TeacherTraining
                 Debug.LogWarning($"Student LLM fallback: {error}");
             }
 
+            source += " · " + StudentSpeechSynthesizer.VoiceDisclosure;
             hud.SetDialogueState(false, source);
             hud.ShowFeedback(assessment, score, beatIndex + 1);
             RecordResolvedTurn(
@@ -425,7 +432,7 @@ namespace AdieLab.TeacherTraining
                     TrainingEventKind.SessionCompleted,
                     TrainingPhase.ReviewingFeedback,
                     TrainingPhase.Complete);
-                modeNavigator?.ShowDebrief(TeacherRubricEvaluator.Evaluate(telemetryEvents));
+                ShowResearchDebrief();
                 return;
             }
 
@@ -474,7 +481,7 @@ namespace AdieLab.TeacherTraining
                     }
                     else if (sessionComplete)
                     {
-                        modeNavigator?.ShowDebrief(TeacherRubricEvaluator.Evaluate(telemetryEvents));
+                        ShowResearchDebrief();
                     }
                 },
                 error => Debug.LogWarning($"Teacher rubric request failed: {error}")));
@@ -516,6 +523,22 @@ namespace AdieLab.TeacherTraining
             });
         }
 
+
+        private void ShowResearchDebrief()
+        {
+            ResearchDebriefReport report = EcdAssessmentEngine.Evaluate(
+                telemetryEvents,
+                ecdAssessmentModel);
+            modeNavigator?.ShowResearchDebrief(report, RestartSession);
+        }
+
+        private void RestartSession()
+        {
+            dialogueRequestId++;
+            speechPerformance?.StopSpeaking();
+            Scene activeScene = SceneManager.GetActiveScene();
+            SceneManager.LoadScene(activeScene.buildIndex);
+        }
         private static string TransitionLabel(ScenarioTransitionReason reason)
         {
             return reason switch
@@ -653,7 +676,8 @@ namespace AdieLab.TeacherTraining
                 studentStateBefore = stateBefore,
                 studentStateAfter = stateAfter,
                 inference = inference,
-                competencyEvidence = Array.Empty<CompetencyEvidence>()
+                competencyEvidence = Array.Empty<CompetencyEvidence>(),
+                studentSpeech = speechPerformance?.CaptureTelemetry() ?? new StudentSpeechTelemetry()
             });
         }
 

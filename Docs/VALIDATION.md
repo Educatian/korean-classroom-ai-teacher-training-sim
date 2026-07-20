@@ -1,5 +1,17 @@
 # Validation record
 
+## Student TTS, ECD, and research dashboard (2026-07-19)
+
+- The full EditMode suite passed 100/100 with zero failures or skips.
+- Final Windows player build completed successfully at 331238930 bytes.
+- Continuous Windows autoplay completed direct dialogue, upright eye contact, six authored intervention beats, and the research debrief capture without dashboard exceptions.
+- The student speech path plans rate, pitch, volume, comma pauses, and sentence pauses from affect. Windows prioritizes the environment-scoped OpenAI Audio API and retains system-speech and pause-aware lip-sync fallbacks.
+- AU25 and AU26 are driven from the played audio amplitude. Telemetry schema 2 records the provider route and prosody plan without raw utterance text.
+- Dedicated player TTS QA emitted STUDENT_TTS_OK and STUDENT_TTS_EVIDENCE_OK with provider=openai-audio-api, rate=0.96, pitch=-0.4, comma pause=189 ms, sentence pause=402 ms, and a 0.58-second generated clip.
+- The researcher-editable ECD ScriptableObject maps six competencies to observable behaviors, evidence identifiers, weights, expected scores, score bands, and missed-signal prompts.
+- The dashboard renders valence/arousal trajectories, intervention history, competency evidence counts, missed signals, retry, and anonymized JSON/CSV export.
+- The first real-player pass exposed a Unity Graphic component conflict on the affect chart. The graph was moved to a dedicated child renderer, rebuilt, and the repeated autoplay passed. The resulting capture is Assets/Reference/ResearchDebriefDashboard.png.
+
 ## Full dialogue, performance, and scenario regression (2026-07-19)
 
 - The free-dialogue request now carries authored scenario context, crisis stage, and persona identity. Conversation state keeps a bounded recent-turn window plus four durable teacher commitments so promises survive short-term history eviction.

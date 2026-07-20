@@ -41,6 +41,12 @@ namespace AdieLab.TeacherTraining
                 }
             }
 
+            if (Array.IndexOf(arguments, "--tts-evidence") >= 0)
+            {
+                StartCoroutine(CaptureStudentTtsEvidence(arguments));
+                return;
+            }
+
             if (Array.IndexOf(arguments, "--face-roster-capture") >= 0)
             {
                 StartCoroutine(CaptureFaceRoster(arguments));
@@ -67,6 +73,49 @@ namespace AdieLab.TeacherTraining
             StartCoroutine(PlayDemo(arguments, circleSceneLoaded));
         }
 
+        private IEnumerator CaptureStudentTtsEvidence(string[] arguments)
+        {
+            yield return new WaitForSecondsRealtime(7f);
+            NpcPerformance focal = GameObject.Find("FocalStudent_Minjun")?.GetComponent<NpcPerformance>();
+            if (focal == null)
+            {
+                FailEvidence("focal student unavailable for TTS evidence", 21);
+                yield break;
+            }
+
+            NpcSpeechPerformance speech = focal.GetComponent<NpcSpeechPerformance>();
+            if (speech == null)
+            {
+                speech = focal.gameObject.AddComponent<NpcSpeechPerformance>();
+            }
+
+            focal.SetUprightEyeContact(true);
+            focal.SetGesture(BehaviorGesture.Listen, 0.24f);
+            speech.Speak(
+                "선생님, 지금은 조금 힘들지만 잠깐 쉬었다가 다시 이야기해 볼게요.",
+                new ActionUnitDirective { au1 = 0.18f, au15 = 0.12f, au25 = 0.15f, au26 = 0.10f },
+                new AffectVector(-0.28f, 0.42f, -0.08f));
+            float deadline = Time.realtimeSinceStartup + 45f;
+            while (!speech.VoiceStatus.Contains("파형 립싱크") && Time.realtimeSinceStartup < deadline)
+            {
+                yield return null;
+            }
+
+            if (!speech.VoiceStatus.Contains("파형 립싱크"))
+            {
+                FailEvidence($"student TTS did not reach audio playback: {speech.VoiceStatus}", 22);
+                yield break;
+            }
+
+            StudentSpeechTelemetry trace = speech.CaptureTelemetry();
+            Debug.Log($"STUDENT_TTS_EVIDENCE_OK provider={trace.providerRoute} rate={trace.rate:0.00} pitch={trace.pitchSemitones:+0.0;-0.0;0.0} commaPause={trace.commaPauseMilliseconds} sentencePause={trace.sentencePauseMilliseconds}");
+            Capture("StudentTtsLipSync.png");
+            yield return new WaitForSecondsRealtime(1.5f);
+            if (Array.IndexOf(arguments, "--autoplay-exit") >= 0)
+            {
+                Application.Quit();
+            }
+        }
         private IEnumerator CapturePresentationEvidence(string[] arguments)
         {
             float deadline = Time.realtimeSinceStartup + 40f;

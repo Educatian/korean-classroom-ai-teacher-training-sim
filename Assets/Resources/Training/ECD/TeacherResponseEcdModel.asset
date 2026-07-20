@@ -1,0 +1,123 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37bd9401fae276342806fb13bf7bab8b, type: 3}
+  m_Name: TeacherResponseEcdModel
+  m_EditorClassIdentifier: AdieLab.TeacherTraining::AdieLab.TeacherTraining.EcdAssessmentModel
+  modelId: teacher-response-ecd-v1
+  schemaVersion: 1
+  competencies:
+  - competency: 0
+    label: "\uD559\uC0DD \uC874\uC5C4"
+    description: "\uACF5\uAC1C\uC801 \uB300\uCE58\uC640 \uB099\uC778\uC744 \uD53C\uD558\uACE0
+      \uD559\uC0DD\uC758 \uCCB4\uBA74\uACFC \uAD8C\uB9AC\uB97C \uBCF4\uD638\uD55C\uB2E4."
+    weight: 1
+    observableBehaviors:
+    - id: StudentDignity
+      label: "\uC874\uC911 \uC5B8\uC5B4"
+      description: "\uACF5\uAC1C\uC801 \uB300\uCE58\uC640 \uB099\uC778\uC744 \uD53C\uD558\uACE0
+        \uD559\uC0DD\uC758 \uCCB4\uBA74\uACFC \uAD8C\uB9AC\uB97C \uBCF4\uD638\uD55C\uB2E4."
+      evidenceIdContains: StudentDignity
+      expectedScore: 2
+      weight: 1
+      missedSignalMessage: "\uC555\uBC15 \uC5C6\uC774 \uD559\uC0DD\uC758 \uC874\uC5C4\uC744
+        \uD655\uC778\uD558\uB294 \uC5B8\uC5B4 \uADFC\uAC70\uAC00 \uBD80\uC871\uD588\uC2B5\uB2C8\uB2E4."
+  - competency: 1
+    label: "\uB0AE\uC740 \uC790\uADF9"
+    description: "\uBAA9\uC18C\uB9AC\uC640 \uC694\uAD6C \uAC15\uB3C4\uB97C \uB0AE\uCD94\uACE0
+      \uCC98\uB9AC \uC2DC\uAC04\uC744 \uC81C\uACF5\uD55C\uB2E4."
+    weight: 1
+    observableBehaviors:
+    - id: LowStimulusResponse
+      label: "\uCC98\uB9AC \uC2DC\uAC04 \uC81C\uACF5"
+      description: "\uBAA9\uC18C\uB9AC\uC640 \uC694\uAD6C \uAC15\uB3C4\uB97C \uB0AE\uCD94\uACE0
+        \uCC98\uB9AC \uC2DC\uAC04\uC744 \uC81C\uACF5\uD55C\uB2E4."
+      evidenceIdContains: LowStimulusResponse
+      expectedScore: 2
+      weight: 1
+      missedSignalMessage: "\uAC01\uC131\uC774 \uB192\uC744 \uB54C \uC694\uAD6C \uAC15\uB3C4\uB97C
+        \uB0AE\uCD94\uAC70\uB098 \uAE30\uB2E4\uB9AC\uB294 \uAC1C\uC785\uC774 \uD544\uC694\uD588\uC2B5\uB2C8\uB2E4."
+  - competency: 2
+    label: "\uAC10\uC815 \uC778\uC815"
+    description: "\uD589\uB3D9\uC744 \uB2E8\uC815\uD558\uC9C0 \uC54A\uACE0 \uAD00\uCC30\uB41C
+      \uC815\uC11C\uC640 \uC5B4\uB824\uC6C0\uC744 \uBC18\uC601\uD55C\uB2E4."
+    weight: 1
+    observableBehaviors:
+    - id: EmotionAcknowledgement
+      label: "\uC815\uC11C \uBC18\uC601"
+      description: "\uD589\uB3D9\uC744 \uB2E8\uC815\uD558\uC9C0 \uC54A\uACE0 \uAD00\uCC30\uB41C
+        \uC815\uC11C\uC640 \uC5B4\uB824\uC6C0\uC744 \uBC18\uC601\uD55C\uB2E4."
+      evidenceIdContains: EmotionAcknowledgement
+      expectedScore: 2
+      weight: 1
+      missedSignalMessage: "\uD559\uC0DD\uC758 \uC815\uC11C \uC2E0\uD638\uB97C \uB9D0\uB85C
+        \uD655\uC778\uD55C \uADFC\uAC70\uAC00 \uBD80\uC871\uD588\uC2B5\uB2C8\uB2E4."
+  - competency: 3
+    label: "\uC120\uD0DD\uAD8C"
+    description: "\uC548\uC804\uD55C \uBC94\uC704 \uC548\uC5D0\uC11C \uD559\uC0DD\uC774
+      \uB2E4\uC74C \uD589\uB3D9\uC744 \uC120\uD0DD\uD558\uB3C4\uB85D \uB3D5\uB294\uB2E4."
+    weight: 1
+    observableBehaviors:
+    - id: StudentAgency
+      label: "\uC120\uD0DD\uAD8C \uC81C\uACF5"
+      description: "\uC548\uC804\uD55C \uBC94\uC704 \uC548\uC5D0\uC11C \uD559\uC0DD\uC774
+        \uB2E4\uC74C \uD589\uB3D9\uC744 \uC120\uD0DD\uD558\uB3C4\uB85D \uB3D5\uB294\uB2E4."
+      evidenceIdContains: StudentAgency
+      expectedScore: 2
+      weight: 1
+      missedSignalMessage: "\uD559\uC0DD\uC774 \uC120\uD0DD\uD560 \uC218 \uC788\uB294
+        \uAD6C\uCCB4\uC801\uC778 \uB300\uC548\uC744 \uC81C\uC2DC\uD558\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4."
+  - competency: 4
+    label: "\uC548\uC804"
+    description: "\uC704\uD5D8 \uC2E0\uD638\uC640 \uC8FC\uBCC0 \uD559\uC0DD\uC758
+      \uC548\uC804\uC744 \uD655\uC778\uD558\uBA70 \uC704\uD611\uC744 \uB192\uC774\uC9C0
+      \uC54A\uB294\uB2E4."
+    weight: 1
+    observableBehaviors:
+    - id: Safety
+      label: "\uC548\uC804 \uD655\uC778"
+      description: "\uC704\uD5D8 \uC2E0\uD638\uC640 \uC8FC\uBCC0 \uD559\uC0DD\uC758
+        \uC548\uC804\uC744 \uD655\uC778\uD558\uBA70 \uC704\uD611\uC744 \uB192\uC774\uC9C0
+        \uC54A\uB294\uB2E4."
+      evidenceIdContains: Safety
+      expectedScore: 2
+      weight: 1
+      missedSignalMessage: "\uC704\uAE30 \uB2E8\uACC4\uC5D0\uC11C \uD559\uC0DD\uACFC
+        \uC8FC\uBCC0\uC758 \uC548\uC804\uC744 \uD655\uC778\uD55C \uADFC\uAC70\uAC00
+        \uBD80\uC871\uD588\uC2B5\uB2C8\uB2E4."
+  - competency: 5
+    label: "\uC218\uC5C5 \uBCF5\uADC0"
+    description: "\uC9C4\uC815 \uC774\uD6C4 \uC791\uACE0 \uC2E4\uD589 \uAC00\uB2A5\uD55C
+      \uC7AC\uCC38\uC5EC \uB2E8\uACC4\uB97C \uD568\uAED8 \uC815\uD55C\uB2E4."
+    weight: 1
+    observableBehaviors:
+    - id: InstructionalReentry
+      label: "\uB2E8\uACC4\uC801 \uBCF5\uADC0"
+      description: "\uC9C4\uC815 \uC774\uD6C4 \uC791\uACE0 \uC2E4\uD589 \uAC00\uB2A5\uD55C
+        \uC7AC\uCC38\uC5EC \uB2E8\uACC4\uB97C \uD568\uAED8 \uC815\uD55C\uB2E4."
+      evidenceIdContains: InstructionalReentry
+      expectedScore: 2
+      weight: 1
+      missedSignalMessage: "\uC9C4\uC815 \uC774\uD6C4 \uC218\uC5C5\uC73C\uB85C \uBCF5\uADC0\uD558\uB294
+        \uC791\uC740 \uB2E4\uC74C \uB2E8\uACC4\uB97C \uC5F0\uACB0\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4."
+  scoreBands:
+  - label: "\uAE30\uCD08 \uC5F0\uC2B5"
+    minimumScore: 0
+    interpretation: "\uD575\uC2EC \uC2E0\uD638\uB97C \uBC1C\uACAC\uD558\uACE0 \uB300\uC751
+      \uBB38\uC7A5\uC744 \uB2E4\uC2DC \uAD6C\uC131\uD569\uB2C8\uB2E4."
+  - label: "\uC131\uC7A5 \uC911"
+    minimumScore: 1.7
+    interpretation: "\uC77C\uBD80 \uADFC\uAC70\uAC00 \uD655\uC778\uB418\uBA70 \uC0C1\uD669\uC5D0
+      \uB9DE\uB294 \uC77C\uAD00\uC131\uC744 \uB192\uC785\uB2C8\uB2E4."
+  - label: "\uC219\uB828"
+    minimumScore: 2.5
+    interpretation: "\uAD00\uCC30 \uADFC\uAC70\uC5D0 \uB9DE\uCDB0 \uC815\uC11C \uC9C0\uC6D0\uACFC
+      \uC218\uC5C5 \uBCF5\uADC0\uB97C \uC5F0\uACB0\uD569\uB2C8\uB2E4."
