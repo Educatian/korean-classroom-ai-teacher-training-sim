@@ -103,6 +103,7 @@ namespace AdieLab.TeacherTraining.Tests
             var original = new TrainingTelemetryEvent
             {
                 sessionId = "session",
+                coachSuggestion = "선택권을 포함한 짧은 대안을 제시하세요.",
                 competencyEvidence = new[]
                 {
                     new CompetencyEvidence
@@ -127,13 +128,83 @@ namespace AdieLab.TeacherTraining.Tests
             TrainingTelemetryEvent restored = JsonUtility.FromJson<TrainingTelemetryEvent>(
                 JsonUtility.ToJson(original));
 
-            Assert.That(restored.schemaVersion, Is.EqualTo(2));
+            Assert.That(restored.schemaVersion, Is.EqualTo(3));
             Assert.That(restored.competencyEvidence[0].observableId, Is.EqualTo("observe-emotion"));
+            Assert.That(restored.coachSuggestion, Does.Contain("선택권"));
             Assert.That(restored.competencyEvidence[0].rationale, Is.EqualTo("정서 반영 발화"));
             Assert.That(restored.studentSpeech.providerRoute, Is.EqualTo("openai-audio-api"));
             Assert.That(restored.studentSpeech.sentencePauseMilliseconds, Is.EqualTo(380));
         }
 
+        [Test]
+        public void EcdEngine_BuildsPrivacySafeTeacherSpeechCoaching()
+        {
+            EcdAssessmentModel model = EcdAssessmentModel.CreateRuntimeDefault();
+            var events = new[]
+            {
+                new TrainingTelemetryEvent
+                {
+                    sessionId = "session",
+                    actionId = "turn-1",
+                    sequence = 1,
+                    beatIndex = 2,
+                    kind = TrainingEventKind.TeacherAction,
+                    actionSource = TrainingActionSource.TeacherUtterance,
+                    teacherTextLength = 18,
+                    teacherTextHash = "hash-only",
+                    studentStateBefore = Snapshot(-0.7f, 0.8f),
+                    studentStateAfter = Snapshot(-0.3f, 0.5f),
+                    competencyEvidence = new[]
+                    {
+                        new CompetencyEvidence
+                        {
+                            dimension = TeacherCompetency.EmotionAcknowledgement,
+                            score = 3f
+                        },
+                        new CompetencyEvidence
+                        {
+                            dimension = TeacherCompetency.StudentAgency,
+                            score = 1.4f
+                        }
+                    }
+                },
+                new TrainingTelemetryEvent
+                {
+                    sessionId = "session",
+                    actionId = "turn-1",
+                    sequence = 2,
+                    beatIndex = 2,
+                    kind = TrainingEventKind.RubricEvaluation,
+                    coachSuggestion = "잠깐 쉴지 이야기할지 네가 선택해도 좋아."
+                }
+            };
+
+            ResearchDebriefReport report = EcdAssessmentEngine.Evaluate(events, model);
+            InterventionTimelineItem coaching = report.interventionTimeline[0];
+
+            Assert.That(coaching.teacherUtteranceSummary, Does.Contain("자유 발화"));
+            Assert.That(coaching.teacherUtteranceSummary, Does.Contain("18자"));
+            Assert.That(coaching.recommendedUtterance, Does.Contain("선택해도 좋아"));
+            Assert.That(coaching.evaluationRationale, Does.Contain("강점"));
+            Assert.That(coaching.evaluationRationale, Does.Contain("보완"));
+            UnityEngine.Object.DestroyImmediate(model);
+        }
+        [Test]
+        public void ResearchDashboard_RequiresUnlockAndReturnsToCompactSummary()
+        {
+            var state = new ResearchDashboardState();
+
+            Assert.That(state.OpenFull(), Is.False);
+            Assert.That(state.View, Is.EqualTo(ResearchDashboardView.Locked));
+
+            state.UnlockSummary();
+            Assert.That(state.View, Is.EqualTo(ResearchDashboardView.Summary));
+            Assert.That(state.OpenFull(), Is.True);
+            Assert.That(state.View, Is.EqualTo(ResearchDashboardView.Full));
+
+            state.ReturnToSummary();
+            Assert.That(state.View, Is.EqualTo(ResearchDashboardView.Summary));
+        }
         private static StudentStateSnapshot Snapshot(float valence, float arousal)
         {
             return new StudentStateSnapshot

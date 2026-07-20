@@ -1056,11 +1056,36 @@ namespace AdieLab.TeacherTraining.Editor
             TMP_Text continueLabel = Label(continueRect, "Label", "다음 상황", font, UiTokens.BodySize, FontStyles.Bold, UiTokens.TextOnDark, TextAlignmentOptions.Center);
             SetRect(continueLabel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
-            RectTransform debriefPanel = Panel(rightPanel, "DebriefPanel", new Color(0.055f, 0.10f, 0.18f, 1f), Vector2.zero, Vector2.one, new Vector2(12f, 12f), new Vector2(-12f, -12f));
+            RectTransform debriefPanel = Panel(rightPanel, "DebriefPanel", new Color(0.055f, 0.10f, 0.18f, 1f), Vector2.zero, Vector2.one, new Vector2(4f, 4f), new Vector2(-4f, -4f));
             TMP_Text debriefText = Label(debriefPanel, "DebriefText", "<b>디브리핑</b>\n훈련을 완료하면 6가지 교사 대응 역량이 표시됩니다.", font, 18, FontStyles.Normal, new Color(0.92f, 0.97f, 0.98f, 1f), TextAlignmentOptions.Center);
             debriefText.lineSpacing = 4f;
             SetRect(debriefText.rectTransform, Vector2.zero, Vector2.one, new Vector2(24f, 24f), new Vector2(-24f, -24f));
             debriefPanel.gameObject.SetActive(false);
+
+            GameObject dashboardCanvasObject = new GameObject(
+                "ResearchDashboardCanvas",
+                typeof(Canvas),
+                typeof(CanvasScaler),
+                typeof(GraphicRaycaster));
+            dashboardCanvasObject.transform.SetParent(parent, false);
+            Canvas dashboardCanvas = dashboardCanvasObject.GetComponent<Canvas>();
+            dashboardCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            dashboardCanvas.sortingOrder = 500;
+            CanvasScaler dashboardScaler = dashboardCanvasObject.GetComponent<CanvasScaler>();
+            dashboardScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            dashboardScaler.referenceResolution = new Vector2(1600f, 900f);
+            dashboardScaler.matchWidthOrHeight = 0.5f;
+
+            RectTransform fullDashboardPanel = Panel(
+                dashboardCanvasObject.transform,
+                "ResearchDashboardPanel",
+                new Color(0.025f, 0.055f, 0.095f, 0.985f),
+                Vector2.zero,
+                Vector2.one,
+                new Vector2(18f, 18f),
+                new Vector2(-18f, -UiTokens.HeaderHeight - 12f));
+            AddSoftShadow(fullDashboardPanel, 0.30f, 10f);
+            fullDashboardPanel.gameObject.SetActive(false);
 
             RectTransform dialoguePanel = Panel(canvasObject.transform, "DialoguePanel", UiTokens.DarkSurface, new Vector2(0.30f, 0f), new Vector2(0.62f, 0f), new Vector2(8f, 32f), new Vector2(-8f, 124f));
             CanvasGroup dialogueGroup = dialoguePanel.gameObject.AddComponent<CanvasGroup>();
@@ -1154,6 +1179,7 @@ namespace AdieLab.TeacherTraining.Editor
             navigatorSerialized.FindProperty("dialoguePanel").objectReferenceValue = dialogueGroup;
             navigatorSerialized.FindProperty("debriefPanel").objectReferenceValue = debriefPanel;
             navigatorSerialized.FindProperty("debriefText").objectReferenceValue = debriefText;
+            navigatorSerialized.FindProperty("fullDashboardPanel").objectReferenceValue = fullDashboardPanel;
             navigatorSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             TrainingSceneSelector sceneSelector = canvasObject.AddComponent<TrainingSceneSelector>();

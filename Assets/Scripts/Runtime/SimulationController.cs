@@ -509,6 +509,7 @@ namespace AdieLab.TeacherTraining
                 actionSource = TrainingActionSource.GenerativeModel,
                 turnRoute = StudentTurnRoute.OpenRouter,
                 turnOutcome = StudentTurnOutcome.Accepted,
+                coachSuggestion = rubric.improvementSuggestion ?? string.Empty,
                 studentStateBefore = state,
                 studentStateAfter = state,
                 inference = new ModelPromptProvenance

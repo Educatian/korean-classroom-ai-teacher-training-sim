@@ -188,6 +188,9 @@ namespace AdieLab.TeacherTraining
         public float valenceBefore;
         public float valenceAfter;
         public string evidenceSummary;
+        public string teacherUtteranceSummary;
+        public string recommendedUtterance;
+        public string evaluationRationale;
     }
 
     [Serializable]
@@ -242,6 +245,7 @@ namespace AdieLab.TeacherTraining
             model = model != null ? model : EcdAssessmentModel.LoadDefault();
             var affect = new List<AffectTrendPoint>();
             var timeline = new List<InterventionTimelineItem>();
+            Dictionary<string, string> coachSuggestions = CollectCoachSuggestions(events);
             string sessionId = string.Empty;
             if (events != null)
             {
@@ -276,7 +280,10 @@ namespace AdieLab.TeacherTraining
                             actionSource = item.actionSource.ToString(),
                             valenceBefore = item.studentStateBefore?.affect.valence ?? 0f,
                             valenceAfter = item.studentStateAfter?.affect.valence ?? 0f,
-                            evidenceSummary = EvidenceSummary(item.competencyEvidence)
+                            evidenceSummary = EvidenceSummary(item.competencyEvidence),
+                            teacherUtteranceSummary = TeacherUtteranceSummary(item),
+                            recommendedUtterance = RecommendedUtterance(item, coachSuggestions),
+                            evaluationRationale = EvaluationRationale(item.competencyEvidence)
                         });
                     }
                 }
@@ -419,6 +426,133 @@ namespace AdieLab.TeacherTraining
                 : string.Empty;
         }
 
+        private static Dictionary<string, string> CollectCoachSuggestions(
+            IReadOnlyList<TrainingTelemetryEvent> events)
+        {
+            var result = new Dictionary<string, string>();
+            if (events == null)
+            {
+                return result;
+            }
+
+            for (int index = 0; index < events.Count; index++)
+            {
+                TrainingTelemetryEvent item = events[index];
+                if (item == null ||
+                    item.kind != TrainingEventKind.RubricEvaluation ||
+                    string.IsNullOrWhiteSpace(item.actionId) ||
+                    string.IsNullOrWhiteSpace(item.coachSuggestion))
+                {
+                    continue;
+                }
+
+                result[item.actionId] = item.coachSuggestion.Trim();
+            }
+
+            return result;
+        }
+
+        private static string TeacherUtteranceSummary(TrainingTelemetryEvent item)
+        {
+            CompetencyEvidence strongest = ExtremeEvidence(item.competencyEvidence, true);
+            string source = item.actionSource == TrainingActionSource.TeacherUtterance
+                ? "자유 발화"
+                : item.actionSource == TrainingActionSource.TeacherChoice
+                    ? "선택형 응답"
+                    : "교사 개입";
+            if (strongest == null)
+            {
+                return $"{source} · 대응 원칙을 확인할 근거가 부족함";
+            }
+
+            string length = item.teacherTextLength > 0 ? $" · {item.teacherTextLength}자" : string.Empty;
+            return $"{source} · {CompetencyLabel(strongest.dimension)} 신호 중심{length}";
+        }
+
+        private static string RecommendedUtterance(
+            TrainingTelemetryEvent item,
+            IReadOnlyDictionary<string, string> coachSuggestions)
+        {
+            if (!string.IsNullOrWhiteSpace(item.actionId) &&
+                coachSuggestions.TryGetValue(item.actionId, out string suggestion) &&
+                !string.IsNullOrWhiteSpace(suggestion))
+            {
+                return suggestion;
+            }
+
+            CompetencyEvidence weakest = ExtremeEvidence(item.competencyEvidence, false);
+            return RecommendedFor(weakest?.dimension ?? TeacherCompetency.EmotionAcknowledgement);
+        }
+
+        private static string EvaluationRationale(CompetencyEvidence[] evidence)
+        {
+            CompetencyEvidence strongest = ExtremeEvidence(evidence, true);
+            CompetencyEvidence weakest = ExtremeEvidence(evidence, false);
+            if (strongest == null)
+            {
+                return "평가 근거가 수집되지 않았습니다.";
+            }
+
+            if (weakest == null || ReferenceEquals(strongest, weakest))
+            {
+                return $"관찰 근거 · {CompetencyLabel(strongest.dimension)} {strongest.score:0.0}";
+            }
+
+            return $"강점 {CompetencyLabel(strongest.dimension)} {strongest.score:0.0} · 보완 {CompetencyLabel(weakest.dimension)} {weakest.score:0.0}";
+        }
+
+        private static CompetencyEvidence ExtremeEvidence(CompetencyEvidence[] evidence, bool highest)
+        {
+            CompetencyEvidence result = null;
+            if (evidence == null)
+            {
+                return result;
+            }
+
+            for (int index = 0; index < evidence.Length; index++)
+            {
+                CompetencyEvidence candidate = evidence[index];
+                if (candidate == null)
+                {
+                    continue;
+                }
+
+                if (result == null || (highest ? candidate.score > result.score : candidate.score < result.score))
+                {
+                    result = candidate;
+                }
+            }
+
+            return result;
+        }
+
+        private static string RecommendedFor(TeacherCompetency competency)
+        {
+            return competency switch
+            {
+                TeacherCompetency.StudentDignity => "지금 힘든 마음을 존중할게. 준비되면 이야기해도 괜찮아.",
+                TeacherCompetency.LowStimulusResponse => "지금은 잠깐 쉬자. 천천히 숨을 고른 뒤 이야기해도 괜찮아.",
+                TeacherCompetency.EmotionAcknowledgement => "많이 답답하고 힘들어 보이는구나. 내가 여기서 기다릴게.",
+                TeacherCompetency.StudentAgency => "잠깐 쉴지, 조용한 곳에서 이야기할지 네가 선택해도 좋아.",
+                TeacherCompetency.Safety => "먼저 다치지 않도록 안전한 거리를 두고 필요한 도움을 함께 찾자.",
+                TeacherCompetency.InstructionalReentry => "준비되면 쉬운 것 하나부터 나와 같이 다시 시작해 보자.",
+                _ => "지금 어떤 도움이 필요한지 천천히 말해 줘도 괜찮아."
+            };
+        }
+
+        private static string CompetencyLabel(TeacherCompetency competency)
+        {
+            return competency switch
+            {
+                TeacherCompetency.StudentDignity => "학생 존엄",
+                TeacherCompetency.LowStimulusResponse => "낮은 자극",
+                TeacherCompetency.EmotionAcknowledgement => "감정 인정",
+                TeacherCompetency.StudentAgency => "선택권",
+                TeacherCompetency.Safety => "안전",
+                TeacherCompetency.InstructionalReentry => "수업 복귀",
+                _ => competency.ToString()
+            };
+        }
         private static string EvidenceSummary(CompetencyEvidence[] evidence)
         {
             if (evidence == null || evidence.Length == 0)

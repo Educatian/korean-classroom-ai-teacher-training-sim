@@ -13,6 +13,7 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private CanvasGroup dialoguePanel;
         [SerializeField] private RectTransform debriefPanel;
         [SerializeField] private TMP_Text debriefText;
+        [SerializeField] private RectTransform fullDashboardPanel;
 
         private int selectedMode = 1;
         private bool debriefUnlocked;
@@ -29,7 +30,12 @@ namespace AdieLab.TeacherTraining
             }
 
             researchDashboard = gameObject.AddComponent<ResearchDebriefDashboard>();
-            researchDashboard.Initialize(debriefPanel, debriefText);
+            researchDashboard.Initialize(
+                debriefPanel,
+                debriefText,
+                fullDashboardPanel,
+                () => SelectMode(3),
+                () => SelectMode(1));
             SelectMode(selectedMode);
         }
 
@@ -41,10 +47,27 @@ namespace AdieLab.TeacherTraining
             }
 
             selectedMode = Mathf.Clamp(mode, 0, 3);
-            SetPanel(observationPanel, 1f, selectedMode == 0 || selectedMode == 1);
-            SetPanel(responsePanel, selectedMode == 1 || selectedMode == 3 ? 1f : 0f, selectedMode == 1);
+            bool fullDashboard = selectedMode == 3;
+            SetPanel(observationPanel, fullDashboard ? 0f : 1f, !fullDashboard && (selectedMode == 0 || selectedMode == 1));
+            SetPanel(responsePanel, selectedMode == 1 ? 1f : 0f, selectedMode == 1 && !debriefUnlocked);
             SetPanel(dialoguePanel, selectedMode == 2 ? 1f : 0f, selectedMode == 2);
-            debriefPanel.gameObject.SetActive(selectedMode == 3);
+
+            if (researchDashboard != null)
+            {
+                if (fullDashboard)
+                {
+                    researchDashboard.OpenFull();
+                }
+                else if (selectedMode == 1 && debriefUnlocked)
+                {
+                    researchDashboard.ShowSummary();
+                }
+                else
+                {
+                    researchDashboard.HideAll();
+                }
+            }
+
             for (int i = 0; i < modeButtons.Length; i++)
             {
                 modeButtons[i].transform.localScale = i == selectedMode ? Vector3.one * 1.045f : Vector3.one;
@@ -65,19 +88,13 @@ namespace AdieLab.TeacherTraining
             for (int i = 0; i < summary.dimensions.Length; i++)
             {
                 text += $"{summary.dimensions[i].label} {summary.dimensions[i].score:0.0}";
-                if (i == 2)
-                {
-                    text += "\n";
-                }
-                else if (i < summary.dimensions.Length - 1)
-                {
-                    text += "  ·  ";
-                }
+                if (i == 2) text += "\n";
+                else if (i < summary.dimensions.Length - 1) text += "  ·  ";
             }
 
             debriefText.text = text;
             debriefUnlocked = true;
-            SelectMode(3);
+            SelectMode(1);
         }
 
         public void ShowResearchDebrief(ResearchDebriefReport report, Action retry)
@@ -89,7 +106,7 @@ namespace AdieLab.TeacherTraining
 
             researchDashboard.Show(report, retry);
             debriefUnlocked = true;
-            SelectMode(3);
+            SelectMode(1);
         }
 
         private static void SetPanel(CanvasGroup panel, float alpha, bool interactive)

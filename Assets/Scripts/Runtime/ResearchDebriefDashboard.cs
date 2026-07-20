@@ -84,20 +84,28 @@ namespace AdieLab.TeacherTraining
         private Button exportButton;
         private ResearchDebriefReport currentReport;
         private Action retryAction;
+        private FullResearchDashboard fullDashboard;
 
-        public void Initialize(RectTransform panel, TMP_Text existingText)
+        public ResearchDashboardState State { get; } = new ResearchDashboardState();
+
+        public void Initialize(
+            RectTransform panel,
+            TMP_Text existingText,
+            RectTransform fullDashboardPanel,
+            Action requestFull,
+            Action returnMain)
         {
             root = panel;
             summaryText = existingText;
             summaryText.alignment = TextAlignmentOptions.TopLeft;
-            summaryText.fontSize = 15f;
+            summaryText.fontSize = 17f;
             summaryText.enableAutoSizing = true;
-            summaryText.fontSizeMin = 11f;
-            summaryText.fontSizeMax = 15f;
-            SetRect(summaryText.rectTransform, new Vector2(0f, 0.53f), Vector2.one, new Vector2(20f, 12f), new Vector2(-20f, -18f));
+            summaryText.fontSizeMin = 13f;
+            summaryText.fontSizeMax = 17f;
+            SetRect(summaryText.rectTransform, new Vector2(0f, 0.57f), Vector2.one, new Vector2(20f, 12f), new Vector2(-20f, -18f));
 
             RectTransform graphSurface = CreatePanel("AffectTrendSurface", new Color(0.035f, 0.07f, 0.12f, 0.92f));
-            SetRect(graphSurface, new Vector2(0.05f, 0.36f), new Vector2(0.95f, 0.54f), Vector2.zero, Vector2.zero);
+            SetRect(graphSurface, new Vector2(0.05f, 0.35f), new Vector2(0.95f, 0.56f), Vector2.zero, Vector2.zero);
             var graphObject = new GameObject("AffectTrend", typeof(RectTransform), typeof(CanvasRenderer), typeof(AffectTrendGraphic));
             graphObject.transform.SetParent(graphSurface, false);
             affectGraph = graphObject.GetComponent<AffectTrendGraphic>();
@@ -107,20 +115,24 @@ namespace AdieLab.TeacherTraining
             legend.color = new Color(0.78f, 0.88f, 0.88f, 1f);
             SetRect(legend.rectTransform, Vector2.zero, Vector2.one, new Vector2(8f, 4f), new Vector2(-8f, -4f));
 
-            detailsText = CreateText(root, "ResearchDetails", string.Empty, 12f, TextAlignmentOptions.TopLeft);
+            detailsText = CreateText(root, "ResearchDetails", string.Empty, 13f, TextAlignmentOptions.TopLeft);
             detailsText.enableAutoSizing = true;
-            detailsText.fontSizeMin = 9f;
-            detailsText.fontSizeMax = 12f;
-            SetRect(detailsText.rectTransform, new Vector2(0f, 0.13f), new Vector2(1f, 0.36f), new Vector2(20f, 4f), new Vector2(-20f, -4f));
+            detailsText.fontSizeMin = 10f;
+            detailsText.fontSizeMax = 13f;
+            SetRect(detailsText.rectTransform, new Vector2(0f, 0.14f), new Vector2(1f, 0.34f), new Vector2(20f, 4f), new Vector2(-20f, -4f));
 
-            retryButton = CreateButton("RetryButton", "같은 상황 재시도", new Vector2(0.05f, 0.025f), new Vector2(0.48f, 0.12f));
-            exportButton = CreateButton("ExportButton", "연구 데이터 내보내기", new Vector2(0.52f, 0.025f), new Vector2(0.95f, 0.12f));
+            retryButton = CreateButton("RetryButton", "같은 상황 재시도", new Vector2(0.05f, 0.035f), new Vector2(0.40f, 0.125f));
+            exportButton = CreateButton("OpenResearchDashboardButton", "큰 대시보드 열기  ›", new Vector2(0.43f, 0.035f), new Vector2(0.95f, 0.125f));
             retryButton.onClick.AddListener(() => retryAction?.Invoke());
-            exportButton.onClick.AddListener(ExportCurrentReport);
+            exportButton.onClick.AddListener(() => requestFull?.Invoke());
             exportStatus = CreateText(root, "ExportStatus", string.Empty, 9f, TextAlignmentOptions.Bottom);
             SetRect(exportStatus.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0.03f), Vector2.zero, Vector2.zero);
-        }
 
+            Sprite rounded = root.GetComponent<Image>()?.sprite;
+            fullDashboard = new FullResearchDashboard(fullDashboardPanel, summaryText.font, rounded, returnMain);
+            root.gameObject.SetActive(false);
+            fullDashboard.SetVisible(false);
+        }
         public void Show(ResearchDebriefReport report, Action retry)
         {
             currentReport = report;
@@ -130,30 +142,65 @@ namespace AdieLab.TeacherTraining
                 return;
             }
 
+            State.UnlockSummary();
             summaryText.text = BuildSummary(report);
             detailsText.text = BuildDetails(report);
             affectGraph.SetPoints(report.affectTrend);
             exportStatus.text = "내보내기에는 원문 발화가 포함되지 않습니다.";
+            fullDashboard.Show(report, retry, ExportFromFullDashboard);
+            ShowSummary();
+        }
+
+        public void ShowSummary()
+        {
+            State.ReturnToSummary();
+            root.gameObject.SetActive(State.IsUnlocked);
+            fullDashboard.SetVisible(false);
+        }
+
+        public bool OpenFull()
+        {
+            if (!State.OpenFull())
+            {
+                return false;
+            }
+
+            root.gameObject.SetActive(false);
+            fullDashboard.SetVisible(true);
+            return true;
+        }
+
+        public void HideAll()
+        {
+            root.gameObject.SetActive(false);
+            fullDashboard.SetVisible(false);
+        }
+
+        private void ExportFromFullDashboard()
+        {
+            ExportCurrentReport();
+            fullDashboard.SetStatus(exportStatus.text);
         }
 
         private string BuildSummary(ResearchDebriefReport report)
         {
-            var text = new StringBuilder();
-            text.Append("<b>연구용 디브리핑 · ").Append(report.overallLevel).Append("</b>  ");
-            text.Append(report.averageScore.ToString("0.00")).Append("/3.00\n");
+            EcdCompetencyResult strongest = null;
+            EcdCompetencyResult priority = null;
             for (int index = 0; index < report.competencies.Length; index++)
             {
                 EcdCompetencyResult item = report.competencies[index];
-                int filled = Mathf.Clamp(Mathf.RoundToInt(item.score / 3f * 5f), 0, 5);
-                text.Append(item.label).Append("  ");
-                text.Append(new string('■', filled)).Append(new string('□', 5 - filled));
-                text.Append(" ").Append(item.score.ToString("0.0"));
-                text.Append("  <size=11>근거 ").Append(item.evidenceCount).Append("</size>\n");
+                if (strongest == null || item.score > strongest.score)
+                {
+                    strongest = item;
+                }
+                if (priority == null || item.score < priority.score)
+                {
+                    priority = item;
+                }
             }
 
-            return text.ToString();
+            return $"<size=12><color=#9FB7BD>훈련 요약</color></size>\n<b>{report.overallLevel}</b>  <color=#52D7BE>{report.averageScore:0.00}/3.00</color>\n<size=12>강점  {strongest?.label ?? "-"}  ·  보완  {priority?.label ?? "-"}</size>";
         }
-
         private string BuildDetails(ResearchDebriefReport report)
         {
             var text = new StringBuilder("<b>개입 타임라인</b>  ");

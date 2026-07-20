@@ -85,7 +85,7 @@ namespace AdieLab.TeacherTraining
     [Serializable]
     public sealed class TrainingTelemetryEvent
     {
-        public const int CurrentSchemaVersion = 2;
+        public const int CurrentSchemaVersion = 3;
 
         public int schemaVersion = CurrentSchemaVersion;
         public string eventId;
@@ -101,6 +101,7 @@ namespace AdieLab.TeacherTraining
         public TrainingActionSource actionSource;
         public int teacherTextLength;
         public string teacherTextHash;
+        public string coachSuggestion;
         public string studentReplyHash;
         public StudentTurnRoute turnRoute;
         public StudentTurnOutcome turnOutcome;

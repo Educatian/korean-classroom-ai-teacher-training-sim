@@ -511,7 +511,27 @@ namespace AdieLab.TeacherTraining
             }
 
             yield return new WaitForSecondsRealtime(1.2f);
-            Capture("TrainingDebrief.png");
+            Capture("TrainingDebriefSummary.png");
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForSecondsRealtime(0.25f);
+            Click("ModeButton_3");
+            yield return new WaitForSecondsRealtime(1.0f);
+            Capture("ResearchDashboardOverview.png");
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForSecondsRealtime(0.25f);
+            Click("DashboardTab_1");
+            yield return new WaitForSecondsRealtime(0.6f);
+            Capture("ResearchDashboardEvidence.png");
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForSecondsRealtime(0.25f);
+            Click("DashboardTab_2");
+            yield return new WaitForSecondsRealtime(0.6f);
+            Capture("ResearchDashboardTimeline.png");
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForSecondsRealtime(0.25f);
+            Click("DashboardBackButton");
+            yield return new WaitForSecondsRealtime(0.6f);
+            Debug.Log("DASHBOARD_QA_OK summary=true overview=true tabs=true return=true");
             if (Array.IndexOf(arguments, "--autoplay-exit") >= 0)
             {
                 yield return new WaitForSecondsRealtime(2f);

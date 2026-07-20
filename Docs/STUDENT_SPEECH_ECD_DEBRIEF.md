@@ -78,8 +78,11 @@ Use **Teacher Training > ECD > Create or Refresh Default Model** only when inten
 
 The debrief mode now displays:
 
+- a compact in-class summary and a dedicated full-screen dashboard;
+- overview, competency/evidence, and intervention-timeline tabs;
 - valence and arousal trajectories across the session;
-- the latest teacher-intervention timeline with pre/post valence;
+- the teacher-intervention timeline with pre/post valence and privacy-safe speech summaries;
+- teacher-speech coaching with an LLM rubric suggestion when available, or a deterministic competency-based alternative;
 - competency scores and evidence counts;
 - missed-signal prompts linked to the highest-arousal beat;
 - a same-scenario retry control;
@@ -91,14 +94,16 @@ Exports are written under:
 
 Raw teacher and student utterances are not exported. Session IDs, model/version identifiers, competency values, evidence counts, affect states, intervention sequences, and speech-prosody metadata remain available for research analysis.
 
+The dashboard also does not retain or display the raw teacher utterance. It shows a privacy-safe summary derived from action source, text length, and observed competency evidence. LLM rubric improvement suggestions are stored separately as coaching feedback and are escaped before TextMeshPro rendering.
+
 ## Verification
 
 The July 19, 2026 implementation pass verified:
 
-- Unity EditMode: 100 tests passed, 0 failed;
+- Unity EditMode: 102 tests passed, 0 failed;
 - Windows player build: succeeded;
 - continuous Windows autoplay: classroom view, direct dialogue and eye contact, six intervention beats, and research dashboard capture completed;
 - runtime log: no dashboard exception after the graph-component fix;
-- reference capture: `Assets/Reference/ResearchDebriefDashboard.png`.
+- reference captures: `Assets/Reference/ResearchDebriefDashboard.png` and `Assets/Reference/ResearchDashboardSpeechCoaching.png`.
 
 Before a study release, complete Korean voice perceptual review, physical Meta Quest audio-spatialization QA, secure TTS proxy deployment, and psychometric validation of the authored ECD model.
