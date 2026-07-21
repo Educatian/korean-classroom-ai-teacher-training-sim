@@ -62,6 +62,7 @@
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0",
-    "com.ivanmurzak.unity.mcp.navigation": "1.0.14"
+    "com.ivanmurzak.unity.mcp.navigation": "1.0.14",
+    "com.unity.postprocessing": "3.4.0"
   }
 }

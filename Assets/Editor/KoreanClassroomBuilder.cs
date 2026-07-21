@@ -78,6 +78,14 @@ namespace AdieLab.TeacherTraining.Editor
             return TrainingSceneRegistry.SceneAssetPaths();
         }
 
+        // Player builds ship the main-menu front page ahead of the training scenes.
+        public static string[] GetPlayerScenePaths()
+        {
+            var scenes = new List<string> { "Assets/Scenes/MainMenu.unity" };
+            scenes.AddRange(TrainingSceneRegistry.SceneAssetPaths());
+            return scenes.ToArray();
+        }
+
         private static void RegisterTrainingScenes()
         {
             string[] paths = GetTrainingScenePaths();
@@ -124,7 +132,7 @@ namespace AdieLab.TeacherTraining.Editor
                 BuildCircleScene();
                 const string output = "Builds/TeacherResponseTrainingFinal/TeacherResponseTraining.exe";
                 Directory.CreateDirectory(Path.GetDirectoryName(output) ?? "Builds");
-                string[] buildScenes = GetTrainingScenePaths();
+                string[] buildScenes = GetPlayerScenePaths();
                 BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
                 {
                     scenes = buildScenes,
@@ -163,7 +171,7 @@ namespace AdieLab.TeacherTraining.Editor
                 PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
                 BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
                 {
-                    scenes = GetTrainingScenePaths(),
+                    scenes = GetPlayerScenePaths(),
                     locationPathName = output,
                     target = BuildTarget.Android,
                     options = BuildOptions.None,
