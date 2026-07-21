@@ -6,6 +6,7 @@ namespace AdieLab.TeacherTraining
     {
         [SerializeField] private float lookSensitivity = 1.5f;
         [SerializeField] private float moveSpeed = 2.5f;
+        [SerializeField, Min(0f)] private float collisionRadius = 0.26f;
         [SerializeField] private Vector2 pitchLimits = new Vector2(-25f, 35f);
         [Header("Face-to-face conversation")]
         [SerializeField] private Transform focusTarget;
@@ -15,6 +16,8 @@ namespace AdieLab.TeacherTraining
 
         private float yaw;
         private float pitch;
+        private float orbitYaw;
+        private float orbitPitch;
         private bool conversationFocused;
         private bool uprightFocus;
         private Transform focusHead;
@@ -70,6 +73,21 @@ namespace AdieLab.TeacherTraining
                         + Vector3.up * cameraHeight
                         + focusTarget.forward * focusOffset.z;
                 }
+                // Right-mouse drag orbits around the student's face during conversation
+                // focus, so the viewpoint stays adjustable while the scene is fixed.
+                if (Input.GetMouseButton(1))
+                {
+                    orbitYaw += Input.GetAxis("Mouse X") * lookSensitivity * 1.6f;
+                    orbitPitch -= Input.GetAxis("Mouse Y") * lookSensitivity * 1.2f;
+                    orbitYaw = Mathf.Clamp(orbitYaw, -80f, 80f);
+                    orbitPitch = Mathf.Clamp(orbitPitch, -18f, 32f);
+                }
+
+                Quaternion orbit =
+                    Quaternion.AngleAxis(orbitYaw, Vector3.up)
+                    * Quaternion.AngleAxis(orbitPitch, focusTarget.right);
+                desiredPosition = face + orbit * (desiredPosition - face);
+
                 float blend = 1f - Mathf.Exp(-focusResponsiveness * Time.deltaTime);
                 transform.position = Vector3.Lerp(transform.position, desiredPosition, blend);
                 transform.rotation = Quaternion.Slerp(
@@ -98,7 +116,48 @@ namespace AdieLab.TeacherTraining
             float vertical = Input.GetAxisRaw("Vertical");
             Vector3 planarForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
             Vector3 movement = (transform.right * horizontal + planarForward * vertical) * (moveSpeed * Time.deltaTime);
-            transform.position += movement;
+            transform.position += ResolveCollisions(movement);
+        }
+
+        // Walls, closed doors, and props physically block free roam; axis-split
+        // retries let the teacher slide along surfaces instead of stopping dead.
+        private Vector3 ResolveCollisions(Vector3 movement)
+        {
+            if (collisionRadius <= 0f || movement == Vector3.zero)
+            {
+                return movement;
+            }
+
+            if (CanOccupy(transform.position + movement))
+            {
+                return movement;
+            }
+
+            Vector3 xOnly = new Vector3(movement.x, 0f, 0f);
+            if (xOnly.x != 0f && CanOccupy(transform.position + xOnly))
+            {
+                return xOnly;
+            }
+
+            Vector3 zOnly = new Vector3(0f, 0f, movement.z);
+            if (zOnly.z != 0f && CanOccupy(transform.position + zOnly))
+            {
+                return zOnly;
+            }
+
+            return Vector3.zero;
+        }
+
+        private bool CanOccupy(Vector3 target)
+        {
+            if (!Physics.CheckSphere(target, collisionRadius, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                return true;
+            }
+
+            // Already overlapping (spawn/focus edge cases): allow movement so
+            // the teacher can back out instead of freezing in place.
+            return Physics.CheckSphere(transform.position, collisionRadius, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
         }
 
         public void SetFocusTarget(Transform target)
@@ -126,6 +185,8 @@ namespace AdieLab.TeacherTraining
                 controlledCamera = GetComponent<Camera>();
             }
             explorationFieldOfView = controlledCamera != null ? controlledCamera.fieldOfView : 0f;
+            orbitYaw = 0f;
+            orbitPitch = 0f;
             conversationFocused = true;
         }
 
