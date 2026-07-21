@@ -166,7 +166,8 @@ namespace AdieLab.TeacherTraining.Editor
                     scenes = GetTrainingScenePaths(),
                     locationPathName = output,
                     target = BuildTarget.Android,
-                    options = BuildOptions.None
+                    options = BuildOptions.None,
+                    extraScriptingDefines = new[] { "QUEST_PRO_RESEARCH" }
                 });
                 if (report.summary.result != BuildResult.Succeeded)
                 {
@@ -292,7 +293,16 @@ namespace AdieLab.TeacherTraining.Editor
 
             Cube("Floor", parent, new Vector3(0f, -0.06f, 0f), new Vector3(14f, 0.12f, 10f), floor);
             Cube("Ceiling", parent, new Vector3(0f, 3.42f, 0f), new Vector3(14f, 0.16f, 10f), ceiling);
-            Cube("FrontWall", parent, new Vector3(0f, 1.7f, 5f), new Vector3(14f, 3.4f, 0.16f), wall);
+            // Corridor-side wall is segmented so the sliding-door opening
+            // (x -6.575..-4.925) and the transom window band (x 2.7..4.6,
+            // y 1.9..2.6) are real holes into the corridor beyond z=+5.
+            Cube("FrontWallLeftJamb", parent, new Vector3(-6.7875f, 1.7f, 5f), new Vector3(0.425f, 3.4f, 0.16f), wall);
+            Cube("FrontWallCenter", parent, new Vector3(-1.1125f, 1.7f, 5f), new Vector3(7.625f, 3.4f, 0.16f), wall);
+            Cube("FrontWallRight", parent, new Vector3(5.8f, 1.7f, 5f), new Vector3(2.4f, 3.4f, 0.16f), wall);
+            Cube("FrontWallDoorHeader", parent, new Vector3(-5.75f, 2.86f, 5f), new Vector3(1.65f, 1.08f, 0.16f), wall);
+            Cube("FrontWallTransomLower", parent, new Vector3(3.65f, 0.95f, 5f), new Vector3(1.9f, 1.9f, 0.16f), wall);
+            Cube("FrontWallTransomUpper", parent, new Vector3(3.65f, 3.0f, 5f), new Vector3(1.9f, 0.8f, 0.16f), wall);
+            BuildTransomBand(parent, "FrontTransom", 3.65f, 1.9f, 5f);
             Cube("BackWall", parent, new Vector3(0f, 1.7f, -5f), new Vector3(14f, 3.4f, 0.16f), wall);
             Cube("LeftWall", parent, new Vector3(-7f, 1.7f, 0f), new Vector3(0.16f, 3.4f, 10f), wall);
             Cube("RightLowerWall", parent, new Vector3(7f, 0.48f, 0f), new Vector3(0.16f, 0.96f, 10f), wall);
@@ -309,13 +319,16 @@ namespace AdieLab.TeacherTraining.Editor
             BuildBoardDetails(parent);
             BuildRearBulletin(parent);
             BuildArchitecturalDetails(parent);
+            BuildCorridorFloor(parent);
         }
 
         private static void BuildArchitecturalDetails(Transform parent)
         {
             Material baseboard = Mat("M_Baseboard");
             Material ceilingGrid = Mat("M_CeilingGrid");
-            Cube("FrontBaseboard", parent, new Vector3(0f, 0.09f, 4.82f), new Vector3(13.7f, 0.18f, 0.08f), baseboard);
+            // Front baseboard is split so no strip crosses the open doorway.
+            Cube("FrontBaseboardWest", parent, new Vector3(-6.7125f, 0.09f, 4.82f), new Vector3(0.275f, 0.18f, 0.08f), baseboard);
+            Cube("FrontBaseboardEast", parent, new Vector3(0.9625f, 0.09f, 4.82f), new Vector3(11.775f, 0.18f, 0.08f), baseboard);
             Cube("BackBaseboard", parent, new Vector3(0f, 0.09f, -4.82f), new Vector3(13.7f, 0.18f, 0.08f), baseboard);
             Cube("LeftBaseboard", parent, new Vector3(-6.82f, 0.09f, 0f), new Vector3(0.08f, 0.18f, 9.55f), baseboard);
             Cube("WindowSill", parent, new Vector3(6.80f, 0.91f, 0f), new Vector3(0.34f, 0.09f, 9.55f), baseboard);
@@ -333,7 +346,10 @@ namespace AdieLab.TeacherTraining.Editor
 
         private static void BuildWindows(Transform parent, Material wall, Material metal, Material glass, Material exterior)
         {
-            Quad("ExteriorBackdrop", parent, new Vector3(7.28f, 1.82f, 0f), new Vector3(9.5f, 2.2f, 1f), Quaternion.Euler(0f, 90f, 0f), exterior);
+            // Backdrop sits just inside the neighbor classroom's party wall
+            // (inner face x=7.08) and covers the full wall so no void or
+            // neighbor-room geometry is visible through the windows.
+            Quad("ExteriorBackdrop", parent, new Vector3(7.06f, 1.71f, 0f), new Vector3(10.4f, 3.44f, 1f), Quaternion.Euler(0f, 90f, 0f), exterior);
             for (int i = 0; i < 4; i++)
             {
                 float z = -3.55f + i * 2.38f;
@@ -347,9 +363,13 @@ namespace AdieLab.TeacherTraining.Editor
 
         private static void BuildDoor(Transform parent, Material wall, Material wood, Material metal)
         {
-            Cube("Door", parent, new Vector3(-5.75f, 1.16f, 4.82f), new Vector3(1.65f, 2.32f, 0.12f), wood);
-            Cube("DoorWindow", parent, new Vector3(-5.75f, 1.75f, 4.73f), new Vector3(0.68f, 0.78f, 0.04f), Mat("M_Glass"));
-            Sphere("DoorHandle", parent, new Vector3(-5.16f, 1.05f, 4.63f), new Vector3(0.10f, 0.10f, 0.10f), metal);
+            // Sliding door parked open (+1.75 m east) on the corridor-side
+            // rail, leaving the 1.65 m doorway fully passable for free roam.
+            Cube("DoorRail", parent, new Vector3(-4.85f, 2.42f, 5.17f), new Vector3(3.95f, 0.07f, 0.16f), metal);
+            GameObject door = RootObject("SlidingDoorAssembly", parent, new Vector3(-4.0f, 0f, 5.17f));
+            Cube("Door", door.transform, new Vector3(0f, 1.16f, 0f), new Vector3(1.65f, 2.32f, 0.10f), wood);
+            Cube("DoorWindow", door.transform, new Vector3(0f, 1.75f, 0.055f), new Vector3(0.68f, 0.78f, 0.04f), Mat("M_Glass"));
+            Sphere("DoorHandle", door.transform, new Vector3(-0.70f, 1.05f, 0.09f), new Vector3(0.10f, 0.10f, 0.10f), metal);
         }
 
         private static void BuildClock(Transform parent, Material rim, Material hand)
@@ -1145,6 +1165,8 @@ namespace AdieLab.TeacherTraining.Editor
             tailBorder.SetAsFirstSibling();
             bubbleInner.SetAsLastSibling();
             bubble.SetAsLastSibling();
+            // Hidden until a student reply arrives; TrainingHud toggles it at runtime.
+            bubble.gameObject.SetActive(false);
 
             GameObject eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
             eventSystem.transform.SetParent(parent, false);
@@ -1265,6 +1287,8 @@ namespace AdieLab.TeacherTraining.Editor
             CreateMaterial("M_PlantLeaf", new Color(0.12f, 0.36f, 0.18f), 0f, 0.30f);
             CreateMaterial("M_Glass", new Color(0.70f, 0.86f, 0.92f, 0.06f), 0.05f, 0.92f, null, Vector2.one, true);
             CreateMaterial("M_ExteriorView", Color.white, 0f, 0.02f, "Assets/Art/Textures/WindowBackdrop_KoreanSchool.png", Vector2.one);
+            CreateMaterial("M_CorridorFloor", new Color(0.93f, 0.91f, 0.86f), 0f, 0.30f, "Assets/Art/GeneratedMaterials/TX_ClassroomVinyl_BaseColor.png", new Vector2(15f, 1.15f), false, false, "Assets/Art/Textures/ClassroomFloor_Terrazzo_HQ_v2_Normal.png");
+            CreateMaterial("M_CorridorWall", new Color(0.97f, 0.96f, 0.93f), 0f, 0.24f, "Assets/Art/GeneratedMaterials/TX_WallPaint_BaseColor.png", new Vector2(10.5f, 2.2f));
             CreateMaterial("M_ClockFace", new Color(0.95f, 0.94f, 0.89f), 0f, 0.25f);
             CreateMaterial("M_Paper", new Color(0.96f, 0.95f, 0.90f), 0f, 0.18f);
             CreateMaterial("M_PosterFrame", new Color(0.12f, 0.34f, 0.20f), 0f, 0.25f);
