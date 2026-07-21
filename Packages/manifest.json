@@ -1,5 +1,25 @@
 {
+  "scopedRegistries": [
+    {
+      "name": "package.openupm.com",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.ivanmurzak",
+        "extensions.unity"
+      ]
+    }
+  ],
   "dependencies": {
+    "com.ivanmurzak.unity.mcp": "0.86.0",
+    "com.ivanmurzak.unity.mcp.animation": "1.2.28",
+    "com.ivanmurzak.unity.mcp.timeline": "1.0.14",
+    "com.ivanmurzak.unity.mcp.cinemachine": "1.0.14",
+    "com.ivanmurzak.unity.mcp.inputsystem": "1.0.14",
+    "com.ivanmurzak.unity.mcp.probuilder": "1.2.28",
+    "com.ivanmurzak.unity.mcp.splines": "1.0.13",
+    "com.ivanmurzak.unity.mcp.particlesystem": "1.2.28",
+    "com.ivanmurzak.unity.mcp.terrain": "1.0.14",
+    "com.ivanmurzak.unity.mcp.tilemap": "1.0.13",
     "com.unity.multiplayer.center": "1.0.1",
     "com.unity.shadergraph": "17.4.0",
     "com.unity.test-framework": "1.6.0",
@@ -41,6 +61,7 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0"
+    "com.unity.modules.xr": "1.0.0",
+    "com.ivanmurzak.unity.mcp.navigation": "1.0.14"
   }
 }
