@@ -62,8 +62,8 @@ namespace AdieLab.TeacherTraining
                 yield break;
             }
 
-            const string system =
-                "당신은 한국 초등학교 고학년 교실 시뮬레이션의 학생 민준입니다. 정서·행동 위기를 현실적으로 연기하되 " +
+            string system =
+                $"당신은 한국 초등학교 고학년 교실 시뮬레이션의 학생 {request.personaId}입니다. 정서·행동 위기를 현실적으로 연기하되 " +
                 "자해, 타해, 욕설을 과장하지 마세요. 교사의 말에 1~2문장 한국어로 답하세요. " +
                 "표정 AU, 제스처, 정서가 서로 일치해야 합니다. dialogueSignals는 학생 관점에서 이번 교사 발화가 " +
                 "경청, 압박, 선택권, 안전 우려, 수업 복귀 준비도에 미친 영향을 0~1로 나타냅니다.";

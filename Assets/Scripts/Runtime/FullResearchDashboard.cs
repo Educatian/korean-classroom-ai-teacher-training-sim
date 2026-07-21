@@ -47,10 +47,11 @@ namespace AdieLab.TeacherTraining
         private readonly TMP_Text[] competencyCards = new TMP_Text[6];
         private TMP_Text interventionText;
         private TMP_Text missedSignalText;
+        private TMP_Text gazeText;
         private readonly TMP_Text status;
         private AffectTrendGraphic graph;
-        private readonly RectTransform[] pages = new RectTransform[3];
-        private readonly Button[] tabs = new Button[3];
+        private readonly RectTransform[] pages = new RectTransform[4];
+        private readonly Button[] tabs = new Button[4];
         private Action retryAction;
         private Action exportAction;
 
@@ -72,7 +73,7 @@ namespace AdieLab.TeacherTraining
             Button back = CreateButton(root, "DashboardBackButton", "훈련 화면으로", new Vector2(0.80f, 0.89f), new Vector2(0.965f, 0.965f), Raised);
             back.onClick.AddListener(() => returnMain?.Invoke());
 
-            string[] labels = { "개요", "역량·근거", "개입 타임라인" };
+            string[] labels = { "개요", "역량·근거", "개입 타임라인", "아이트래킹" };
             for (int index = 0; index < labels.Length; index++)
             {
                 float min = 0.035f + index * 0.132f;
@@ -86,6 +87,7 @@ namespace AdieLab.TeacherTraining
             BuildOverviewPage();
             BuildCompetencyPage();
             BuildTimelinePage();
+            BuildGazePage();
 
             Button retry = CreateButton(root, "DashboardRetryButton", "같은 상황 재시도", new Vector2(0.035f, 0.035f), new Vector2(0.20f, 0.105f), Raised);
             retry.onClick.AddListener(() => retryAction?.Invoke());
@@ -130,6 +132,7 @@ namespace AdieLab.TeacherTraining
 
             interventionText.text = BuildInterventions(report);
             missedSignalText.text = BuildSpeechCoaching(report);
+            gazeText.text = BuildGazeSummary(report);
             graph.SetPoints(report.affectTrend);
             status.text = "익명화된 연구 데이터 · 원문 교사 발화 제외";
         }
@@ -221,6 +224,40 @@ namespace AdieLab.TeacherTraining
             missedSignalText.lineSpacing = 8f;
             SetRect(missedSignalText.rectTransform, new Vector2(0.08f, 0.08f), new Vector2(0.92f, 0.82f));
         }
+        private void BuildGazePage()
+        {
+            RectTransform card = Panel(pages[3], "EyeTrackingCard", Surface);
+            SetRect(card, Vector2.zero, Vector2.one);
+            TMP_Text heading = Text(card, "Title", "Quest Pro 교사 시선 · 학생 상호작용", 20f,
+                TextAlignmentOptions.MidlineLeft, Primary);
+            heading.fontStyle = FontStyles.Bold;
+            SetRect(heading.rectTransform, new Vector2(0.045f, 0.84f), new Vector2(0.95f, 0.97f));
+            gazeText = Text(card, "Content", string.Empty, 17f, TextAlignmentOptions.TopLeft, Primary);
+            gazeText.lineSpacing = 10f;
+            SetRect(gazeText.rectTransform, new Vector2(0.045f, 0.07f), new Vector2(0.95f, 0.83f));
+        }
+
+        private static string BuildGazeSummary(ResearchDebriefReport report)
+        {
+            GazeDebriefSummary gaze = report.gaze ?? new GazeDebriefSummary();
+            var text = new StringBuilder();
+            text.Append("<color=#9FB7BD>유효 아이트래킹 행동</color>  <b>").Append(gaze.actionsWithEyeTracking).Append("회</b>     ")
+                .Append("<color=#9FB7BD>머리방향 대체 행동</color>  <b>").Append(gaze.actionsWithHeadGazeFallback).Append("회</b>\n")
+                .Append("<color=#9FB7BD>유효 표본율</color>  <b>").Append((gaze.averageValidSampleRatio * 100f).ToString("0")).Append("%</b>\n")
+                .Append("<color=#9FB7BD>학생 관련 첫 고정</color>  <b>").Append(gaze.averageFirstRelevantFixationMilliseconds >= 0 ? gaze.averageFirstRelevantFixationMilliseconds + " ms" : "관찰 없음")
+                .Append("</b>     <color=#9FB7BD>놓친 핵심 신호</color>  <b>").Append(gaze.missedRelevantCueCount).Append("회</b>\n")
+                .Append("<color=#9FB7BD>초점 학생 체류</color>  <b>").Append((gaze.totalFocalStudentDwellMilliseconds / 1000f).ToString("0.0")).Append("초</b>     ")
+                .Append("<color=#9FB7BD>상호 시선 구간</color>  <b>").Append((gaze.totalMutualGazeMilliseconds / 1000f).ToString("0.0")).Append("초</b>\n\n")
+                .Append("<color=#52D7BE><b>개입별 시선 근거</b></color>\n");
+            foreach (InterventionTimelineItem item in report.interventionTimeline)
+            {
+                TeacherGazeSummary turn = item.gaze ?? new TeacherGazeSummary();
+                text.Append("#").Append(item.beatIndex + 1).Append("  ").Append(turn.trackingSource == EyeTrackingSource.HeadGazeFallback ? "머리방향 대체" : "아이트래킹").Append(" · 첫 고정 ").Append(turn.firstRelevantFixationMilliseconds).Append(" ms · 학생 체류 ")
+                    .Append(turn.focalStudentDwellMilliseconds).Append(" ms · 유효 ").Append((turn.validSampleRatio * 100f).ToString("0")).Append("%\n");
+            }
+            return text.ToString();
+        }
+
 
         private void SelectTab(int selected)
         {
@@ -266,7 +303,7 @@ namespace AdieLab.TeacherTraining
                 float change = item.valenceAfter - item.valenceBefore;
                 string direction = change > 0.05f ? "정서 개선" : change < -0.05f ? "정서 악화" : "정서 유지";
                 text.Append("<color=#52D7BE><size=18><b>#").Append(item.beatIndex + 1).Append("</b></size></color>  <b>")
-                    .Append(item.actionSource).Append("</b>     <color=#9FB7BD>정서가 ")
+                    .Append(TrainingActionSourceLabels.Korean(item.actionSource)).Append("</b>     <color=#9FB7BD>정서가 ")
                     .Append(item.valenceBefore.ToString("+0.0;-0.0;0.0")).Append(" → ")
                     .Append(item.valenceAfter.ToString("+0.0;-0.0;0.0")).Append("</color>\n")
                     .Append("<size=13><color=#9FB7BD>").Append(direction);

@@ -191,6 +191,7 @@ namespace AdieLab.TeacherTraining
         public string teacherUtteranceSummary;
         public string recommendedUtterance;
         public string evaluationRationale;
+        public TeacherGazeSummary gaze = new TeacherGazeSummary();
     }
 
     [Serializable]
@@ -200,6 +201,19 @@ namespace AdieLab.TeacherTraining
         public string label;
         public string message;
         public int beatIndex;
+    }
+
+    [Serializable]
+    public sealed class GazeDebriefSummary
+    {
+        public int actionsWithEyeTracking;
+        public int actionsWithHeadGazeFallback;
+        [Range(0f, 1f)] public float averageValidSampleRatio;
+        public int averageFirstRelevantFixationMilliseconds = -1;
+        public int totalFocalStudentDwellMilliseconds;
+        public int totalMutualGazeMilliseconds;
+        public int missedRelevantCueCount;
+        public int totalTransitions;
     }
 
     [Serializable]
@@ -215,6 +229,7 @@ namespace AdieLab.TeacherTraining
         public InterventionTimelineItem[] interventionTimeline = Array.Empty<InterventionTimelineItem>();
         public MissedSignal[] missedSignals = Array.Empty<MissedSignal>();
 
+        public GazeDebriefSummary gaze = new GazeDebriefSummary();
         public RubricSummary ToRubricSummary()
         {
             var dimensions = new RubricDimension[competencies.Length];
@@ -283,13 +298,50 @@ namespace AdieLab.TeacherTraining
                             evidenceSummary = EvidenceSummary(item.competencyEvidence),
                             teacherUtteranceSummary = TeacherUtteranceSummary(item),
                             recommendedUtterance = RecommendedUtterance(item, coachSuggestions),
-                            evaluationRationale = EvaluationRationale(item.competencyEvidence)
+                            evaluationRationale = EvaluationRationale(item.competencyEvidence),
+                            gaze = item.gaze ?? new TeacherGazeSummary()
                         });
                     }
                 }
             }
 
             var competencyResults = new List<EcdCompetencyResult>();
+            var gazeSummary = new GazeDebriefSummary();
+            int fixationLatencyTotal = 0;
+            for (int index = 0; index < timeline.Count; index++)
+            {
+                TeacherGazeSummary gaze = timeline[index].gaze;
+                if (gaze == null)
+                {
+                    continue;
+                }
+                if (gaze.trackingSource == EyeTrackingSource.HeadGazeFallback)
+                {
+                    gazeSummary.actionsWithHeadGazeFallback++;
+                    continue;
+                }
+                if (gaze.trackingSource != EyeTrackingSource.EyeGaze) continue;
+                gazeSummary.actionsWithEyeTracking++;
+                gazeSummary.averageValidSampleRatio += gaze.validSampleRatio;
+                gazeSummary.totalFocalStudentDwellMilliseconds += gaze.focalStudentDwellMilliseconds;
+                gazeSummary.totalMutualGazeMilliseconds += gaze.mutualGazeMilliseconds;
+                gazeSummary.totalTransitions += gaze.transitionCount;
+                if (gaze.missedRelevantCue) gazeSummary.missedRelevantCueCount++;
+                if (gaze.firstRelevantFixationMilliseconds >= 0)
+                {
+                    fixationLatencyTotal += gaze.firstRelevantFixationMilliseconds;
+                }
+            }
+            if (gazeSummary.actionsWithEyeTracking > 0)
+            {
+                gazeSummary.averageValidSampleRatio /= gazeSummary.actionsWithEyeTracking;
+                int observedFixations =
+                    gazeSummary.actionsWithEyeTracking - gazeSummary.missedRelevantCueCount;
+                gazeSummary.averageFirstRelevantFixationMilliseconds = observedFixations > 0
+                    ? fixationLatencyTotal / observedFixations
+                    : -1;
+            }
+
             var missed = new List<MissedSignal>();
             float weightedSum = 0f;
             float totalWeight = 0f;
@@ -348,7 +400,8 @@ namespace AdieLab.TeacherTraining
                 competencies = competencyResults.ToArray(),
                 affectTrend = affect.ToArray(),
                 interventionTimeline = timeline.ToArray(),
-                missedSignals = missed.ToArray()
+                missedSignals = missed.ToArray(),
+                gaze = gazeSummary
             };
         }
 
@@ -365,6 +418,14 @@ namespace AdieLab.TeacherTraining
             for (int eventIndex = 0; eventIndex < events.Count; eventIndex++)
             {
                 TrainingTelemetryEvent item = events[eventIndex];
+                // Generative rubric events are advisory context only; the deterministic
+                // assessment must never ingest model-produced competency scores.
+                if (item != null &&
+                    (item.kind == TrainingEventKind.RubricEvaluation ||
+                     item.actionSource == TrainingActionSource.GenerativeModel))
+                {
+                    continue;
+                }
                 CompetencyEvidence[] evidence = item?.competencyEvidence;
                 if (evidence == null)
                 {

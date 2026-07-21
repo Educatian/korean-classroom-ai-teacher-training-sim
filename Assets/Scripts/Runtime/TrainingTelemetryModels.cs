@@ -36,6 +36,30 @@ namespace AdieLab.TeacherTraining
         InstructionalReentry = 5
     }
 
+    public static class TrainingActionSourceLabels
+    {
+        public static string Korean(TrainingActionSource source)
+        {
+            return source switch
+            {
+                TrainingActionSource.System => "시스템",
+                TrainingActionSource.ScriptedScenario => "시나리오",
+                TrainingActionSource.TeacherChoice => "선택 대응",
+                TrainingActionSource.TeacherUtterance => "직접 대화",
+                TrainingActionSource.GenerativeModel => "AI 학생 반응",
+                TrainingActionSource.LocalFallback => "로컬 대화",
+                _ => source.ToString()
+            };
+        }
+
+        public static string Korean(string serializedSource)
+        {
+            return System.Enum.TryParse(serializedSource, out TrainingActionSource parsed)
+                ? Korean(parsed)
+                : serializedSource;
+        }
+    }
+
     [Serializable]
     public sealed class StudentStateSnapshot
     {
@@ -85,7 +109,7 @@ namespace AdieLab.TeacherTraining
     [Serializable]
     public sealed class TrainingTelemetryEvent
     {
-        public const int CurrentSchemaVersion = 3;
+        public const int CurrentSchemaVersion = 4;
 
         public int schemaVersion = CurrentSchemaVersion;
         public string eventId;
@@ -110,5 +134,6 @@ namespace AdieLab.TeacherTraining
         public ModelPromptProvenance inference = new ModelPromptProvenance();
         public CompetencyEvidence[] competencyEvidence = Array.Empty<CompetencyEvidence>();
         public StudentSpeechTelemetry studentSpeech = new StudentSpeechTelemetry();
+        public TeacherGazeSummary gaze = new TeacherGazeSummary();
     }
 }
