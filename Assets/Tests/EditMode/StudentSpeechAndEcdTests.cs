@@ -128,7 +128,7 @@ namespace AdieLab.TeacherTraining.Tests
             TrainingTelemetryEvent restored = JsonUtility.FromJson<TrainingTelemetryEvent>(
                 JsonUtility.ToJson(original));
 
-            Assert.That(restored.schemaVersion, Is.EqualTo(3));
+            Assert.That(restored.schemaVersion, Is.EqualTo(TrainingTelemetryEvent.CurrentSchemaVersion));
             Assert.That(restored.competencyEvidence[0].observableId, Is.EqualTo("observe-emotion"));
             Assert.That(restored.coachSuggestion, Does.Contain("선택권"));
             Assert.That(restored.competencyEvidence[0].rationale, Is.EqualTo("정서 반영 발화"));

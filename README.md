@@ -12,9 +12,9 @@ This project is a research and teacher-education prototype. It does not replace 
 | Primary platform | Windows 11, Built-in Render Pipeline |
 | Training scenes | Scene 1 general classroom, Scene 2 circle discussion and presentation |
 | Student NPCs | 15 Rocketbox-based students per classroom |
-| Dialogue | Deterministic local fallback plus optional OpenRouter LLM integration |
+| Dialogue | Deterministic fallback plus desktop OpenRouter and authenticated Quest secure-proxy routes |
 | Assessment | Authored response scoring plus evidence-centered telemetry events |
-| Validation | EditMode `95/95` passed, rendered PlayMode QA passed, Windows player build passed |
+| Validation | EditMode `115/115`, Worker `12/12`, XR/scenario PlayMode QA, Windows and Quest builds passed |
 | Status | Active research prototype |
 
 ## Screenshots
@@ -135,13 +135,13 @@ The current training loop asks the teacher to:
 - Four training modes: observation, response, dialogue, and debriefing.
 - Rounded translucent HUD panels using TextMeshPro and Noto Sans KR SDF font assets.
 - Structured multiple-choice response buttons with press/hover motion.
-- Direct dialogue input with optional Windows DictationRecognizer microphone input.
+- Direct dialogue input with Windows/Quest microphone capture and authenticated OpenRouter Korean transcription.
 - Subtle button feedback sound and classroom-footstep style movement audio.
 - Scene selector for switching between the general classroom and the circle discussion scene.
 
 ### OpenRouter LLM Integration
 
-The simulation can run fully without an API key through a deterministic local fallback. When configured, OpenRouter is used for direct student dialogue.
+The simulation can run fully without an API key through a deterministic local fallback. Windows can use an environment-scoped OpenRouter key. Quest uses the deployed Cloudflare relay with an automatic short-lived session token; provider keys never enter the APK. The same relay exposes schema-validated student turns, teacher rubric evaluation, Korean WAV transcription, and affect-conditioned student WAV speech.
 
 Environment variables:
 
@@ -372,9 +372,9 @@ ProjectSettings/                # Unity project settings
 
 ## Known Limitations
 
-- The current validated deployment target is Windows desktop. WebGL and VR are represented as constrained deployment paths rather than finished production builds.
-- Student TTS is implemented for Windows through an environment-scoped OpenAI Audio API key, with Windows system speech and timed lip-sync fallbacks. Korean system voice quality depends on the installed Windows voice pack.
-- Meta Quest student TTS must use the secure proxy boundary; direct provider keys are intentionally not packaged in the APK.
+- Windows and the ARM64 Quest APK pass automated build and structural QA; physical Quest 2/Pro acceptance is still required for controller ergonomics, microphone permission UX, audio quality, and sustained performance.
+- Student TTS and microphone STT use the authenticated Cloudflare proxy on both Windows and Quest. The Worker uses one `OPENROUTER_API_KEY`; Windows system speech and timed lip-sync remain offline fallbacks. Korean voice quality still requires physical-device testing.
+- The deployed runtime routes fail closed until the Cloudflare Worker has `OPENROUTER_API_KEY`; no provider key is packaged in the Windows player or APK.
 - Rubric scores are authored research heuristics, not validated teacher evaluation instruments.
 - Some Unity 6 obsolete API warnings remain around `FindObjectsByType` overloads; these do not block the current build or tests.
 

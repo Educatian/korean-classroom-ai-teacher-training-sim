@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="2" result="Passed" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-07-20 20:06:12Z" end-time="2026-07-20 20:06:12Z" duration="0.1293719">
+  <test-suite type="TestSuite" id="1000" name="정서행동 지원 교사대응훈련" fullname="정서행동 지원 교사대응훈련" runstate="Runnable" testcasecount="108" result="Passed" start-time="2026-07-20 20:06:12Z" end-time="2026-07-20 20:06:12Z" duration="0.129372" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1137" name="AdieLab.TeacherTraining.Tests.dll" fullname="C:/Users/jewoo/Documents/New project/Library/ScriptAssemblies/AdieLab.TeacherTraining.Tests.dll" runstate="Runnable" testcasecount="108" result="Passed" start-time="2026-07-20 20:06:12Z" end-time="2026-07-20 20:06:12Z" duration="0.098251" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="44816" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1138" name="AdieLab" fullname="AdieLab" runstate="Runnable" testcasecount="108" result="Passed" start-time="2026-07-20 20:06:12Z" end-time="2026-07-20 20:06:12Z" duration="0.092057" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1139" name="TeacherTraining" fullname="AdieLab.TeacherTraining" runstate="Runnable" testcasecount="108" result="Passed" start-time="2026-07-20 20:06:12Z" end-time="2026-07-20 20:06:12Z" duration="0.088063" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1140" name="Tests" fullname="AdieLab.TeacherTraining.Tests" runstate="Runnable" testcasecount="108" result="Passed" start-time="2026-07-20 20:06:12Z" end-time="2026-07-20 20:06:12Z" duration="0.085539" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1065" name="ResearchCloudSyncTests" fullname="AdieLab.TeacherTraining.Tests.ResearchCloudSyncTests" classname="AdieLab.TeacherTraining.Tests.ResearchCloudSyncTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-07-20 20:06:12Z" end-time="2026-07-20 20:06:12Z" duration="0.079797" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1066" name="EndpointPolicy_AcceptsHttpsWorkerAndRejectsDirectStorageHosts" fullname="AdieLab.TeacherTraining.Tests.ResearchCloudSyncTests.EndpointPolicy_AcceptsHttpsWorkerAndRejectsDirectStorageHosts" methodname="EndpointPolicy_AcceptsHttpsWorkerAndRejectsDirectStorageHosts" classname="AdieLab.TeacherTraining.Tests.ResearchCloudSyncTests" runstate="Runnable" seed="2127286140" result="Passed" start-time="2026-07-20 20:06:12Z" end-time="2026-07-20 20:06:12Z" duration="0.023794" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1067" name="RawGazeDescriptor_CountsSamplesAndComputesStableSha256" fullname="AdieLab.TeacherTraining.Tests.ResearchCloudSyncTests.RawGazeDescriptor_CountsSamplesAndComputesStableSha256" methodname="RawGazeDescriptor_CountsSamplesAndComputesStableSha256" classname="AdieLab.TeacherTraining.Tests.ResearchCloudSyncTests" runstate="Runnable" seed="651651206" result="Passed" start-time="2026-07-20 20:06:12Z" end-time="2026-07-20 20:06:12Z" duration="0.037671" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: C:/Users/jewoo/AppData/LocalLow/AdDIE Lab/정서행동 지원 교사대응훈련\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -101,6 +101,7 @@ namespace AdieLab.TeacherTraining.Editor
             SetEnabled<MetaQuestTouchPlusControllerProfile>(settings, metaQuest);
             SetEnabled<MetaQuestTouchProControllerProfile>(settings, metaQuest);
             SetEnabled<MetaQuestFeature>(settings, metaQuest);
+            SetEnabled<EyeGazeInteraction>(settings, metaQuest);
             EditorUtility.SetDirty(settings);
         }
 

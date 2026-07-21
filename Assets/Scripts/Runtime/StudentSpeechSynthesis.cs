@@ -157,16 +157,37 @@ namespace AdieLab.TeacherTraining
         {
             Cancel();
             StudentSpeechProsody prosody = StudentSpeechProsodyPlanner.Plan(text, affect);
+            SecureProxyLlmGateway secureProxy = FindAnyObjectByType<SecureProxyLlmGateway>();
+            if (secureProxy != null && secureProxy.IsConfigured)
+            {
+                synthesis = StartCoroutine(SynthesizeSecureProxy(secureProxy, text, prosody, completed, failed));
+                return;
+            }
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-            string apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-            synthesis = !string.IsNullOrWhiteSpace(apiKey)
-                ? StartCoroutine(SynthesizeOpenAi(text, prosody, apiKey, completed, failed))
-                : StartCoroutine(SynthesizeWindows(text, prosody, completed, failed));
+            synthesis = StartCoroutine(SynthesizeWindows(text, prosody, completed, failed));
 #else
-            failed?.Invoke("이 플랫폼은 보안 TTS 프록시 연결이 필요합니다.");
+            failed?.Invoke("보안 TTS 프록시 연결이 준비되지 않았습니다.");
 #endif
         }
 
+        private IEnumerator SynthesizeSecureProxy(
+            SecureProxyLlmGateway gateway,
+            string text,
+            StudentSpeechProsody prosody,
+            Action<AudioClip, StudentSpeechProsody> completed,
+            Action<string> failed)
+        {
+            AudioClip clip = null;
+            string error = null;
+            yield return gateway.RequestSpeech(text, prosody, value => clip = value, value => error = value);
+            synthesis = null;
+            if (clip == null)
+            {
+                failed?.Invoke(error ?? "보안 프록시가 학생 음성을 반환하지 않았습니다.");
+                yield break;
+            }
+            completed?.Invoke(clip, prosody);
+        }
         public void Cancel()
         {
             if (synthesis != null)
@@ -182,83 +203,6 @@ namespace AdieLab.TeacherTraining
         }
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        [Serializable]
-        private sealed class OpenAiSpeechRequest
-        {
-            public string model;
-            public string input;
-            public string voice;
-            public string instructions;
-            public string response_format;
-        }
-
-        private IEnumerator SynthesizeOpenAi(
-            string text,
-            StudentSpeechProsody prosody,
-            string apiKey,
-            Action<AudioClip, StudentSpeechProsody> completed,
-            Action<string> failed)
-        {
-            var payload = new OpenAiSpeechRequest
-            {
-                model = Environment.GetEnvironmentVariable("OPENAI_TTS_MODEL") ?? "gpt-4o-mini-tts",
-                input = text,
-                voice = Environment.GetEnvironmentVariable("OPENAI_TTS_VOICE") ?? "coral",
-                response_format = "wav",
-                instructions = $"한국어 초등학생 역할의 자연스러운 합성 음성. 감정가는 {prosody.pitchSemitones:+0.0;-0.0;0.0}, 속도는 {prosody.rate:0.00}, 문장 사이에는 {prosody.sentencePauseMilliseconds}밀리초 정도 쉬어 말한다. 과장하지 않고 교실 대화처럼 말한다."
-            };
-            byte[] body = Encoding.UTF8.GetBytes(JsonUtility.ToJson(payload));
-            using UnityWebRequest request = new UnityWebRequest(
-                "https://api.openai.com/v1/audio/speech",
-                UnityWebRequest.kHttpVerbPOST);
-            request.uploadHandler = new UploadHandlerRaw(body);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-            request.SetRequestHeader("Authorization", "Bearer " + apiKey);
-            request.timeout = 30;
-            yield return request.SendWebRequest();
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                yield return SynthesizeWindows(text, prosody, completed, failed);
-                yield break;
-            }
-
-            string outputPath = Path.Combine(
-                Application.temporaryCachePath,
-                $"student-speech-openai-{Guid.NewGuid():N}.wav");
-            bool writeFailed = false;
-            try
-            {
-                File.WriteAllBytes(outputPath, request.downloadHandler.data);
-            }
-            catch (IOException)
-            {
-                writeFailed = true;
-            }
-
-            if (writeFailed)
-            {
-                yield return SynthesizeWindows(text, prosody, completed, failed);
-                yield break;
-            }
-
-            string uri = new Uri(outputPath).AbsoluteUri;
-            using UnityWebRequest audioRequest = UnityWebRequestMultimedia.GetAudioClip(uri, AudioType.WAV);
-            yield return audioRequest.SendWebRequest();
-            if (audioRequest.result != UnityWebRequest.Result.Success)
-            {
-                try { File.Delete(outputPath); } catch (IOException) { }
-                yield return SynthesizeWindows(text, prosody, completed, failed);
-                yield break;
-            }
-
-            AudioClip clip = DownloadHandlerAudioClip.GetContent(audioRequest);
-            clip.name = "StudentSpeechOpenAi";
-            completed?.Invoke(clip, prosody);
-            try { File.Delete(outputPath); } catch (IOException) { }
-            synthesis = null;
-        }
-
         private IEnumerator SynthesizeWindows(
             string text,
             StudentSpeechProsody prosody,

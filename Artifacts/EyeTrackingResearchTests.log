@@ -1,0 +1,518 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.4/staging' branch; Version is '6000.4.9f1 (f7258d6eebbe) revision 16197005'; Using compiler version '194234433'; Build Type 'Release'
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jewoo" at "2026-07-20T20:08:49.7301024Z"
+OS: 'Windows 11  (10.0.26200) Core' Language: 'en' Physical Memory: 32534 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-07-20T20:08:49Z
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Unity.exe
+-batchmode
+-nographics
+-projectPath
+C:\Users\jewoo\Documents\New project
+-runTests
+-testPlatform
+EditMode
+-testFilter
+AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests
+-testResults
+C:\Users\jewoo\Documents\New project\Artifacts\EyeTrackingResearchTests.xml
+-logFile
+C:\Users\jewoo\Documents\New project\Artifacts\EyeTrackingResearchTests.log
+Successfully changed project path to: C:\Users\jewoo\Documents\New project
+C:/Users/jewoo/Documents/New project
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+Player connection [56932]  Target information:
+
+Player connection [56932]  * "[IP] 192.168.1.86 [Port] 55504 [Flags] 2 [Guid] 3565257603 [EditorId] 3565257603 [Version] 1048832 [Id] WindowsEditor(7,Jacob) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [56932] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [56932] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Package Manager] Connected to IPC stream "Upm-94468" after 0.6 seconds.
+[Licensing::Module] Licensing is not yet initialized.
+[Licensing::Client] Error: HandshakeResponse reported an error:
+	ResponseCode: 505
+	ResponseStatus: Unsupported protocol version '1.18.1'.
+[Licensing::Module] Error: Failed to handshake to channel: "LicenseClient-jewoo"
+[Licensing::IpcConnector] LicenseClient-jewoo channel disconnected successfully.
+[Licensing::IpcConnector] Channel LicenseClient-jewoo-6000.4.9 doesn't exist
+[Licensing::Module] Successfully launched the LicensingClient (PId: 96900)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jewoo-6000.4.9" at "2026-07-20T20:08:54.3905504Z"
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 96900, path: "C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.1+9fbee8e
+  Session Id:              699ee390f8534be6863d2b8161cbb685
+  Correlation Id:          a3943953edc4bff8c6cb892ee2be1a30
+  External correlation Id: 7066290330651237672
+  Machine Id:              0pJxV3NYECG7vRIZuKUBqZ+A2VQ=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-jewoo-6000.4.9" (connect: 0.37s, validation: 0.14s, handshake: 0.01s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-jewoo-6000.4.9-notifications" at "2026-07-20T20:08:54.539968Z"
+[Licensing::Module] Connected to LicensingClient (PId: 96900, launch time: 0.02, total connection time: 0.52s)
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 3863511-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Module] Licensing Background thread has ended after 4.90s
+[Licensing::Module] Licensing is initialized (took 3.76s).
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+[Licensing::Client] Successfully resolved entitlement details
+Refreshing native plugins compatible for Editor in 4.42 ms, found 1 plugins.
+Initialize engine version: 6000.4.9f1 (f7258d6eebbe)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/jewoo/Documents/New project/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56468
+CodeReloadManager initialized
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
+Registered in 0.003795 seconds.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.712 seconds
+Domain Reload Profiling: 1881ms
+	BeginReloadAssembly (306ms)
+		CreateAndSetChildDomain (18ms)
+	RebuildCommonClasses (110ms)
+	RebuildNativeTypeToScriptingClass (24ms)
+	initialDomainReloadingComplete (135ms)
+	LoadAllAssembliesAndSetupDomain (591ms)
+		LoadAssemblies (285ms)
+		AnalyzeDomain (577ms)
+			TypeCache.Refresh (575ms)
+				TypeCache.ScanAssembly (554ms)
+	FinalizeReload (715ms)
+		SetupLoadedEditorAssemblies (0ms)
+			InitializePlatformSupportModulesInManaged (103ms)
+			BeforeProcessingInitializeOnLoad (115ms)
+			ProcessInitializeOnLoadAttributes (198ms)
+			ProcessInitializeOnLoadMethodAttributes (201ms)
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 58 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.xr.interaction.toolkit@3.0.9 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.interaction.toolkit@9774edd5e6a4)
+    com.unity.xr.management@4.5.3 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.management@574ebfb1e976)
+    com.unity.xr.meta-openxr@2.4.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.meta-openxr@8727a9e3eafa)
+    com.unity.xr.openxr@1.16.1 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.openxr@ef0033a586bf)
+    com.unity.inputsystem@1.19.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.inputsystem@21a28c3a6c83)
+    com.unity.xr.core-utils@2.6.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.core-utils@a8b900321199)
+    com.unity.xr.legacyinputhelpers@3.0.1 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.legacyinputhelpers@3f62d634f63b)
+    com.unity.xr.arfoundation@6.4.3 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.arfoundation@0bc01ac72a06)
+    com.unity.xr.compositionlayers@2.4.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.compositionlayers@461024b1d757)
+    com.unity.mathematics@1.3.3 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.mathematics@19a9377c4ffa)
+    com.unity.searcher@4.9.4 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.searcher@d45a78918735)
+    com.unity.editorcoroutines@1.1.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.editorcoroutines@87a15ed012c2)
+    com.unity.burst@1.8.29 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.burst@6bb9aca3ef38)
+    com.unity.nuget.mono-cecil@1.11.6 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.test-framework.performance@3.4.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.test-framework.performance@aa81a99c4a75)
+  Built-in packages:
+    com.unity.multiplayer.center@1.0.1 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.multiplayer.center@f01f4ba8d00a)
+    com.unity.shadergraph@17.4.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.shadergraph@06b482f4a9ba)
+    com.unity.test-framework@1.6.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.test-framework@76560ee600cb)
+    com.unity.ugui@2.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.ugui@1f2d1ab0d950)
+    com.unity.modules.accessibility@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.0.5 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.ext.nunit@d8c07649098d)
+    com.unity.render-pipelines.core@17.4.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.render-pipelines.core@d0f56ad6832a)
+    com.unity.collections@6.4.0 (location: C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.collections@5b6ebd78ccc0)
+[Subsystems] Looking for new subsystems at path C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.meta-openxr@8727a9e3eafa
+[Subsystems] Novel subsystem found at Library/PackageCache/com.unity.xr.meta-openxr@8727a9e3eafa/Runtime/UnitySubsystemsManifest.json
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/jewoo/Documents/New project/Assets
+[Subsystems] Discovering subsystems at path C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.meta-openxr@8727a9e3eafa
+[Subsystems] No descriptors matched for  examples in Library/PackageCache/com.unity.xr.meta-openxr@8727a9e3eafa/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] No descriptors matched for  inputs in Library/PackageCache/com.unity.xr.meta-openxr@8727a9e3eafa/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] No descriptors matched for  displays in Library/PackageCache/com.unity.xr.meta-openxr@8727a9e3eafa/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] 1 'meshings' descriptors matched in Library/PackageCache/com.unity.xr.meta-openxr@8727a9e3eafa/Runtime/UnitySubsystemsManifest.json
+[Subsystems] Discovering subsystems at path C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.openxr@ef0033a586bf
+[Subsystems] No descriptors matched for  examples in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] 1 'inputs' descriptors matched in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json
+[Subsystems] 1 'displays' descriptors matched in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json
+[Subsystems] No descriptors matched for  meshings in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] Discovering subsystems at path C:\Users\jewoo\Documents\New project\Library\PackageCache\com.unity.xr.arfoundation@0bc01ac72a06
+[Subsystems] No descriptors matched for  examples in Library/PackageCache/com.unity.xr.arfoundation@0bc01ac72a06/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] 1 'inputs' descriptors matched in Library/PackageCache/com.unity.xr.arfoundation@0bc01ac72a06/Runtime/UnitySubsystemsManifest.json
+[Subsystems] No descriptors matched for  displays in Library/PackageCache/com.unity.xr.arfoundation@0bc01ac72a06/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] 1 'meshings' descriptors matched in Library/PackageCache/com.unity.xr.arfoundation@0bc01ac72a06/Runtime/UnitySubsystemsManifest.json
+[Package Manager] Done registering packages in 0.03 seconds
+Starting: C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1300b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/jewoo/Documents/New project
+DisplayProgressbar: Compiling Scripts
+ExitCode: 0 Duration: 0s789ms
+[ 785/1023  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+*** Tundra build success (0.65 seconds), 1 items updated, 1023 evaluated
+AssetDatabase: script compilation time: 1.935637s
+Begin MonoManager ReloadAssembly
+Assembly Assembly-CSharp-Editor-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll not valid. Loading of assembly skipped.
+Assembly Assembly-CSharp-Editor.dll at Library/ScriptAssemblies/Assembly-CSharp-Editor.dll not valid. Loading of assembly skipped.
+Assembly Assembly-CSharp-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll not valid. Loading of assembly skipped.
+Assembly Assembly-CSharp.dll at Library/ScriptAssemblies/Assembly-CSharp.dll not valid. Loading of assembly skipped.
+Assembly TestNewCustomAssembly.dll at Library/ScriptAssemblies/TestNewCustomAssembly.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.BurstCompatibilityGen.dll at Library/ScriptAssemblies/Unity.Collections.BurstCompatibilityGen.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.DocCodeSamples.dll at Library/ScriptAssemblies/Unity.Collections.DocCodeSamples.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.PerformanceTests.dll at Library/ScriptAssemblies/Unity.Collections.PerformanceTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.Tests.dll at Library/ScriptAssemblies/Unity.Collections.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Collections.Tests.Playmode.dll at Library/ScriptAssemblies/Unity.Collections.Tests.Playmode.dll not valid. Loading of assembly skipped.
+Assembly Unity.InputSystem.IntegrationTests.dll at Library/ScriptAssemblies/Unity.InputSystem.IntegrationTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Mathematics.Tests.dll at Library/ScriptAssemblies/Unity.Mathematics.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Multiplayer.Center.Editor.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Multiplayer.Center.Tests.dll at Library/ScriptAssemblies/Unity.Multiplayer.Center.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Nuget.Mono-Cecil.dll at Library/ScriptAssemblies/Unity.Nuget.Mono-Cecil.dll not valid. Loading of assembly skipped.
+Assembly Unity.PathTracing.Editor.Tests.dll at Library/ScriptAssemblies/Unity.PathTracing.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.PathTracing.Runtime.Tests.dll at Library/ScriptAssemblies/Unity.PathTracing.Runtime.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.RenderPipelines.Core.Editor.Tests.dll at Library/ScriptAssemblies/Unity.RenderPipelines.Core.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.RenderPipelines.Core.Runtime.Tests.dll at Library/ScriptAssemblies/Unity.RenderPipelines.Core.Runtime.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Searcher.EditorTests.dll at Library/ScriptAssemblies/Unity.Searcher.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.ShaderGraph.Editor.Tests.dll at Library/ScriptAssemblies/Unity.ShaderGraph.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Editor.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.UnifiedRayTracing.Editor.Tests.dll at Library/ScriptAssemblies/Unity.UnifiedRayTracing.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.ARFoundation.CodeSamples.Editor.Tests.dll at Library/ScriptAssemblies/Unity.XR.ARFoundation.CodeSamples.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.ARFoundation.CodeSamples.Tests.dll at Library/ScriptAssemblies/Unity.XR.ARFoundation.CodeSamples.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.ARFoundation.Editor.Tests.dll at Library/ScriptAssemblies/Unity.XR.ARFoundation.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.ARFoundation.InternalUtils.Editor.Tests.dll at Library/ScriptAssemblies/Unity.XR.ARFoundation.InternalUtils.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.ARFoundation.Runtime.Tests.dll at Library/ScriptAssemblies/Unity.XR.ARFoundation.Runtime.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.ARSubsystems.Editor.Tests.dll at Library/ScriptAssemblies/Unity.XR.ARSubsystems.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.CompositionLayers.Editor.Tests.dll at Library/ScriptAssemblies/Unity.XR.CompositionLayers.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.CompositionLayers.Tests.dll at Library/ScriptAssemblies/Unity.XR.CompositionLayers.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.CoreUtils.CodeSamples.Tests.dll at Library/ScriptAssemblies/Unity.XR.CoreUtils.CodeSamples.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.CoreUtils.Editor.Tests.dll at Library/ScriptAssemblies/Unity.XR.CoreUtils.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.CoreUtils.Tests.dll at Library/ScriptAssemblies/Unity.XR.CoreUtils.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.Interaction.Toolkit.Editor.Tests.dll at Library/ScriptAssemblies/Unity.XR.Interaction.Toolkit.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.Interaction.Toolkit.Tests.dll at Library/ScriptAssemblies/Unity.XR.Interaction.Toolkit.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.Management.EditorTests.dll at Library/ScriptAssemblies/Unity.XR.Management.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.Management.TestPackage.dll at Library/ScriptAssemblies/Unity.XR.Management.TestPackage.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.Management.TestPackage.Editor.dll at Library/ScriptAssemblies/Unity.XR.Management.TestPackage.Editor.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.Management.Tests.dll at Library/ScriptAssemblies/Unity.XR.Management.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.Management.Tests.Standalone.dll at Library/ScriptAssemblies/Unity.XR.Management.Tests.Standalone.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.MetaOpenXR.CodeSamples.Tests.dll at Library/ScriptAssemblies/Unity.XR.MetaOpenXR.CodeSamples.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.MetaOpenXR.Editor.Tests.dll at Library/ScriptAssemblies/Unity.XR.MetaOpenXR.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.MetaOpenXR.Tests.dll at Library/ScriptAssemblies/Unity.XR.MetaOpenXR.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.OpenXR.Editor.Tests.dll at Library/ScriptAssemblies/Unity.XR.OpenXR.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.OpenXR.Tests.dll at Library/ScriptAssemblies/Unity.XR.OpenXR.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.OpenXR.Ubuntu.Tests.dll at Library/ScriptAssemblies/Unity.XR.OpenXR.Ubuntu.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.Simulation.Editor.Tests.dll at Library/ScriptAssemblies/Unity.XR.Simulation.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.Simulation.Runtime.Tests.dll at Library/ScriptAssemblies/Unity.XR.Simulation.Runtime.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.TestSupport.dll at Library/ScriptAssemblies/Unity.XR.TestSupport.dll not valid. Loading of assembly skipped.
+Assembly Unity.XR.TestTooling.Editor.Tests.dll at Library/ScriptAssemblies/Unity.XR.TestTooling.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.Common.Tests.dll at Library/ScriptAssemblies/UnityEditor.UI.Common.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.EditorTests.dll at Library/ScriptAssemblies/UnityEditor.UI.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.XR.LegacyInputHelpers.Tests.dll at Library/ScriptAssemblies/UnityEditor.XR.LegacyInputHelpers.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.SpatialTracking.Tests.dll at Library/ScriptAssemblies/UnityEngine.SpatialTracking.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.UI.Tests.dll at Library/ScriptAssemblies/UnityEngine.UI.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.XR.OpenXR.CodeSamples.Editor.Tests.dll at Library/ScriptAssemblies/UnityEngine.XR.OpenXR.CodeSamples.Editor.Tests.dll not valid. Loading of assembly skipped.
+Refreshing native plugins compatible for Editor in 14.02 ms, found 9 plugins.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  5.367 seconds
+Domain Reload Profiling: 6731ms
+	BeginReloadAssembly (501ms)
+		DisableScriptedObjects (51ms)
+		CreateAndSetChildDomain (153ms)
+	RebuildCommonClasses (90ms)
+	RebuildNativeTypeToScriptingClass (34ms)
+	initialDomainReloadingComplete (102ms)
+	LoadAllAssembliesAndSetupDomain (636ms)
+		LoadAssemblies (549ms)
+		AnalyzeDomain (312ms)
+			TypeCache.Refresh (191ms)
+				TypeCache.ScanAssembly (173ms)
+			BuildScriptInfoCaches (99ms)
+			ResolveRequiredComponents (18ms)
+	FinalizeReload (5368ms)
+		SetupLoadedEditorAssemblies (0ms)
+			InitializePlatformSupportModulesInManaged (69ms)
+			BeforeProcessingInitializeOnLoad (278ms)
+			ProcessInitializeOnLoadAttributes (4352ms)
+			ProcessInitializeOnLoadMethodAttributes (251ms)
+			AfterProcessingInitializeOnLoad (7ms)
+		AwakeInstancesAfterBackupRestoration (37ms)
+(Values over 0.050ms)
+Asset Pipeline Refresh (id=9ffec3c4305bdf3478bf4d4f8f3700e1): Total: 9.421 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=5993 ms
+		Asset DB Callback time: managed=27 ms, native=32 ms
+		Scripting: domain reloads=1, domain reload time=1370 ms, compile time=1938 ms, other=56 ms
+		Project Asset Count: scripts=1279, non-scripts=1931
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokePackagesCallback: 36.822ms
+	ApplyChangesToAssetFolders: 0.841ms
+	Scan: 181.151ms
+	CategorizeScriptCompilationAssets: 53.235ms
+	ProcessAssetsWithTransientArtifactChanges: 102.014ms
+	CategorizeAssets: 67.394ms
+	CompileScripts: 1937.906ms
+	ImportOutOfDateAssets: 5413.296ms (5411.407ms without children)
+		UnloadImportedAssets: 0.239ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.694ms
+		OnDemandSchedulerStart: 0.939ms
+	PostProcessAllAssets: 28.038ms
+		MonoPostProcessAllAssets: 27.964ms
+			SyncVS.PostprocessSyncProject 5.797ms
+			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 3.186ms
+			SpeedTree9Postprocessor.OnPostprocessAllAssets 1.247ms
+			ProjectSettingsPostprocessor.OnPostprocessAllAssets 1.087ms
+			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.566ms
+			InputActionAssetPostprocessor.OnPostprocessAllAssets 0.411ms
+			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.297ms
+			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.283ms
+			RenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 0.137ms
+	UnloadStreamsBegin: 1.988ms
+	PersistCurrentRevisions: 0.156ms
+	GenerateScriptTypeHashes: 5.211ms
+	GenerateScriptTypeSerializationHashes: 8.154ms
+	Untracked: 1588.170ms
+
+Application.AssetDatabase Initial Refresh End
+Shader Hidden/ChartRasterizerHardware is not supported: GPU does not support conservative rasterization
+Shader Hidden/ChartRasterizerHardware is not supported: GPU does not support conservative rasterization
+Scanning for USB devices : 11.819ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-정서행동 지원 교사대응훈련
+Unloading 81 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 5193 unused Assets / (8.8 MB). Loaded Objects now: 5835.
+Memory consumption went from 171.2 MB to 162.4 MB.
+Total: 32.804500 ms (FindLiveObjects: 0.552500 ms CreateObjectMapping: 0.467800 ms MarkObjects: 23.301800 ms  DeleteObjects: 8.475700 ms)
+
+Microsoft Media Foundation video decoding to texture disabled: graphics device is Null, only Direct3D 11 and Direct3D 12 (only on desktop) are supported for hardware-accelerated video decoding.
+[Project] Loading completed in 17.847 seconds
+	Project init time: 				16.734 seconds
+		Template init time: 		0.000 seconds
+		Package Manager init time: 		4.398 seconds
+		Asset Database init time: 		0.200 seconds
+		Global illumination init time: 	0.003 seconds
+		Assemblies load time: 			1.931 seconds
+		Unity extensions init time: 	0.088 seconds
+		Asset Database refresh time: 	9.424 seconds
+	Scene opening time: 			0.796 seconds
+##utp:{"type":"ProjectInfo","version":2,"phase":"Immediate","time":1784578147559,"processId":94468,"projectLoad":17.846726,"projectInit":16.7344368,"templateInit":0.0,"packageManagerInit":4.3981897,"assetDatabaseInit":0.1998883,"globalIlluminationInit":0.0033356,"assembliesLoad":1.9311226,"unityExtensionsInit":0.0875447,"assetDatabaseRefresh":9.4237202,"sceneOpening":0.7957693}
+##utp:{"type":"EditorInfo","version":2,"phase":"Immediate","time":1784578147559,"processId":94468,"editorVersion":"6000.4.9f1 (f7258d6eebbe)","branch":"6000.4/staging","buildType":"Release","platform":"Windows"}
+[Licensing::Client] Successfully resolved entitlement details
+Running tests for ExecutionSettings with details:
+targetPlatform = 
+playerHeartbeatTimeout = 600
+filters[0] = 
+   Filter with settings:
+   testMode = EditMode
+   targetPlatform = 
+   testNames = null
+   groupNames = AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests
+   categoryNames = null
+   assemblyNames = null
+ignoreTests = {}
+featureFlags = null
+
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:InitializeAndExecuteRun (string[]) (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/CommandLineTest/Executer.cs:53)
+UnityEditor.TestTools.TestRunner.CommandLineTest.TestStarter:InitializeAndExecuteRun () (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/CommandLineTest/TestStarter.cs:64)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/CommandLineTest/Executer.cs Line: 53)
+
+Start importing Assets/XR/Settings/OpenXRPackageSettings.asset using Guid(63d612d0a725c7240822959e7e1ceb83) (NativeFormatImporter) -> (Import Result ID: '6b6d15c9935350e7a2a9557ca5538c98') in 0.0134471 seconds [static dependencies only]. Details - ImportResultOutputID=4713500ad77193a51069eb1fbec7676f DependenciesID=3c89ad02fe7f30526222c659587a6d66 StaticDependenciesID=fb0130a3ae5c5a50fd075558eb4f721d 
+Refreshing native plugins compatible for Editor in 10.65 ms, found 9 plugins.
+Asset Pipeline Refresh (id=d6d42f32ad9925f499ae781ca3f79df0): Total: 0.176 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/XR/Settings/OpenXRPackageSettings.asset using Guid(63d612d0a725c7240822959e7e1ceb83) (NativeFormatImporter) -> (Import Result ID: '6b6d15c9935350e7a2a9557ca5538c98') in 0.0034871 seconds [static dependencies only]. Details - ImportResultOutputID=4713500ad77193a51069eb1fbec7676f DependenciesID=3c89ad02fe7f30526222c659587a6d66 StaticDependenciesID=fb0130a3ae5c5a50fd075558eb4f721d 
+Refreshing native plugins compatible for Editor in 11.24 ms, found 9 plugins.
+Asset Pipeline Refresh (id=aeee79cca0e01e547bc8c71644fe1c1f): Total: 0.039 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/XR/Settings/OpenXRPackageSettings.asset using Guid(63d612d0a725c7240822959e7e1ceb83) (NativeFormatImporter) -> (Import Result ID: '6b6d15c9935350e7a2a9557ca5538c98') in 0.0040714 seconds [static dependencies only]. Details - ImportResultOutputID=4713500ad77193a51069eb1fbec7676f DependenciesID=3c89ad02fe7f30526222c659587a6d66 StaticDependenciesID=fb0130a3ae5c5a50fd075558eb4f721d 
+Refreshing native plugins compatible for Editor in 8.41 ms, found 9 plugins.
+Asset Pipeline Refresh (id=8ae49a8c3ad5d5c4db07288fe4d82952): Total: 0.034 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+Start Indexing on Editor startup
+[Indexing] Starting Initial Indexing for Assets
+[UnityConnectServicesConfig] config is NOT valid, switching to default
+Created GICache directory at C:/Users/jewoo/AppData/LocalLow/Unity/Caches/GiCache. Took: 0.066s, timestamps: [17.851 - 17.917]
+Unloading 1 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 36 unused Assets / (57.4 KB). Loaded Objects now: 5942.
+Memory consumption went from 151.7 MB to 151.6 MB.
+Total: 16.054100 ms (FindLiveObjects: 0.315700 ms CreateObjectMapping: 0.159100 ms MarkObjects: 15.531200 ms  DeleteObjects: 0.046700 ms)
+
+Executing IPrebuildSetup for: Unity.PerformanceTesting.Editor.TestRunBuilder.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.TestRun.Tasks.BuildActionTaskBase`1/<ExecuteMethods>d__8<UnityEngine.TestTools.IPrebuildSetup>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs:48)
+UnityEditor.TestTools.TestRunner.TestRun.Tasks.BuildActionTaskBase`1/<Execute>d__7<UnityEngine.TestTools.IPrebuildSetup>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs:34)
+UnityEditor.TestTools.TestRunner.TestRun.TestJobRunner:ExecuteStep () (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/TestRun/TestJobRunner.cs:173)
+UnityEditor.TestTools.TestRunner.TestRun.TestJobRunner:ExecuteCallback () (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/TestRun/TestJobRunner.cs:108)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs Line: 48)
+
+Saving results to: C:/Users/jewoo/AppData/LocalLow/AdDIE Lab/정서행동 지원 교사대응훈련\TestResults.xml
+Saving results to: C:\Users\jewoo\Documents\New project\Artifacts\EyeTrackingResearchTests.xml
+Executing IPostBuildCleanup for: Unity.PerformanceTesting.Editor.TestRunBuilder.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.TestRun.Tasks.BuildActionTaskBase`1/<ExecuteMethods>d__8<UnityEngine.TestTools.IPostBuildCleanup>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs:48)
+UnityEditor.TestTools.TestRunner.TestRun.Tasks.BuildActionTaskBase`1/<Execute>d__7<UnityEngine.TestTools.IPostBuildCleanup>:MoveNext () (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs:34)
+UnityEditor.TestTools.TestRunner.TestRun.TestJobRunner:ExecuteStep () (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/TestRun/TestJobRunner.cs:173)
+UnityEditor.TestTools.TestRunner.TestRun.TestJobRunner:ExecuteCallback () (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/TestRun/TestJobRunner.cs:108)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/TestRun/Tasks/BuildActionTaskBase.cs Line: 48)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 0 unused Assets / (0 B). Loaded Objects now: 5943.
+Memory consumption went from 149.6 MB to 149.6 MB.
+Total: 17.561600 ms (FindLiveObjects: 0.325700 ms CreateObjectMapping: 0.189200 ms MarkObjects: 17.032300 ms  DeleteObjects: 0.013200 ms)
+
+DisplayProgressbar: Undo
+Test run completed. Exiting with code 0 (Ok). Run completed.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:ExitApplication (UnityEditor.TestTools.TestRunner.CommandLineTest.Executer/ReturnCodes,string) (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/CommandLineTest/Executer.cs:81)
+UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:ExitIfRunIsCompleted () (at ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/CommandLineTest/Executer.cs:74)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+(Filename: ./Library/PackageCache/com.unity.test-framework@76560ee600cb/UnityEditor.TestRunner/CommandLineTest/Executer.cs Line: 81)
+
+Killing ADB server in 2.2002758 seconds.
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input Polling Thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-jewoo-6000.4.9-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-jewoo-6000.4.9 channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+CodeReloadManager destroyed
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+[Package Manager] Server process was shutdown
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1784578153643,"processId":94468,"allocatedMemory":15136724,"memoryLabels":[{"Default":190440},{"Permanent":15276},{"NewDelete":65019},{"Thread":4230344},{"Manager":38285},{"VertexData":8},{"Geometry":816},{"Texture":24},{"Shader":849132},{"Material":24},{"GfxDevice":55320},{"Animation":392},{"Audio":3008},{"FreeType":8},{"FontEngine":736},{"Physics":2090},{"Physics2D":16},{"Serialization":952},{"Input":9880},{"JobScheduler":33024},{"TextLib":216},{"Mono":32},{"ScriptingNativeRuntime":155052},{"BaseObject":1620432},{"Resource":1184},{"Renderer":3008},{"Transform":4685},{"File":1088},{"WebCam":616},{"Culling":32},{"Terrain":11394},{"Wind":24},{"STL":40},{"String":13530},{"StaticString":6718},{"Utility":2674950},{"Curl":2559},{"PoolAlloc":2168},{"AI":80},{"TypeTree":16157},{"ScriptManager":448},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":120},{"GI":7792},{"Director":8320},{"CloudService":1008},{"WebRequest":808},{"VR":48482},{"SceneManager":504},{"Video":64},{"LazyScriptCache":32},{"Camera":17},{"Secure":2377},{"SerializationCache":1576},{"APIUpdating":10320},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":344},{"Hierarchy":608},{"CoreStats":13112},{"Identifiers":12960},{"Gui":128},{"EditorUtility":124285},{"VersionControl":4},{"Undo":931},{"AssetDatabase":4503520},{"EditorGi":328},{"UnityConnect":37777},{"Upm":1912},{"UpmDiagnostics":8},{"AssetCompliance":64},{"DrivenProperties":72},{"LocalIPC":211},{"ProfilerEditor":9746},{"CoreBusinessMetrics":2623},{"Windowing":456},{"Licensing":664},{"AssetReference":32},{"IPCStream":32}]}

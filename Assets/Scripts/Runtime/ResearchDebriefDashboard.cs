@@ -209,7 +209,7 @@ namespace AdieLab.TeacherTraining
             {
                 InterventionTimelineItem item = report.interventionTimeline[index];
                 text.Append("#").Append(item.beatIndex + 1).Append(" ")
-                    .Append(item.actionSource).Append(" ")
+                    .Append(TrainingActionSourceLabels.Korean(item.actionSource)).Append(" ")
                     .Append(item.valenceBefore.ToString("+0.0;-0.0;0.0")).Append("→")
                     .Append(item.valenceAfter.ToString("+0.0;-0.0;0.0"));
                 if (index < report.interventionTimeline.Length - 1)
@@ -259,6 +259,7 @@ namespace AdieLab.TeacherTraining
                     : currentReport.sessionId;
                 string jsonPath = Path.Combine(directory, stem + ".json");
                 string csvPath = Path.Combine(directory, stem + "-competencies.csv");
+                string gazeCsvPath = Path.Combine(directory, stem + "-eye-tracking.csv");
                 File.WriteAllText(jsonPath, JsonUtility.ToJson(currentReport, true), Encoding.UTF8);
                 var csv = new StringBuilder("model_id,session_id,competency,score,evidence_count\n");
                 for (int index = 0; index < currentReport.competencies.Length; index++)
@@ -272,6 +273,25 @@ namespace AdieLab.TeacherTraining
                 }
 
                 File.WriteAllText(csvPath, csv.ToString(), Encoding.UTF8);
+                var gazeCsv = new StringBuilder(
+                    "session_id,sequence,beat,source,valid_ratio,first_relevant_fixation_ms,focal_dwell_ms,mutual_gaze_ms,fixations,revisits,transitions,missed_cue\n");
+                foreach (InterventionTimelineItem intervention in currentReport.interventionTimeline)
+                {
+                    TeacherGazeSummary gaze = intervention.gaze ?? new TeacherGazeSummary();
+                    gazeCsv.Append(Escape(currentReport.sessionId)).Append(',')
+                        .Append(intervention.sequence).Append(',')
+                        .Append(intervention.beatIndex).Append(',')
+                        .Append(gaze.trackingSource).Append(',')
+                        .Append(gaze.validSampleRatio.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture)).Append(',')
+                        .Append(gaze.firstRelevantFixationMilliseconds).Append(',')
+                        .Append(gaze.focalStudentDwellMilliseconds).Append(',')
+                        .Append(gaze.mutualGazeMilliseconds).Append(',')
+                        .Append(gaze.fixationCount).Append(',')
+                        .Append(gaze.revisitCount).Append(',')
+                        .Append(gaze.transitionCount).Append(',')
+                        .Append(gaze.missedRelevantCue ? 1 : 0).Append('\n');
+                }
+                File.WriteAllText(gazeCsvPath, gazeCsv.ToString(), Encoding.UTF8);
                 exportStatus.text = "익명화된 JSON·CSV 저장 완료";
             }
             catch (Exception exception) when (

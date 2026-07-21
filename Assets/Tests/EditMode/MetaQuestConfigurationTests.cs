@@ -27,9 +27,11 @@ namespace AdieLab.TeacherTraining.Tests
             Assert.That(settings.GetFeature<OculusTouchControllerProfile>()?.enabled, Is.True);
             Assert.That(settings.GetFeature<MetaQuestTouchPlusControllerProfile>()?.enabled, Is.True);
             Assert.That(settings.GetFeature<KHRSimpleControllerProfile>()?.enabled, Is.True);
+            Assert.That(settings.GetFeature<EyeGazeInteraction>()?.enabled, Is.True);
             Assert.That(PlayerSettings.GetUseDefaultGraphicsAPIs(BuildTarget.Android), Is.False);
             Assert.That(PlayerSettings.GetGraphicsAPIs(BuildTarget.Android), Is.EqualTo(new[] { GraphicsDeviceType.Vulkan }));
         }
+
 
         private static void AssertTarget(BuildTargetGroup group)
         {

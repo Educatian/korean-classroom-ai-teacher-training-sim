@@ -56,7 +56,7 @@ Personas and scenario beats are ScriptableObject assets under `Assets/Resources/
 
 The training scenes now expose a top-bar `DESKTOP` / `IVR` toggle. XR Plug-in Management, OpenXR, Meta OpenXR, and XR Interaction Toolkit are installed. IVR activation creates a transient XR Origin, tracked head and two controller-ray inputs, and a world-space version of the existing HUD; returning to desktop restores the original camera, input module, footstep behavior, and screen-space HUD. Android defaults to IVR while Windows and the Editor default to desktop. A release Quest APK is produced by `KoreanClassroomBuilder.BuildMetaQuestFromCommandLine`.
 
-The local XR rig and APK build are validated, but physical-headset acceptance remains outstanding. The Quest client contract and transport policy are implemented; a deployed relay URL, participant authentication/session issuance, and server-side OpenRouter credential are still required for live headset dialogue. Package versions, build commands, security boundaries, and the headset QA checklist are documented in `Docs/META_QUEST_READINESS.md`.
+The local XR rig and APK build are validated, and the Cloudflare relay, automatic Quest session issuance, and server-side OpenRouter credential are active. Physical-headset acceptance remains outstanding for controller, microphone, spatial-audio, lip-sync, and sustained-performance QA. Package versions, build commands, security boundaries, and the headset QA checklist are documented in `Docs/META_QUEST_READINESS.md`.
 
 ## OpenRouter setup
 

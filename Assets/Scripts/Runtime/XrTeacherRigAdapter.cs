@@ -37,6 +37,7 @@ namespace AdieLab.TeacherTraining
         private bool ownsXrRaycaster;
 
         public bool IsEnabled => xrRoot != null;
+        public QuestProEyeGazeProvider EyeGazeProvider { get; private set; }
 
         public void Enable(Camera camera, Canvas canvas)
         {
@@ -101,6 +102,7 @@ namespace AdieLab.TeacherTraining
             }
             ReleaseXrUiComponents();
 
+            EyeGazeProvider = null;
             Object.Destroy(xrRoot);
             xrRoot = null;
         }
@@ -155,6 +157,11 @@ namespace AdieLab.TeacherTraining
             BuildController(offset.transform, "Left Controller", "LeftHand");
             BuildController(offset.transform, "Right Controller", "RightHand");
             ConfigureEventSystem();
+            EyeGazeProvider = xrRoot.AddComponent<QuestProEyeGazeProvider>();
+            EyeTrackingResearchSettings researchSettings = EyeTrackingResearchSettings.LoadDefault();
+            EyeGazeProvider.Configure(
+                xrRoot.transform, teacherCamera,
+                researchSettings.allowHeadGazeFallback);
         }
 
         private void BuildController(Transform parent, string name, string hand)

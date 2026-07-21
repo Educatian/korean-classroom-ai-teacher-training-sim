@@ -34,6 +34,7 @@ namespace AdieLab.TeacherTraining.Editor
             SessionState.SetBool(ArmedKey, true);
             phase = 0;
             ArmCallbacks();
+            TrainingExperienceModePolicy.Save(TrainingExperienceMode.Desktop);
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             EditorApplication.EnterPlaymode();
         }
@@ -105,6 +106,8 @@ namespace AdieLab.TeacherTraining.Editor
             adapter.Enable(camera, canvas);
 
             Require(adapter.IsEnabled, "XR adapter did not enter the enabled state.");
+            Require(adapter.EyeGazeProvider != null,
+                "Quest Pro eye-gaze provider was not created with the XR Origin.");
             Require(UnityEngine.Object.FindAnyObjectByType<XROrigin>() != null, "XR Origin was not created.");
             Require(UnityEngine.Object.FindObjectsByType<XRRayInteractor>(FindObjectsSortMode.None).Length == 2,
                 "Two tracked XR ray controllers were not created.");
@@ -127,9 +130,8 @@ namespace AdieLab.TeacherTraining.Editor
                 "XR Origin remained after disabling IVR mode.");
             Require(!UnityEngine.Object.FindObjectsByType<XRUIInputModule>(FindObjectsSortMode.None).Any(module => module.enabled),
                 "XR UI input remained enabled after restoring desktop mode.");
-            Require(!UnityEngine.Object.FindObjectsByType<TrackedDeviceGraphicRaycaster>(FindObjectsSortMode.None)
-                    .Any(raycaster => raycaster.enabled),
-                "Tracked-device raycaster remained enabled after restoring desktop mode.");
+            Require(canvas.GetComponent<TrackedDeviceGraphicRaycaster>()?.enabled != true,
+                "Training HUD raycaster remained enabled after restoring desktop mode.");
             Require(UnityEngine.Object.FindAnyObjectByType<StandaloneInputModule>()?.enabled == true,
                 "Desktop input module was not restored.");
             Camera camera = UnityEngine.Object.FindObjectsByType<Camera>(

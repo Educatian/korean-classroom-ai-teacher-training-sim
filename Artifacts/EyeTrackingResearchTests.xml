@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="4" result="Passed" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-07-20 20:09:10Z" end-time="2026-07-20 20:09:10Z" duration="0.0746531">
+  <test-suite type="TestSuite" id="1000" name="정서행동 지원 교사대응훈련" fullname="정서행동 지원 교사대응훈련" runstate="Runnable" testcasecount="108" result="Passed" start-time="2026-07-20 20:09:10Z" end-time="2026-07-20 20:09:10Z" duration="0.074653" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1137" name="AdieLab.TeacherTraining.Tests.dll" fullname="C:/Users/jewoo/Documents/New project/Library/ScriptAssemblies/AdieLab.TeacherTraining.Tests.dll" runstate="Runnable" testcasecount="108" result="Passed" start-time="2026-07-20 20:09:10Z" end-time="2026-07-20 20:09:10Z" duration="0.064510" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="94468" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1138" name="AdieLab" fullname="AdieLab" runstate="Runnable" testcasecount="108" result="Passed" start-time="2026-07-20 20:09:10Z" end-time="2026-07-20 20:09:10Z" duration="0.062724" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1139" name="TeacherTraining" fullname="AdieLab.TeacherTraining" runstate="Runnable" testcasecount="108" result="Passed" start-time="2026-07-20 20:09:10Z" end-time="2026-07-20 20:09:10Z" duration="0.061814" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1140" name="Tests" fullname="AdieLab.TeacherTraining.Tests" runstate="Runnable" testcasecount="108" result="Passed" start-time="2026-07-20 20:09:10Z" end-time="2026-07-20 20:09:10Z" duration="0.060629" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1039" name="EyeTrackingResearchTests" fullname="AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests" classname="AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-07-20 20:09:10Z" end-time="2026-07-20 20:09:10Z" duration="0.054903" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1043" name="Debrief_AggregatesOnlyLiveEyeGazeActions" fullname="AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests.Debrief_AggregatesOnlyLiveEyeGazeActions" methodname="Debrief_AggregatesOnlyLiveEyeGazeActions" classname="AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests" runstate="Runnable" seed="1431645607" result="Passed" start-time="2026-07-20 20:09:10Z" end-time="2026-07-20 20:09:10Z" duration="0.024256" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1041" name="GazeAccumulator_MarksCueMissedWhenOnlyInterfaceWasViewed" fullname="AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests.GazeAccumulator_MarksCueMissedWhenOnlyInterfaceWasViewed" methodname="GazeAccumulator_MarksCueMissedWhenOnlyInterfaceWasViewed" classname="AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests" runstate="Runnable" seed="980053734" result="Passed" start-time="2026-07-20 20:09:10Z" end-time="2026-07-20 20:09:10Z" duration="0.009184" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1040" name="GazeAccumulator_SummarizesRelevantStudentAttention" fullname="AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests.GazeAccumulator_SummarizesRelevantStudentAttention" methodname="GazeAccumulator_SummarizesRelevantStudentAttention" classname="AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests" runstate="Runnable" seed="753123739" result="Passed" start-time="2026-07-20 20:09:10Z" end-time="2026-07-20 20:09:10Z" duration="0.001683" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1042" name="TelemetryEvent_JsonRoundTripPreservesGazeSummary" fullname="AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests.TelemetryEvent_JsonRoundTripPreservesGazeSummary" methodname="TelemetryEvent_JsonRoundTripPreservesGazeSummary" classname="AdieLab.TeacherTraining.Tests.EyeTrackingResearchTests" runstate="Runnable" seed="1396484650" result="Passed" start-time="2026-07-20 20:09:10Z" end-time="2026-07-20 20:09:10Z" duration="0.002537" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: C:/Users/jewoo/AppData/LocalLow/AdDIE Lab/정서행동 지원 교사대응훈련\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

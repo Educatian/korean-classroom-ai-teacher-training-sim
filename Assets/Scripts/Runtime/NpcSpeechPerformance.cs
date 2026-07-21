@@ -111,12 +111,15 @@ namespace AdieLab.TeacherTraining
 
         private static string PreferredProviderRoute()
         {
+            SecureProxyLlmGateway gateway = FindAnyObjectByType<SecureProxyLlmGateway>();
+            if (gateway != null && gateway.IsConfigured)
+            {
+                return "secure-proxy-tts";
+            }
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-            return string.IsNullOrWhiteSpace(System.Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-                ? "windows-sapi"
-                : "openai-audio-api";
+            return "windows-sapi";
 #else
-            return "secure-proxy-required";
+            return "scheduled-lipsync";
 #endif
         }
         public void StopSpeaking()

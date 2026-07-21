@@ -6,7 +6,7 @@ A resolved student turn now follows one connected research pipeline:
 
 1. The student agent returns Korean dialogue, affect values, a gesture, and Facial Action Unit directives.
 2. `StudentSpeechProsodyPlanner` converts valence, arousal, dominance, punctuation, and text length into a speaking-rate, pitch, volume, and pause plan.
-3. `StudentSpeechSynthesizer` requests a synthetic Korean voice on Windows when an environment-scoped OpenAI key is available.
+3. `StudentSpeechSynthesizer` requests a synthetic Korean voice through the authenticated OpenRouter proxy on Windows and Quest.
 4. `NpcSpeechPerformance` plays the clip from the student's position and drives AU25 (lips part) and AU26 (jaw drop) from the live audio amplitude.
 5. If speech synthesis is unavailable, the same prosody plan drives pause-aware lip movement so the facial performance remains coherent.
 6. Telemetry records the provider route and prosody plan without storing the raw teacher or student utterance.
@@ -22,23 +22,24 @@ The runtime checks these environment variables:
 
 | Variable | Required | Default |
 |---|---:|---|
-| `OPENAI_API_KEY` | For high-quality Korean TTS | none |
-| `OPENAI_TTS_MODEL` | No | `gpt-4o-mini-tts` |
-| `OPENAI_TTS_VOICE` | No | `coral` |
+| `OPENROUTER_API_KEY` | Worker-side LLM, Korean STT, and student TTS | none |
+| `OPENROUTER_STT_MODEL` | No | `openai/gpt-4o-mini-transcribe` |
+| `OPENROUTER_TTS_MODEL` | No | `x-ai/grok-voice-tts-1.0` |
+| `OPENROUTER_TTS_VOICE` | No | `Ara` |
 
 No provider key is serialized into a Unity scene, ScriptableObject, build, log, screenshot, or telemetry event.
 
 The fallback order is:
 
-1. OpenAI Audio API using the process environment on Windows;
-2. installed Windows Korean speech voice;
+1. authenticated Cloudflare proxy backed by the Worker-side OpenRouter key on Windows and Quest;
+2. installed Windows Korean speech voice on Windows;
 3. silent, pause-aware lip-sync animation.
 
-The current reference workstation has no Korean Windows SAPI voice installed, so reproducible Korean voice QA uses the environment-scoped OpenAI path.
+The reference workstation uses the same authenticated OpenRouter proxy as Quest for reproducible Korean voice and transcription QA; provider credentials remain server-side.
 
 ### Meta Quest
 
-A provider key must never be packaged in the APK. Quest uses the existing secure-proxy trust boundary. The client sends text plus the prosody plan to an authenticated server route, receives short-lived audio bytes, and passes the returned clip to the same `NpcSpeechPerformance` amplitude-driven lip-sync path. The current APK still requires deployment of that server-side TTS route before headset speech QA.
+A provider key must never be packaged in the APK. Quest uses the existing secure-proxy trust boundary. The client sends text plus the prosody plan to an authenticated server route, receives short-lived audio bytes, and passes the returned clip to the same `NpcSpeechPerformance` amplitude-driven lip-sync path. The server-side TTS and STT routes are deployed and live-smoke-tested; physical headset audio, microphone permission, and spatial lip-sync QA remain.
 
 ## Prosody and lip-sync starting values
 

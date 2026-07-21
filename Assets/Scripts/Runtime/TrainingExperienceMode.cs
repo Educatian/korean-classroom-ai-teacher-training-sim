@@ -21,6 +21,11 @@ namespace AdieLab.TeacherTraining
 
         public static TrainingExperienceMode Load(RuntimePlatform platform)
         {
+            if (platform == RuntimePlatform.Android)
+            {
+                return TrainingExperienceMode.ImmersiveVr;
+            }
+
             int fallback = (int)DefaultFor(platform);
             return (TrainingExperienceMode)PlayerPrefs.GetInt(PreferenceKey, fallback);
         }

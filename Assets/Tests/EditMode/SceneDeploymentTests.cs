@@ -56,6 +56,23 @@ namespace AdieLab.TeacherTraining.Tests
         }
 
         [Test]
+        public void ExperienceMode_AndroidIgnoresPersistedDesktopPreference()
+        {
+            TrainingExperienceMode original = TrainingExperienceModePolicy.Load(RuntimePlatform.WindowsEditor);
+            try
+            {
+                TrainingExperienceModePolicy.Save(TrainingExperienceMode.Desktop);
+                Assert.That(
+                    TrainingExperienceModePolicy.Load(RuntimePlatform.Android),
+                    Is.EqualTo(TrainingExperienceMode.ImmersiveVr));
+            }
+            finally
+            {
+                TrainingExperienceModePolicy.Save(original);
+            }
+        }
+
+        [Test]
         public void DeploymentConfig_DeclaresWindowsReadyAndConstrainedAlternates()
         {
             SceneDeploymentConfig windows = SceneDeploymentConfig.For(TrainingDeploymentTarget.WindowsDesktop);
