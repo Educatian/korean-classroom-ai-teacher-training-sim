@@ -81,6 +81,22 @@ namespace AdieLab.TeacherTraining
             return true;
         }
 
+        /// <summary>
+        /// Cancels a pending student response and returns control to the teacher.
+        /// Used when a pause outlived an in-flight response request: the reply was
+        /// dropped while paused, so waiting again would soft-lock the session.
+        /// </summary>
+        public bool TryCancelStudentResponse()
+        {
+            if (CurrentPhase != TrainingPhase.AwaitingStudentResponse)
+            {
+                return false;
+            }
+
+            CurrentPhase = TrainingPhase.AwaitingTeacherAction;
+            return true;
+        }
+
         public bool TryAbort()
         {
             if (CurrentPhase == TrainingPhase.Complete ||

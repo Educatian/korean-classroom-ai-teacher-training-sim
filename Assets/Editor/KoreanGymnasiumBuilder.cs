@@ -502,6 +502,25 @@ namespace AdieLab.TeacherTraining.Editor
                 Cube("MullionH", window, new Vector3(0.03f, 0f, 0f), new Vector3(0.05f, 0.05f, 1.55f), trim);
             }
 
+            // Clerestory band just under the eaves on both long walls: the
+            // continuous high daylight strip typical of Korean school gyms.
+            Transform clerestory = RootObject("Clerestory", dressing, Vector3.zero).transform;
+            for (int side = 0; side < 2; side++)
+            {
+                float x = (side == 0 ? -1f : 1f) * (GymHalfWidth - 0.09f);
+                float inward = side == 0 ? 0.02f : -0.02f;
+                for (int i = 0; i < 10; i++)
+                {
+                    float z = -18f + i * 4f;
+                    Transform pane = RootObject($"Clerestory_{(side == 0 ? "W" : "E")}_{i:00}", clerestory,
+                        new Vector3(x, GymEaveHeight - 1.35f, z)).transform;
+                    Cube("Frame", pane, Vector3.zero, new Vector3(0.06f, 1.5f, 3.7f), trim);
+                    Cube("Glass", pane, new Vector3(inward, 0f, 0f), new Vector3(0.05f, 1.34f, 3.54f), glass);
+                    Cube("MullionV1", pane, new Vector3(inward * 1.5f, 0f, -1.18f), new Vector3(0.05f, 1.4f, 0.05f), trim);
+                    Cube("MullionV2", pane, new Vector3(inward * 1.5f, 0f, 1.18f), new Vector3(0.05f, 1.4f, 0.05f), trim);
+                }
+            }
+
             // Doors with steel kick plates: double doors on the south end,
             // single doors on both long walls near the stage.
             Transform doors = RootObject("Doors", dressing, Vector3.zero).transform;

@@ -76,6 +76,40 @@ namespace AdieLab.TeacherTraining.Tests
         }
 
         [Test]
+        public void SessionState_CancelStudentResponseReturnsTurnToTeacher()
+        {
+            var state = new TrainingSessionState();
+            Assert.That(state.TryTransitionTo(TrainingPhase.AwaitingTeacherAction), Is.True);
+            Assert.That(state.TryTransitionTo(TrainingPhase.AwaitingStudentResponse), Is.True);
+
+            Assert.That(state.TryCancelStudentResponse(), Is.True);
+            Assert.That(state.CurrentPhase, Is.EqualTo(TrainingPhase.AwaitingTeacherAction));
+            Assert.That(state.TryCancelStudentResponse(), Is.False);
+        }
+
+        [Test]
+        public void Coordinator_PauseDuringResponseThenCancelRecoversTheTurn()
+        {
+            var coordinator = new TrainingTurnCoordinator(3);
+            Assert.That(coordinator.Start(), Is.True);
+            Assert.That(coordinator.TrySubmit(TeacherAction.FromUtterance("잠깐"), out TrainingRequestToken token), Is.True);
+
+            // Pause lands while the student reply is in flight; the reply is
+            // dropped, so the resume path must hand the turn back.
+            Assert.That(coordinator.TryPause(), Is.True);
+            Assert.That(coordinator.TryResolve(token), Is.False);
+            Assert.That(coordinator.TryResume(), Is.True);
+            Assert.That(coordinator.Phase, Is.EqualTo(TrainingPhase.AwaitingStudentResponse));
+            Assert.That(coordinator.TryCancelPendingStudentResponse(), Is.True);
+            Assert.That(coordinator.Phase, Is.EqualTo(TrainingPhase.AwaitingTeacherAction));
+
+            // The stale token can no longer complete anything after the cancel.
+            Assert.That(coordinator.TryResolve(token), Is.False);
+            Assert.That(coordinator.TrySubmit(TeacherAction.FromChoice(1), out TrainingRequestToken second), Is.True);
+            Assert.That(second.IsValid, Is.True);
+        }
+
+        [Test]
         public void SessionState_PauseResumeAndAbortPreserveSafetySemantics()
         {
             var state = new TrainingSessionState();

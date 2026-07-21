@@ -13,7 +13,8 @@ namespace AdieLab.TeacherTraining
         SessionPaused = 5,
         SessionResumed = 6,
         SessionAborted = 7,
-        RubricEvaluation = 8
+        RubricEvaluation = 8,
+        ReflectionSubmitted = 9
     }
 
     public enum TrainingActionSource
@@ -109,11 +110,12 @@ namespace AdieLab.TeacherTraining
     [Serializable]
     public sealed class TrainingTelemetryEvent
     {
-        public const int CurrentSchemaVersion = 4;
+        public const int CurrentSchemaVersion = 5;
 
         public int schemaVersion = CurrentSchemaVersion;
         public string eventId;
         public string sessionId;
+        public int attemptNumber = 1;
         public int sequence;
         public string timestampUtc;
         public string scenarioId;

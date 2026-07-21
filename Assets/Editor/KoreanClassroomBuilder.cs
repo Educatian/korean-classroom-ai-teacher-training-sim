@@ -1296,6 +1296,7 @@ namespace AdieLab.TeacherTraining.Editor
             CreateMaterial("M_PlantLeaf", new Color(0.12f, 0.36f, 0.18f), 0f, 0.30f);
             CreateMaterial("M_Glass", new Color(0.70f, 0.86f, 0.92f, 0.06f), 0.05f, 0.92f, null, Vector2.one, true);
             CreateMaterial("M_ExteriorView", Color.white, 0f, 0.02f, "Assets/Art/Textures/WindowBackdrop_KoreanSchool.png", Vector2.one);
+            CreateMaterial("M_CorridorPanorama", Color.white, 0f, 0.02f, "Assets/Art/Textures/CorridorPanorama_Strip.png", Vector2.one);
             CreateMaterial("M_CorridorFloor", new Color(0.93f, 0.91f, 0.86f), 0f, 0.30f, "Assets/Art/GeneratedMaterials/TX_ClassroomVinyl_BaseColor.png", new Vector2(15f, 1.15f), false, false, "Assets/Art/Textures/ClassroomFloor_Terrazzo_HQ_v2_Normal.png");
             CreateMaterial("M_CorridorWall", new Color(0.97f, 0.96f, 0.93f), 0f, 0.24f, "Assets/Art/GeneratedMaterials/TX_WallPaint_BaseColor.png", new Vector2(10.5f, 2.2f));
             CreateMaterial("M_ClockFace", new Color(0.95f, 0.94f, 0.89f), 0f, 0.25f);
@@ -1526,6 +1527,7 @@ namespace AdieLab.TeacherTraining.Editor
                          "Assets/Art/Textures/BirchDesk_Albedo.png",
                          "Assets/Art/Textures/ClassroomFloor_Albedo.png",
                          "Assets/Art/Textures/WindowBackdrop_KoreanSchool.png",
+                         "Assets/Art/Textures/CorridorPanorama_Strip.png",
                          "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2.png",
                          "Assets/Art/Textures/ClassroomFloor_Terrazzo_HQ_v2.png",
                          "Assets/Art/Textures/ClassroomWall_Eggshell_HQ_v2.png",
@@ -1540,7 +1542,9 @@ namespace AdieLab.TeacherTraining.Editor
                     continue;
                 }
 
-                bool isExteriorBackdrop = path.EndsWith("WindowBackdrop_KoreanSchool.png", StringComparison.OrdinalIgnoreCase);
+                bool isExteriorBackdrop =
+                    path.EndsWith("WindowBackdrop_KoreanSchool.png", StringComparison.OrdinalIgnoreCase) ||
+                    path.EndsWith("CorridorPanorama_Strip.png", StringComparison.OrdinalIgnoreCase);
                 importer.wrapMode = isExteriorBackdrop ? TextureWrapMode.Clamp : TextureWrapMode.Repeat;
                 importer.maxTextureSize = 2048;
                 importer.textureCompression = isExteriorBackdrop

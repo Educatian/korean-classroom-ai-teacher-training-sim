@@ -82,6 +82,17 @@ namespace AdieLab.TeacherTraining
             return state.TryResume();
         }
 
+        public bool TryCancelPendingStudentResponse()
+        {
+            if (!state.TryCancelStudentResponse())
+            {
+                return false;
+            }
+
+            input.InvalidateActiveRequest();
+            return true;
+        }
+
         public bool TryAbort()
         {
             input.InvalidateActiveRequest();

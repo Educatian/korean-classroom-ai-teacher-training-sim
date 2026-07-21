@@ -130,6 +130,7 @@ namespace AdieLab.TeacherTraining
     {
         public string sessionId;
         public string timestampUtc;
+        public int attemptNumber;
         public int beatIndex;
         public string beatTitle;
         public int selectedOption;

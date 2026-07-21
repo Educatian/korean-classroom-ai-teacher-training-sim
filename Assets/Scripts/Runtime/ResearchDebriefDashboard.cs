@@ -261,12 +261,14 @@ namespace AdieLab.TeacherTraining
                 string csvPath = Path.Combine(directory, stem + "-competencies.csv");
                 string gazeCsvPath = Path.Combine(directory, stem + "-eye-tracking.csv");
                 File.WriteAllText(jsonPath, JsonUtility.ToJson(currentReport, true), Encoding.UTF8);
-                var csv = new StringBuilder("model_id,session_id,competency,score,evidence_count\n");
+                var csv = new StringBuilder("model_id,session_id,attempt,is_retry,competency,score,evidence_count\n");
                 for (int index = 0; index < currentReport.competencies.Length; index++)
                 {
                     EcdCompetencyResult item = currentReport.competencies[index];
                     csv.Append(Escape(currentReport.modelId)).Append(',')
                         .Append(Escape(currentReport.sessionId)).Append(',')
+                        .Append(currentReport.attemptNumber).Append(',')
+                        .Append(currentReport.attemptNumber > 1 ? 1 : 0).Append(',')
                         .Append(Escape(item.competency.ToString())).Append(',')
                         .Append(item.score.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture)).Append(',')
                         .Append(item.evidenceCount).Append('\n');

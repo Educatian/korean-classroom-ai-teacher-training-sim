@@ -75,12 +75,20 @@ namespace AdieLab.TeacherTraining.Editor
             Cube("OuterWindowRailMid", root, new Vector3(0f, 2.02f, CorridorOuterZ), new Vector3(42.6f, 0.05f, 0.12f), metal);
             Cube("OuterWindowGlass", root, new Vector3(0f, 1.84f, CorridorOuterZ + 0.045f), new Vector3(42.6f, 1.7f, 0.03f), glass);
 
-            // Courtyard backdrop quads behind the glazing so the windows never
-            // show void, even at glancing angles from the corridor ends.
-            for (int i = 0; i < 5; i++)
+            // Courtyard backdrop behind the glazing so the windows never show
+            // void, even at glancing angles from the corridor ends. One wide
+            // campus panorama split into four tiles; alternate tiles mirror
+            // (negative x scale) so the seam lines up without visible repeats.
+            Material panorama = Mat("M_CorridorPanorama") ?? exterior;
+            for (int i = 0; i < 4; i++)
             {
-                float x = -18.8f + i * 9.4f;
-                Quad($"CorridorBackdrop_{i}", root, new Vector3(x, 1.75f, 8.85f), new Vector3(9.45f, 3.6f, 1f), Quaternion.identity, exterior);
+                float x = -16.2f + i * 10.8f;
+                GameObject tile = Quad($"CorridorBackdrop_{i}", root, new Vector3(x, 1.75f, 8.85f), new Vector3(10.85f, 3.6f, 1f), Quaternion.identity, panorama);
+                if (i % 2 == 1)
+                {
+                    Vector3 scale = tile.transform.localScale;
+                    tile.transform.localScale = new Vector3(-scale.x, scale.y, scale.z);
+                }
             }
         }
 

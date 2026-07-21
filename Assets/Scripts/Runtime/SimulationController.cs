@@ -27,6 +27,7 @@ namespace AdieLab.TeacherTraining
         private string sessionId;
         private string sessionStartedAtUtc;
         private int beatIndex;
+        private int attemptNumber = 1;
         private int score;
         private int dialogueRequestId;
         private int telemetrySequence;
@@ -97,6 +98,8 @@ namespace AdieLab.TeacherTraining
                 .LoadDefault()
                 .ScenarioFor(ActiveSceneId);
             beats = scenarioAsset.BuildRuntimeBeats();
+            attemptNumber = TrainingAttemptTracker.BeginAttempt(ActiveSceneId);
+            TeacherResponseOptionShuffler.Shuffle(beats, attemptNumber, ActiveSceneId);
             crisisStages = new CrisisStage[scenarioAsset.AuthoredBeats.Count];
             for (int index = 0; index < crisisStages.Length; index++)
             {
@@ -217,6 +220,7 @@ namespace AdieLab.TeacherTraining
                 ActiveSceneId,
                 null);
             HudPanelFolding.Install(hud.RootCanvas, hud.PrimaryFont);
+            PauseMenuSystem.Install(this, hud.RootCanvas, hud.PrimaryFont);
             MinimapSystem.Install(
                 hud.RootCanvas,
                 hud.PrimaryFont,
@@ -228,6 +232,10 @@ namespace AdieLab.TeacherTraining
             {
                 HandsOnCardSystem.Install(this, sceneCamera);
                 StrategyBoardSystem.Install(this, sceneCamera);
+            }
+            if (schoolyardScenario)
+            {
+                SchoolyardPlayLoop.Install(focalStudent, classmates);
             }
             StudentDialogueSelector selector = StudentDialogueSelector.Install(sceneCamera, focalStudent, classmates);
             if (selector != null)
@@ -308,6 +316,68 @@ namespace AdieLab.TeacherTraining
                     }
                 }
             });
+        }
+
+        /// <summary>
+        /// Pauses the assessed state machine for a psychological-safety break.
+        /// Any phase short of Complete/Aborted can pause, including while a
+        /// student response is in flight (the reply is dropped and the request
+        /// is cancelled on resume so the session cannot soft-lock).
+        /// </summary>
+        public bool PauseSession()
+        {
+            if (turnCoordinator == null || sessionComplete)
+            {
+                return false;
+            }
+
+            TrainingPhase before = turnCoordinator.Phase;
+            if (!turnCoordinator.TryPause())
+            {
+                return false;
+            }
+
+            speechPerformance?.StopSpeaking();
+            RecordLifecycleEvent(TrainingEventKind.SessionPaused, before, turnCoordinator.Phase);
+            return true;
+        }
+
+        public bool ResumeSession()
+        {
+            if (turnCoordinator == null || !turnCoordinator.TryResume())
+            {
+                return false;
+            }
+
+            RecordLifecycleEvent(TrainingEventKind.SessionResumed, TrainingPhase.Paused, turnCoordinator.Phase);
+            if (turnCoordinator.Phase == TrainingPhase.AwaitingStudentResponse)
+            {
+                // The in-flight reply was dropped while paused; hand the turn back.
+                dialogueRequestId++;
+                turnCoordinator.TryCancelPendingStudentResponse();
+                hud.SetDialogueState(false, "준비되면 다시 대응해 주세요");
+            }
+
+            return true;
+        }
+
+        public void AbortSessionToMenu()
+        {
+            if (turnCoordinator != null && !sessionComplete)
+            {
+                TrainingPhase before = turnCoordinator.Phase;
+                if (turnCoordinator.TryAbort())
+                {
+                    RecordLifecycleEvent(
+                        TrainingEventKind.SessionAborted,
+                        before,
+                        TrainingPhase.Aborted);
+                    QueueAbortedResearchSession();
+                }
+            }
+
+            speechPerformance?.StopSpeaking();
+            SceneManager.LoadScene("MainMenu", LoadSceneMode.Single);
         }
 
         private static Transform HeadOf(NpcPerformance student)
@@ -664,7 +734,20 @@ namespace AdieLab.TeacherTraining
                     TrainingEventKind.SessionCompleted,
                     TrainingPhase.ReviewingFeedback,
                     TrainingPhase.Complete);
-                ShowResearchDebrief();
+                // Reflection sits between completion and the debrief so the
+                // written answers land in telemetry before the session uploads.
+                ReflectionPromptPanel reflection = ReflectionPromptPanel.Show(
+                    hud.RootCanvas,
+                    hud.PrimaryFont,
+                    answers =>
+                    {
+                        RecordReflections(answers);
+                        ShowResearchDebrief();
+                    });
+                if (reflection == null)
+                {
+                    ShowResearchDebrief();
+                }
                 return;
             }
 
@@ -771,6 +854,81 @@ namespace AdieLab.TeacherTraining
                 telemetryEvents,
                 report,
                 eyeTrackingRecorder != null ? eyeTrackingRecorder.RawDataPath : string.Empty);
+        }
+
+        [Serializable]
+        private struct ReflectionRecord
+        {
+            public string sessionId;
+            public string timestampUtc;
+            public int question;
+            public string prompt;
+            public string answer;
+        }
+
+        private void RecordReflections(string[] answers)
+        {
+            if (answers == null)
+            {
+                return;
+            }
+
+            CrisisScenarioProfile scenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, beatIndex);
+            StudentStateSnapshot state = CaptureStudentState();
+            for (int index = 0; index < answers.Length; index++)
+            {
+                string answer = answers[index];
+                if (string.IsNullOrWhiteSpace(answer))
+                {
+                    continue;
+                }
+
+                // Telemetry keeps hash+length only (same privacy boundary as
+                // teacher utterances); the raw text stays in the local record.
+                AppendTelemetry(new TrainingTelemetryEvent
+                {
+                    eventId = Guid.NewGuid().ToString(),
+                    sessionId = sessionId,
+                    sequence = telemetrySequence++,
+                    timestampUtc = DateTime.UtcNow.ToString("O"),
+                    scenarioId = scenario.id,
+                    beatIndex = beatIndex,
+                    kind = TrainingEventKind.ReflectionSubmitted,
+                    phaseBefore = TrainingPhase.Complete,
+                    phaseAfter = TrainingPhase.Complete,
+                    actionId = "reflection.q" + (index + 1),
+                    actionSource = TrainingActionSource.TeacherUtterance,
+                    teacherTextLength = answer.Length,
+                    teacherTextHash = TextHash(answer),
+                    studentStateBefore = state,
+                    studentStateAfter = state
+                });
+                AppendReflectionRecord(index + 1, answer);
+            }
+        }
+
+        private void AppendReflectionRecord(int question, string answer)
+        {
+            var record = new ReflectionRecord
+            {
+                sessionId = sessionId,
+                timestampUtc = DateTime.UtcNow.ToString("O"),
+                question = question,
+                prompt = question <= ReflectionPromptPanel.Questions.Length
+                    ? ReflectionPromptPanel.Questions[question - 1]
+                    : string.Empty,
+                answer = answer
+            };
+            string path = Path.Combine(Application.persistentDataPath, "teacher_training_reflections.jsonl");
+            try
+            {
+                File.AppendAllText(path, JsonUtility.ToJson(record) + Environment.NewLine);
+            }
+            catch (Exception exception) when (
+                exception is IOException || exception is UnauthorizedAccessException)
+            {
+                Debug.LogWarning(exception.GetType().Name);
+            }
         }
 
         private void ShowResearchDebrief()
@@ -968,6 +1126,7 @@ namespace AdieLab.TeacherTraining
 
         private void AppendTelemetry(TrainingTelemetryEvent trainingEvent)
         {
+            trainingEvent.attemptNumber = attemptNumber;
             telemetryEvents.Add(trainingEvent);
 #if !UNITY_WEBGL
             string fileName = new string(new[]
@@ -999,6 +1158,7 @@ namespace AdieLab.TeacherTraining
             {
                 sessionId = sessionId,
                 timestampUtc = DateTime.UtcNow.ToString("O"),
+                attemptNumber = attemptNumber,
                 beatIndex = beatIndex,
                 beatTitle = beats[beatIndex].title,
                 selectedOption = selectedOption,

@@ -222,6 +222,7 @@ namespace AdieLab.TeacherTraining
         public string modelId;
         public int modelSchemaVersion;
         public string sessionId;
+        public int attemptNumber = 1;
         public string overallLevel;
         public float averageScore;
         public EcdCompetencyResult[] competencies = Array.Empty<EcdCompetencyResult>();
@@ -262,6 +263,7 @@ namespace AdieLab.TeacherTraining
             var timeline = new List<InterventionTimelineItem>();
             Dictionary<string, string> coachSuggestions = CollectCoachSuggestions(events);
             string sessionId = string.Empty;
+            int attemptNumber = 1;
             if (events != null)
             {
                 for (int index = 0; index < events.Count; index++)
@@ -273,6 +275,7 @@ namespace AdieLab.TeacherTraining
                     }
 
                     sessionId = string.IsNullOrEmpty(sessionId) ? item.sessionId : sessionId;
+                    attemptNumber = Math.Max(attemptNumber, item.attemptNumber);
                     StudentStateSnapshot state = item.studentStateAfter;
                     if (state != null)
                     {
@@ -395,6 +398,7 @@ namespace AdieLab.TeacherTraining
                 modelId = model.ModelId,
                 modelSchemaVersion = model.SchemaVersion,
                 sessionId = sessionId,
+                attemptNumber = attemptNumber,
                 overallLevel = model.BandFor(average),
                 averageScore = average,
                 competencies = competencyResults.ToArray(),
