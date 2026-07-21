@@ -41,6 +41,7 @@ namespace AdieLab.TeacherTraining
             Canvas canvas,
             TMP_FontAsset font,
             CrisisScenarioProfile scenario,
+            TrainingSceneId sceneId,
             Action onStart)
         {
             if (canvas == null || font == null)
@@ -66,9 +67,7 @@ namespace AdieLab.TeacherTraining
             Icon(card, "icon_guide", new Vector2(40f, -62f), 34f);
             Label(card, font, "Title", "훈련 시작 전 안내", 26, FontStyles.Bold, Accent,
                 new Vector2(84f, -66f), new Vector2(-40f, -24f));
-            Label(card, font, "Role",
-                "당신은 담임 교사입니다. 정서·행동 위기 신호를 보이는 학생에게 여섯 개 상황에 걸쳐 대응합니다.\n" +
-                "각 상황에서 학생을 관찰한 뒤 대응을 선택하거나, 학생에게 직접 말을 건넬 수 있습니다.",
+            Label(card, font, "Role", RoleTextFor(sceneId),
                 16, FontStyles.Normal, TextMain, new Vector2(40f, -132f), new Vector2(-40f, -72f));
 
             Icon(card, "icon_student", new Vector2(40f, -168f), 24f);
@@ -118,6 +117,22 @@ namespace AdieLab.TeacherTraining
 
             UiEntranceMotion.Play(card.gameObject, 0.28f);
             return panel;
+        }
+
+        private static string RoleTextFor(TrainingSceneId sceneId)
+        {
+            return sceneId switch
+            {
+                TrainingSceneId.CircleDiscussion =>
+                    "당신은 담임 교사입니다. 서클 토론과 발표 상황에서 또래의 시선 압박 속에 위기 신호를 보이는 학생에게 여섯 개 상황에 걸쳐 대응합니다.\n" +
+                    "각 상황에서 학생을 관찰한 뒤 대응을 선택하거나, 학생에게 직접 말을 건넬 수 있습니다.",
+                TrainingSceneId.RecoveryRoom =>
+                    "당신은 담임 교사입니다. 교실 위기 직후, 안정 공간(마음쉼터)에서 학생과 단둘이 회복 대화를 나눕니다.\n" +
+                    "여섯 단계에 걸쳐 진정 확인부터 교실 복귀 계획까지, 신뢰를 다시 세우는 대화를 이어 갑니다. 자유 대화를 적극 활용해 보세요.",
+                _ =>
+                    "당신은 담임 교사입니다. 정서·행동 위기 신호를 보이는 학생에게 여섯 개 상황에 걸쳐 대응합니다.\n" +
+                    "각 상황에서 학생을 관찰한 뒤 대응을 선택하거나, 학생에게 직접 말을 건넬 수 있습니다."
+            };
         }
 
         private static string DescribeStudent(CrisisScenarioProfile scenario)

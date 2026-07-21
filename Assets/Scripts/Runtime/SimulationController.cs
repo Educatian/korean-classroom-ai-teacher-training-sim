@@ -208,6 +208,7 @@ namespace AdieLab.TeacherTraining
                 hud.RootCanvas,
                 hud.PrimaryFont,
                 TrainingResearchCatalog.ForBeat(ActiveSceneId, 0),
+                ActiveSceneId,
                 null);
             HudPanelFolding.Install(hud.RootCanvas, hud.PrimaryFont);
             MinimapSystem.Install(

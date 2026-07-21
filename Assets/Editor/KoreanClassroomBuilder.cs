@@ -271,6 +271,7 @@ namespace AdieLab.TeacherTraining.Editor
             BuildSimulationSystem(systems.transform, hud, studentSet, cameraController);
 
             Selection.activeGameObject = camera.gameObject;
+            KoreanClassroomVisualPolish.ApplyVisualPolish();
             EditorSceneManager.SaveScene(scene, ScenePath);
             RegisterTrainingScenes();
             AssetDatabase.SaveAssets();

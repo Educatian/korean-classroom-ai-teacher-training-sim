@@ -35,6 +35,10 @@ namespace AdieLab.TeacherTraining
             {
                 TryLoad(TrainingSceneId.CircleDiscussion);
             }
+            else if (Input.GetKeyDown(KeyCode.F3))
+            {
+                TryLoad(TrainingSceneId.RecoveryRoom);
+            }
         }
 
         public void LoadOtherScene()
@@ -67,9 +71,12 @@ namespace AdieLab.TeacherTraining
                 return;
             }
 
-            sceneToggleLabel.text = CurrentSceneId == TrainingSceneId.GeneralClassroom
-                ? new string(new[] { 'S', 'C', 'E', 'N', 'E', ' ', '1' })
-                : new string(new[] { 'S', 'C', 'E', 'N', 'E', ' ', '2' });
+            sceneToggleLabel.text = CurrentSceneId switch
+            {
+                TrainingSceneId.CircleDiscussion => "서클 토론",
+                TrainingSceneId.RecoveryRoom => "마음쉼터",
+                _ => "일반 교실"
+            };
         }
     }
 }

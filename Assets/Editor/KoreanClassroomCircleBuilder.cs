@@ -101,6 +101,7 @@ namespace AdieLab.TeacherTraining.Editor
             context.transform.position = Vector3.zero;
             Cylinder("DiscussionCenterMarker", context.transform, new Vector3(0f, 0.015f, 0f), new Vector3(1.15f, 0.018f, 1.15f), Quaternion.identity, Mat("M_WorkMint"));
 
+            KoreanClassroomVisualPolish.ApplyVisualPolish();
             EditorSceneManager.SaveScene(scene, CircleScenePath);
             RegisterTrainingScenes();
             AssetDatabase.SaveAssets();

@@ -139,7 +139,40 @@ namespace AdieLab.TeacherTraining.Editor
             }
 
             // 6) Save as the recovery training scene.
+            KoreanClassroomVisualPolish.ApplyVisualPolish();
             EditorSceneManager.SaveScene(scene, RecoveryScenePath);
+        }
+
+        private static void PlaceBeanBag(
+            Transform parent,
+            string name,
+            Vector3 position,
+            Quaternion rotation,
+            Material tint)
+        {
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Models/Generated/SM_RecoveryBeanBag_Realistic.obj");
+            if (model == null)
+            {
+                // Fallback keeps the scene buildable if the authored mesh is absent.
+                Sphere(name, parent, position + new Vector3(0f, 0.2f, 0f), new Vector3(0.9f, 0.45f, 0.9f), tint);
+                return;
+            }
+
+            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(model, parent);
+            instance.name = name;
+            instance.transform.localPosition = position;
+            instance.transform.localRotation = rotation;
+            // 0.85 drops the dented seat to ~0.41 m, matching the seated-pose hip height.
+            instance.transform.localScale = new Vector3(0.85f, 0.85f, 0.85f);
+            foreach (MeshRenderer renderer in instance.GetComponentsInChildren<MeshRenderer>())
+            {
+                renderer.sharedMaterial = tint;
+            }
+
+            BoxCollider collider = instance.AddComponent<BoxCollider>();
+            collider.size = new Vector3(1.05f, 0.5f, 1.05f);
+            collider.center = new Vector3(0f, 0.25f, 0f);
             RegisterTrainingScenes();
             AssetDatabase.SaveAssets();
         }
@@ -356,11 +389,11 @@ namespace AdieLab.TeacherTraining.Editor
             Cylinder("Pencil_B", cup.transform, new Vector3(0.12f, 1.5f, 0.1f), new Vector3(0.14f, 1.5f, 0.14f), Quaternion.Euler(6f, 0f, -7f), Mat("M_RecoveryCard_Green"));
             Cylinder("Pencil_C", cup.transform, new Vector3(0.02f, 1.45f, -0.14f), new Vector3(0.14f, 1.5f, 0.14f), Quaternion.Euler(-7f, 0f, 3f), Mat("M_RecoveryCard_Blue"));
 
-            // --- Bean-bag floor cushions (student north side, teacher south) ---
-            Sphere("StudentBeanBag", furnishing, RecoveryStudentSeat + new Vector3(0f, 0.20f, 0.06f), new Vector3(0.85f, 0.52f, 0.85f), Mat("M_RecoveryCushionStudent"));
-            Sphere("StudentBeanBagBase", furnishing, RecoveryStudentSeat + new Vector3(0f, 0.10f, 0.06f), new Vector3(0.95f, 0.28f, 0.95f), Mat("M_RecoveryCushionStudent"));
-            Sphere("TeacherBeanBag", furnishing, RecoveryTeacherSeat + new Vector3(0f, 0.20f, -0.06f), new Vector3(0.85f, 0.52f, 0.85f), Mat("M_RecoveryCushionTeacher"));
-            Sphere("TeacherBeanBagBase", furnishing, RecoveryTeacherSeat + new Vector3(0f, 0.10f, -0.06f), new Vector3(0.95f, 0.28f, 0.95f), Mat("M_RecoveryCushionTeacher"));
+            // --- Bean-bag floor cushions (Blender-authored, dented seat, raised back) ---
+            PlaceBeanBag(furnishing, "StudentBeanBag", RecoveryStudentSeat + new Vector3(0f, 0f, 0.16f),
+                Quaternion.Euler(0f, 180f, 0f), Mat("M_RecoveryCushionStudent"));
+            PlaceBeanBag(furnishing, "TeacherBeanBag", RecoveryTeacherSeat + new Vector3(0f, 0f, -0.16f),
+                Quaternion.identity, Mat("M_RecoveryCushionTeacher"));
 
             // --- Low open bookshelf with picture books (east wall) -------------
             GameObject shelf = RootObject("PictureBookShelf", furnishing, new Vector3(-8.66f, 0f, 1.15f));
