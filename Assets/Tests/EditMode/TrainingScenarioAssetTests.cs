@@ -16,7 +16,12 @@ namespace AdieLab.TeacherTraining.Tests
             Assert.That(catalog, Is.Not.Null);
             Assert.That(catalog.StudentPersonas.Count, Is.GreaterThanOrEqualTo(5));
             Assert.That(catalog.Scenarios.Select(item => item.SceneId),
-                Is.EquivalentTo(new[] { TrainingSceneId.GeneralClassroom, TrainingSceneId.CircleDiscussion }));
+                Is.EquivalentTo(new[]
+                {
+                    TrainingSceneId.GeneralClassroom,
+                    TrainingSceneId.CircleDiscussion,
+                    TrainingSceneId.RecoveryRoom
+                }));
         }
 
         [Test]
@@ -31,7 +36,7 @@ namespace AdieLab.TeacherTraining.Tests
                 .ToArray();
 
             // Then
-            Assert.That(beats, Has.Length.EqualTo(12));
+            Assert.That(beats, Has.Length.EqualTo(18));
             Assert.That(beats.All(item => !string.IsNullOrWhiteSpace(item.Trigger)), Is.True);
             Assert.That(beats.Select(item => item.Stage).Distinct().Count(), Is.GreaterThanOrEqualTo(4));
             Assert.That(beats.All(item => item.TeacherGoals.Count > 0), Is.True);

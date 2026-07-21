@@ -11,11 +11,14 @@ namespace AdieLab.TeacherTraining.Tests
         {
             string general = TrainingSceneRegistry.SceneName(TrainingSceneId.GeneralClassroom);
             string circle = TrainingSceneRegistry.SceneName(TrainingSceneId.CircleDiscussion);
+            string recovery = TrainingSceneRegistry.SceneName(TrainingSceneId.RecoveryRoom);
 
             Assert.That(general, Is.Not.Empty);
             Assert.That(circle, Is.Not.Empty.And.Not.EqualTo(general));
+            Assert.That(recovery, Is.Not.Empty.And.Not.EqualTo(general).And.Not.EqualTo(circle));
             Assert.That(TrainingSceneRegistry.Other(TrainingSceneId.GeneralClassroom), Is.EqualTo(TrainingSceneId.CircleDiscussion));
-            Assert.That(TrainingSceneRegistry.Other(TrainingSceneId.CircleDiscussion), Is.EqualTo(TrainingSceneId.GeneralClassroom));
+            Assert.That(TrainingSceneRegistry.Other(TrainingSceneId.CircleDiscussion), Is.EqualTo(TrainingSceneId.RecoveryRoom));
+            Assert.That(TrainingSceneRegistry.Other(TrainingSceneId.RecoveryRoom), Is.EqualTo(TrainingSceneId.GeneralClassroom));
         }
 
         [Test]
@@ -23,10 +26,11 @@ namespace AdieLab.TeacherTraining.Tests
         {
             string[] paths = TrainingSceneRegistry.SceneAssetPaths();
 
-            Assert.That(paths, Has.Length.EqualTo(2));
-            Assert.That(paths.Distinct().Count(), Is.EqualTo(2));
+            Assert.That(paths, Has.Length.EqualTo(3));
+            Assert.That(paths.Distinct().Count(), Is.EqualTo(3));
             Assert.That(paths, Does.Contain(TrainingSceneRegistry.SceneAssetPath(TrainingSceneId.GeneralClassroom)));
             Assert.That(paths, Does.Contain(TrainingSceneRegistry.SceneAssetPath(TrainingSceneId.CircleDiscussion)));
+            Assert.That(paths, Does.Contain(TrainingSceneRegistry.SceneAssetPath(TrainingSceneId.RecoveryRoom)));
         }
 
         [Test]

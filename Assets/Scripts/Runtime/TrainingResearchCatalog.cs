@@ -5,7 +5,8 @@ namespace AdieLab.TeacherTraining
     public enum TrainingSceneId
     {
         GeneralClassroom = 1,
-        CircleDiscussion = 2
+        CircleDiscussion = 2,
+        RecoveryRoom = 3
     }
 
     public enum StudentGradeBand

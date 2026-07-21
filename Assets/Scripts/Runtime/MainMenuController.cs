@@ -22,6 +22,11 @@ namespace AdieLab.TeacherTraining
             SceneManager.LoadScene("KoreanClassroomCircleTraining", LoadSceneMode.Single);
         }
 
+        public void StartRecoveryRoom()
+        {
+            SceneManager.LoadScene("KoreanClassroomRecoveryTraining", LoadSceneMode.Single);
+        }
+
         public void ToggleResearchInfo()
         {
             if (infoPanel == null)

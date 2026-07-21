@@ -17,6 +17,7 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private TeacherCameraController teacherCamera;
         [SerializeField] private TrainingModeNavigator modeNavigator;
         [SerializeField] private bool circleDiscussionScenario;
+        [SerializeField] private bool recoveryRoomScenario;
         [SerializeField] private EcdAssessmentModel ecdAssessmentModel;
 
         private ScenarioBeat[] beats;
@@ -50,9 +51,11 @@ namespace AdieLab.TeacherTraining
         private bool sessionComplete =>
             turnCoordinator != null &&
             (turnCoordinator.Phase == TrainingPhase.Complete || turnCoordinator.Phase == TrainingPhase.Aborted);
-        private TrainingSceneId ActiveSceneId => circleDiscussionScenario
-            ? TrainingSceneId.CircleDiscussion
-            : TrainingSceneId.GeneralClassroom;
+        private TrainingSceneId ActiveSceneId => recoveryRoomScenario
+            ? TrainingSceneId.RecoveryRoom
+            : circleDiscussionScenario
+                ? TrainingSceneId.CircleDiscussion
+                : TrainingSceneId.GeneralClassroom;
         private ILlmGateway LlmGateway =>
             LlmDeploymentPolicy.TransportFor(Application.platform) == LlmTransportMode.SecureProxy
                 ? secureProxyCoach
@@ -108,6 +111,10 @@ namespace AdieLab.TeacherTraining
             StudentGazeAoiInstaller.Install(focalStudent, "focal-student", true);
             for (int index = 0; index < classmates.Length; index++)
             {
+                if (classmates[index] == null || !classmates[index].gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
                 StudentGazeAoiInstaller.Install(classmates[index], "classmate-" + index, false);
             }
             StudentGazeAoiInstaller.InstallHud(hud.GetComponentInParent<Canvas>());
@@ -170,6 +177,12 @@ namespace AdieLab.TeacherTraining
             for (int i = 0; i < classmates.Length; i++)
             {
                 NpcPerformance classmate = classmates[i];
+                // Scene variants (recovery room) deactivate classmates; their Awake never
+                // ran, so touching them would null-ref and abort the whole session start.
+                if (classmate == null || !classmate.gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
                 classmate.SetAffect(i % 3 == 0 ? StudentAffect.Uneasy : StudentAffect.Calm, true);
                 float initialHold = 5.2f + (i % 7) * 0.37f;
                 StudentGazeController gaze = classmate.GetComponent<StudentGazeController>();
@@ -197,6 +210,10 @@ namespace AdieLab.TeacherTraining
                 TrainingResearchCatalog.ForBeat(ActiveSceneId, 0),
                 null);
             HudPanelFolding.Install(hud.RootCanvas, hud.PrimaryFont);
+            MinimapSystem.Install(
+                hud.RootCanvas,
+                hud.PrimaryFont,
+                teacherCamera != null ? teacherCamera.GetComponent<Camera>() : Camera.main);
             dialogueTarget = focalStudent;
             focalSpeechAnchor = HeadOf(focalStudent);
             Camera sceneCamera = teacherCamera != null ? teacherCamera.GetComponent<Camera>() : Camera.main;

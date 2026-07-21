@@ -6,6 +6,7 @@ namespace AdieLab.TeacherTraining
     {
         private const int KoreanClassroomTraining = 0;
         private const int KoreanClassroomCircleTraining = 0;
+        private const int KoreanClassroomRecoveryTraining = 0;
         private static readonly string AssetPrefix = new string(new[]
         {
             'A', 's', 's', 'e', 't', 's', '/', 'S', 'c', 'e', 'n', 'e', 's', '/'
@@ -21,6 +22,7 @@ namespace AdieLab.TeacherTraining
             {
                 TrainingSceneId.GeneralClassroom => nameof(KoreanClassroomTraining),
                 TrainingSceneId.CircleDiscussion => nameof(KoreanClassroomCircleTraining),
+                TrainingSceneId.RecoveryRoom => nameof(KoreanClassroomRecoveryTraining),
                 _ => throw new ArgumentOutOfRangeException(nameof(sceneId), sceneId, null)
             };
         }
@@ -35,7 +37,8 @@ namespace AdieLab.TeacherTraining
             return new[]
             {
                 SceneAssetPath(TrainingSceneId.GeneralClassroom),
-                SceneAssetPath(TrainingSceneId.CircleDiscussion)
+                SceneAssetPath(TrainingSceneId.CircleDiscussion),
+                SceneAssetPath(TrainingSceneId.RecoveryRoom)
             };
         }
 
@@ -44,18 +47,27 @@ namespace AdieLab.TeacherTraining
             return sceneId switch
             {
                 TrainingSceneId.GeneralClassroom => TrainingSceneId.CircleDiscussion,
-                TrainingSceneId.CircleDiscussion => TrainingSceneId.GeneralClassroom,
+                TrainingSceneId.CircleDiscussion => TrainingSceneId.RecoveryRoom,
+                TrainingSceneId.RecoveryRoom => TrainingSceneId.GeneralClassroom,
                 _ => throw new ArgumentOutOfRangeException(nameof(sceneId), sceneId, null)
             };
         }
 
         public static TrainingSceneId FromSceneName(string sceneName)
         {
-            return string.Equals(
+            if (string.Equals(
                     sceneName,
                     SceneName(TrainingSceneId.CircleDiscussion),
+                    StringComparison.Ordinal))
+            {
+                return TrainingSceneId.CircleDiscussion;
+            }
+
+            return string.Equals(
+                    sceneName,
+                    SceneName(TrainingSceneId.RecoveryRoom),
                     StringComparison.Ordinal)
-                ? TrainingSceneId.CircleDiscussion
+                ? TrainingSceneId.RecoveryRoom
                 : TrainingSceneId.GeneralClassroom;
         }
     }
