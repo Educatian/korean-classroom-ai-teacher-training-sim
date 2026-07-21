@@ -18,6 +18,8 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private TrainingModeNavigator modeNavigator;
         [SerializeField] private bool circleDiscussionScenario;
         [SerializeField] private bool recoveryRoomScenario;
+        [SerializeField] private bool schoolyardScenario;
+        [SerializeField] private bool gymnasiumScenario;
         [SerializeField] private EcdAssessmentModel ecdAssessmentModel;
 
         private ScenarioBeat[] beats;
@@ -51,11 +53,15 @@ namespace AdieLab.TeacherTraining
         private bool sessionComplete =>
             turnCoordinator != null &&
             (turnCoordinator.Phase == TrainingPhase.Complete || turnCoordinator.Phase == TrainingPhase.Aborted);
-        private TrainingSceneId ActiveSceneId => recoveryRoomScenario
-            ? TrainingSceneId.RecoveryRoom
-            : circleDiscussionScenario
-                ? TrainingSceneId.CircleDiscussion
-                : TrainingSceneId.GeneralClassroom;
+        private TrainingSceneId ActiveSceneId => gymnasiumScenario
+            ? TrainingSceneId.Gymnasium
+            : schoolyardScenario
+                ? TrainingSceneId.Schoolyard
+                : recoveryRoomScenario
+                    ? TrainingSceneId.RecoveryRoom
+                    : circleDiscussionScenario
+                        ? TrainingSceneId.CircleDiscussion
+                        : TrainingSceneId.GeneralClassroom;
         private ILlmGateway LlmGateway =>
             LlmDeploymentPolicy.TransportFor(Application.platform) == LlmTransportMode.SecureProxy
                 ? secureProxyCoach

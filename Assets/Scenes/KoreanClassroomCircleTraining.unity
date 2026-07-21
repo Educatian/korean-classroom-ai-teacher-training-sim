@@ -20,9 +20,9 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.82, g: 0.82, b: 0.76, a: 1}
-  m_AmbientEquatorColor: {r: 0.6, g: 0.57, b: 0.5, a: 1}
-  m_AmbientGroundColor: {r: 0.25, g: 0.23, b: 0.2, a: 1}
+  m_AmbientSkyColor: {r: 0.72, g: 0.72, b: 0.7, a: 1}
+  m_AmbientEquatorColor: {r: 0.58, g: 0.56, b: 0.53, a: 1}
+  m_AmbientGroundColor: {r: 0.36, g: 0.33, b: 0.3, a: 1}
   m_AmbientIntensity: 1.02
   m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
@@ -102011,7 +102011,7 @@ Camera:
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_RenderingPath: -1
+  m_RenderingPath: 3
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
@@ -122697,6 +122697,8 @@ MonoBehaviour:
   modeNavigator: {fileID: 1272401512}
   circleDiscussionScenario: 1
   recoveryRoomScenario: 0
+  schoolyardScenario: 0
+  gymnasiumScenario: 0
   ecdAssessmentModel: {fileID: 0}
 --- !u!114 &1995604414
 MonoBehaviour:

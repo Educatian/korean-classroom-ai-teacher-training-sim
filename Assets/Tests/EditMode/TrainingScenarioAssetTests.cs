@@ -20,7 +20,9 @@ namespace AdieLab.TeacherTraining.Tests
                 {
                     TrainingSceneId.GeneralClassroom,
                     TrainingSceneId.CircleDiscussion,
-                    TrainingSceneId.RecoveryRoom
+                    TrainingSceneId.RecoveryRoom,
+                    TrainingSceneId.Schoolyard,
+                    TrainingSceneId.Gymnasium
                 }));
         }
 
@@ -36,7 +38,7 @@ namespace AdieLab.TeacherTraining.Tests
                 .ToArray();
 
             // Then
-            Assert.That(beats, Has.Length.EqualTo(18));
+            Assert.That(beats, Has.Length.EqualTo(30));
             Assert.That(beats.All(item => !string.IsNullOrWhiteSpace(item.Trigger)), Is.True);
             Assert.That(beats.Select(item => item.Stage).Distinct().Count(), Is.GreaterThanOrEqualTo(4));
             Assert.That(beats.All(item => item.TeacherGoals.Count > 0), Is.True);

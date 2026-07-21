@@ -27,6 +27,16 @@ namespace AdieLab.TeacherTraining
             SceneManager.LoadScene("KoreanClassroomRecoveryTraining", LoadSceneMode.Single);
         }
 
+        public void StartSchoolyard()
+        {
+            SceneManager.LoadScene("KoreanSchoolyardTraining", LoadSceneMode.Single);
+        }
+
+        public void StartGymnasium()
+        {
+            SceneManager.LoadScene("KoreanGymnasiumTraining", LoadSceneMode.Single);
+        }
+
         public void ToggleResearchInfo()
         {
             if (infoPanel == null)

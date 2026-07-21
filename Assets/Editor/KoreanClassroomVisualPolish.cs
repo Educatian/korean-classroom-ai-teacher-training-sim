@@ -88,6 +88,44 @@ namespace AdieLab.TeacherTraining.Editor
             vignette.intensity.Override(0.16f);
             vignette.smoothness.Override(0.42f);
 
+            // --- Advanced pass: adaptation, photographic texture, reflections ---
+            if (!profile.TryGetSettings(out AutoExposure exposure))
+            {
+                exposure = profile.AddSettings<AutoExposure>();
+            }
+
+            exposure.minLuminance.Override(-2f);
+            exposure.maxLuminance.Override(2f);
+            exposure.keyValue.Override(1f);
+            exposure.speedUp.Override(2.2f);
+            exposure.speedDown.Override(1.4f);
+
+            if (!profile.TryGetSettings(out Grain grain))
+            {
+                grain = profile.AddSettings<Grain>();
+            }
+
+            grain.intensity.Override(0.12f);
+            grain.size.Override(1.1f);
+            grain.lumContrib.Override(0.75f);
+
+            if (!profile.TryGetSettings(out ChromaticAberration aberration))
+            {
+                aberration = profile.AddSettings<ChromaticAberration>();
+            }
+
+            aberration.intensity.Override(0.06f);
+
+            if (!profile.TryGetSettings(out ScreenSpaceReflections reflections))
+            {
+                reflections = profile.AddSettings<ScreenSpaceReflections>();
+            }
+
+            // Requires the deferred rendering path (set on cameras in AttachPostFx).
+            reflections.preset.Override(ScreenSpaceReflectionPreset.Medium);
+            reflections.distanceFade.Override(0.12f);
+            reflections.vignette.Override(0.45f);
+
             EditorUtility.SetDirty(profile);
             AssetDatabase.SaveAssets();
             return profile;
@@ -102,6 +140,11 @@ namespace AdieLab.TeacherTraining.Editor
                 {
                     continue;
                 }
+
+                // Deferred enables screen-space reflections on the glossy floors;
+                // the platform guard reverts to forward on Android at runtime.
+                camera.renderingPath = RenderingPath.DeferredShading;
+                camera.allowHDR = true;
 
                 var layer = camera.GetComponent<PostProcessLayer>();
                 if (layer == null)
@@ -182,6 +225,71 @@ namespace AdieLab.TeacherTraining.Editor
             SetMaterialFloat("M_Glass", "_Glossiness", 0.94f);
             SetMaterialFloat("M_Wall", "_Glossiness", 0.18f);
             SetMaterialFloat("M_CorridorWall", "_Glossiness", 0.16f);
+            ApplyDetailMaps();
+        }
+
+        private const string DetailWallPath = "Assets/Art/GeneratedMaterials/TX_Detail_WallMottle.png";
+        private const string DetailFloorPath = "Assets/Art/GeneratedMaterials/TX_Detail_FloorScuff.png";
+        private const string DetailNormalPath = "Assets/Art/GeneratedMaterials/TX_Detail_MicroNormal.png";
+
+        private static void ApplyDetailMaps()
+        {
+            EnsureNormalImport(DetailNormalPath);
+            var wallDetail = AssetDatabase.LoadAssetAtPath<Texture2D>(DetailWallPath);
+            var floorDetail = AssetDatabase.LoadAssetAtPath<Texture2D>(DetailFloorPath);
+            var microNormal = AssetDatabase.LoadAssetAtPath<Texture2D>(DetailNormalPath);
+            SetDetail("M_Wall", wallDetail, microNormal, 6f, 0.35f);
+            SetDetail("M_CorridorWall", wallDetail, microNormal, 6f, 0.3f);
+            SetDetail("M_RecoveryWall", wallDetail, microNormal, 5f, 0.3f);
+            SetDetail("M_Floor", floorDetail, microNormal, 8f, 0.45f);
+            SetDetail("M_CorridorFloor", floorDetail, microNormal, 8f, 0.4f);
+        }
+
+        private static void EnsureNormalImport(string path)
+        {
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer != null && importer.textureType != TextureImporterType.NormalMap)
+            {
+                importer.textureType = TextureImporterType.NormalMap;
+                importer.SaveAndReimport();
+            }
+        }
+
+        private static void SetDetail(
+            string materialName,
+            Texture2D detailAlbedo,
+            Texture2D detailNormal,
+            float tiling,
+            float normalScale)
+        {
+            string[] guids = AssetDatabase.FindAssets(materialName + " t:Material");
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (Path.GetFileNameWithoutExtension(path) != materialName)
+                {
+                    continue;
+                }
+
+                var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (material == null)
+                {
+                    continue;
+                }
+
+                material.EnableKeyword("_DETAIL_MULX2");
+                if (detailAlbedo != null && material.HasProperty("_DetailAlbedoMap"))
+                {
+                    material.SetTexture("_DetailAlbedoMap", detailAlbedo);
+                    material.SetTextureScale("_DetailAlbedoMap", new Vector2(tiling, tiling));
+                }
+                if (detailNormal != null && material.HasProperty("_DetailNormalMap"))
+                {
+                    material.SetTexture("_DetailNormalMap", detailNormal);
+                    material.SetFloat("_DetailNormalMapScale", normalScale);
+                }
+                EditorUtility.SetDirty(material);
+            }
         }
 
         private static void SetMaterialFloat(string materialName, string property, float value)
@@ -217,6 +325,28 @@ namespace AdieLab.TeacherTraining.Editor
             }
 
             RenderSettings.ambientIntensity = 1.02f;
+
+            // Scene-typed trilight ambient: cool sky bounce outdoors, warm interior fill.
+            string sceneName = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().name;
+            bool outdoor = sceneName.Contains("Schoolyard");
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
+            if (outdoor)
+            {
+                RenderSettings.ambientSkyColor = new Color(0.62f, 0.72f, 0.85f);
+                RenderSettings.ambientEquatorColor = new Color(0.60f, 0.62f, 0.58f);
+                RenderSettings.ambientGroundColor = new Color(0.30f, 0.36f, 0.26f);
+            }
+            else
+            {
+                RenderSettings.ambientSkyColor = new Color(0.72f, 0.72f, 0.70f);
+                RenderSettings.ambientEquatorColor = new Color(0.58f, 0.56f, 0.53f);
+                RenderSettings.ambientGroundColor = new Color(0.36f, 0.33f, 0.30f);
+            }
+
+            // Shadow fidelity for close-range character shots.
+            QualitySettings.shadowResolution = ShadowResolution.VeryHigh;
+            QualitySettings.shadowDistance = Mathf.Max(QualitySettings.shadowDistance, outdoor ? 110f : 55f);
+            QualitySettings.shadowCascades = 4;
         }
     }
 }

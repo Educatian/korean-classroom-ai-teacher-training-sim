@@ -17,6 +17,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/KoreanClassroomRecoveryTraining.unity
     guid: 0a462ae23240d2148860ac6f5a6250c0
+  - enabled: 1
+    path: Assets/Scenes/KoreanSchoolyardTraining.unity
+    guid: 2aee1c3f3855047408ad10b76bef457a
+  - enabled: 1
+    path: Assets/Scenes/KoreanGymnasiumTraining.unity
+    guid: d8462f7bcbfa9814a89d7a17e7bd28ad
   m_configObjects:
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 4b579e0d78cb3ba41af07931eae1567f, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: e49fe53cafbfe964fb59d1e0d77eb7fa, type: 2}

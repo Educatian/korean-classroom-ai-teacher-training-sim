@@ -39,6 +39,14 @@ namespace AdieLab.TeacherTraining
             {
                 TryLoad(TrainingSceneId.RecoveryRoom);
             }
+            else if (Input.GetKeyDown(KeyCode.F4))
+            {
+                TryLoad(TrainingSceneId.Schoolyard);
+            }
+            else if (Input.GetKeyDown(KeyCode.F5))
+            {
+                TryLoad(TrainingSceneId.Gymnasium);
+            }
         }
 
         public void LoadOtherScene()
@@ -75,6 +83,8 @@ namespace AdieLab.TeacherTraining
             {
                 TrainingSceneId.CircleDiscussion => "서클 토론",
                 TrainingSceneId.RecoveryRoom => "마음쉼터",
+                TrainingSceneId.Schoolyard => "운동장",
+                TrainingSceneId.Gymnasium => "강당",
                 _ => "일반 교실"
             };
         }

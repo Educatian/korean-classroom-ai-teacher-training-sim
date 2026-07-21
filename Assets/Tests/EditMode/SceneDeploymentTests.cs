@@ -12,13 +12,19 @@ namespace AdieLab.TeacherTraining.Tests
             string general = TrainingSceneRegistry.SceneName(TrainingSceneId.GeneralClassroom);
             string circle = TrainingSceneRegistry.SceneName(TrainingSceneId.CircleDiscussion);
             string recovery = TrainingSceneRegistry.SceneName(TrainingSceneId.RecoveryRoom);
+            string schoolyard = TrainingSceneRegistry.SceneName(TrainingSceneId.Schoolyard);
+            string gymnasium = TrainingSceneRegistry.SceneName(TrainingSceneId.Gymnasium);
 
             Assert.That(general, Is.Not.Empty);
             Assert.That(circle, Is.Not.Empty.And.Not.EqualTo(general));
             Assert.That(recovery, Is.Not.Empty.And.Not.EqualTo(general).And.Not.EqualTo(circle));
+            Assert.That(schoolyard, Is.Not.Empty.And.Not.EqualTo(general).And.Not.EqualTo(circle).And.Not.EqualTo(recovery));
+            Assert.That(gymnasium, Is.Not.Empty.And.Not.EqualTo(schoolyard));
             Assert.That(TrainingSceneRegistry.Other(TrainingSceneId.GeneralClassroom), Is.EqualTo(TrainingSceneId.CircleDiscussion));
             Assert.That(TrainingSceneRegistry.Other(TrainingSceneId.CircleDiscussion), Is.EqualTo(TrainingSceneId.RecoveryRoom));
-            Assert.That(TrainingSceneRegistry.Other(TrainingSceneId.RecoveryRoom), Is.EqualTo(TrainingSceneId.GeneralClassroom));
+            Assert.That(TrainingSceneRegistry.Other(TrainingSceneId.RecoveryRoom), Is.EqualTo(TrainingSceneId.Schoolyard));
+            Assert.That(TrainingSceneRegistry.Other(TrainingSceneId.Schoolyard), Is.EqualTo(TrainingSceneId.Gymnasium));
+            Assert.That(TrainingSceneRegistry.Other(TrainingSceneId.Gymnasium), Is.EqualTo(TrainingSceneId.GeneralClassroom));
         }
 
         [Test]
@@ -26,11 +32,13 @@ namespace AdieLab.TeacherTraining.Tests
         {
             string[] paths = TrainingSceneRegistry.SceneAssetPaths();
 
-            Assert.That(paths, Has.Length.EqualTo(3));
-            Assert.That(paths.Distinct().Count(), Is.EqualTo(3));
+            Assert.That(paths, Has.Length.EqualTo(5));
+            Assert.That(paths.Distinct().Count(), Is.EqualTo(5));
             Assert.That(paths, Does.Contain(TrainingSceneRegistry.SceneAssetPath(TrainingSceneId.GeneralClassroom)));
             Assert.That(paths, Does.Contain(TrainingSceneRegistry.SceneAssetPath(TrainingSceneId.CircleDiscussion)));
             Assert.That(paths, Does.Contain(TrainingSceneRegistry.SceneAssetPath(TrainingSceneId.RecoveryRoom)));
+            Assert.That(paths, Does.Contain(TrainingSceneRegistry.SceneAssetPath(TrainingSceneId.Schoolyard)));
+            Assert.That(paths, Does.Contain(TrainingSceneRegistry.SceneAssetPath(TrainingSceneId.Gymnasium)));
         }
 
         [Test]

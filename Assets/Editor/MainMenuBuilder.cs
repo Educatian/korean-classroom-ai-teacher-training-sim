@@ -87,11 +87,13 @@ namespace AdieLab.TeacherTraining.EditorTools
             MainMenuController controller = controllerObject.GetComponent<MainMenuController>();
 
             // Menu buttons
-            Button startGeneral = MenuButton(root, font, "StartGeneralButton", "일반 교실 훈련 시작", Teal, TealDeep, new Vector2(0.5f, 0f), new Vector2(-250f, 316f), new Vector2(250f, 388f), 26);
-            Button startCircle = MenuButton(root, font, "StartCircleButton", "서클 토론 훈련", ButtonDark, TextMain, new Vector2(0.5f, 0f), new Vector2(-250f, 240f), new Vector2(-4f, 302f), 20);
-            Button startRecovery = MenuButton(root, font, "StartRecoveryButton", "안정 공간 1:1 대화", ButtonDark, TextMain, new Vector2(0.5f, 0f), new Vector2(4f, 240f), new Vector2(250f, 302f), 20);
-            Button infoButton = MenuButton(root, font, "ResearchInfoButton", "연구 정보", ButtonDark, TextSoft, new Vector2(0.5f, 0f), new Vector2(-250f, 166f), new Vector2(-4f, 226f), 19);
-            Button quitButton = MenuButton(root, font, "QuitButton", "종료", ButtonDark, TextSoft, new Vector2(0.5f, 0f), new Vector2(4f, 166f), new Vector2(250f, 226f), 19);
+            Button startGeneral = MenuButton(root, font, "StartGeneralButton", "일반 교실 훈련 시작", Teal, TealDeep, new Vector2(0.5f, 0f), new Vector2(-330f, 330f), new Vector2(330f, 398f), 26);
+            Button startCircle = MenuButton(root, font, "StartCircleButton", "서클 토론", ButtonDark, TextMain, new Vector2(0.5f, 0f), new Vector2(-330f, 258f), new Vector2(-172f, 318f), 19);
+            Button startRecovery = MenuButton(root, font, "StartRecoveryButton", "마음쉼터 1:1", ButtonDark, TextMain, new Vector2(0.5f, 0f), new Vector2(-164f, 258f), new Vector2(-6f, 318f), 19);
+            Button startSchoolyard = MenuButton(root, font, "StartSchoolyardButton", "운동장", ButtonDark, TextMain, new Vector2(0.5f, 0f), new Vector2(6f, 258f), new Vector2(164f, 318f), 19);
+            Button startGymnasium = MenuButton(root, font, "StartGymnasiumButton", "강당", ButtonDark, TextMain, new Vector2(0.5f, 0f), new Vector2(172f, 258f), new Vector2(330f, 318f), 19);
+            Button infoButton = MenuButton(root, font, "ResearchInfoButton", "연구 정보", ButtonDark, TextSoft, new Vector2(0.5f, 0f), new Vector2(-330f, 186f), new Vector2(-6f, 244f), 18);
+            Button quitButton = MenuButton(root, font, "QuitButton", "종료", ButtonDark, TextSoft, new Vector2(0.5f, 0f), new Vector2(6f, 186f), new Vector2(330f, 244f), 18);
 
             Text(root, "Footer", "연구·교사교육용 프로토타입 · 임상 판단과 학교 위기대응 절차를 대체하지 않습니다", font, 14, FontStyles.Normal,
                 new Color(0.45f, 0.56f, 0.58f, 1f),
@@ -126,6 +128,8 @@ namespace AdieLab.TeacherTraining.EditorTools
             UnityEventTools(startGeneral, controller.StartGeneralClassroom);
             UnityEventTools(startCircle, controller.StartCircleDiscussion);
             UnityEventTools(startRecovery, controller.StartRecoveryRoom);
+            UnityEventTools(startSchoolyard, controller.StartSchoolyard);
+            UnityEventTools(startGymnasium, controller.StartGymnasium);
             UnityEventTools(infoButton, controller.ToggleResearchInfo);
             UnityEventTools(closeInfo, controller.ToggleResearchInfo);
             UnityEventTools(quitButton, controller.QuitApplication);
@@ -147,7 +151,9 @@ namespace AdieLab.TeacherTraining.EditorTools
                 ScenePath,
                 "Assets/Scenes/KoreanClassroomTraining.unity",
                 "Assets/Scenes/KoreanClassroomCircleTraining.unity",
-                "Assets/Scenes/KoreanClassroomRecoveryTraining.unity"
+                "Assets/Scenes/KoreanClassroomRecoveryTraining.unity",
+                "Assets/Scenes/KoreanSchoolyardTraining.unity",
+                "Assets/Scenes/KoreanGymnasiumTraining.unity"
             };
             EditorBuildSettings.scenes = desired
                 .Select(path => new EditorBuildSettingsScene(path, true))

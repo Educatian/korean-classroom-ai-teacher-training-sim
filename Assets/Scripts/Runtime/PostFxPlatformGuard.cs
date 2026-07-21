@@ -20,6 +20,12 @@ namespace AdieLab.TeacherTraining
 
 #if UNITY_ANDROID && !UNITY_EDITOR
             layer.enabled = false;
+            // Deferred (needed for desktop SSR) is too heavy for the Quest GPU.
+            var guardedCamera = GetComponent<Camera>();
+            if (guardedCamera != null)
+            {
+                guardedCamera.renderingPath = RenderingPath.Forward;
+            }
 #endif
         }
     }

@@ -6,7 +6,9 @@ namespace AdieLab.TeacherTraining
     {
         GeneralClassroom = 1,
         CircleDiscussion = 2,
-        RecoveryRoom = 3
+        RecoveryRoom = 3,
+        Schoolyard = 4,
+        Gymnasium = 5
     }
 
     public enum StudentGradeBand

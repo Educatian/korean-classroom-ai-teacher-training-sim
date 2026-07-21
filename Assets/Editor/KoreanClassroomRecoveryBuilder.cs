@@ -425,9 +425,11 @@ namespace AdieLab.TeacherTraining.Editor
                 Cube($"MidBook_{i:00}", shelf.transform, new Vector3(0f, 0.4375f + 0.10f, -0.45f + i * 0.16f), new Vector3(0.15f, 0.20f, 0.036f), bookMaterials[(i + 3) % bookMaterials.Length]);
             }
 
-            // --- Potted plants (two corners) -----------------------------------
-            BuildRecoveryPlant(furnishing, "RecoveryPlant_SW", new Vector3(-13.1f, 0f, 0.55f));
-            BuildRecoveryPlant(furnishing, "RecoveryPlant_NE", new Vector3(-9.0f, 0f, 4.35f));
+            // --- Potted plants (Blender-authored, two corners) ------------------
+            PlaceAuthoredPlant(furnishing, "RecoveryPlant_SW", "SM_PottedSansevieria_Realistic.obj",
+                new Vector3(-13.1f, 0f, 0.55f), 35f, 1.05f);
+            PlaceAuthoredPlant(furnishing, "RecoveryPlant_NE", "SM_PottedRubberPlant_Realistic.obj",
+                new Vector3(-9.0f, 0f, 4.35f), 140f, 1.1f);
 
             // --- Framed kid-art posters ----------------------------------------
             Cube("KidArtFrame_A", furnishing, new Vector3(-11.85f, 1.78f, 0.10f), new Vector3(0.66f, 0.50f, 0.03f), wood);
@@ -444,21 +446,26 @@ namespace AdieLab.TeacherTraining.Editor
             Cube("MinuteHand", clock.transform, new Vector3(0.09f, 0.10f, 0f), new Vector3(0.28f, 0.025f, 0.025f), metal);
         }
 
-        private static void BuildRecoveryPlant(Transform parent, string name, Vector3 position)
+        private static void PlaceAuthoredPlant(
+            Transform parent,
+            string name,
+            string fileName,
+            Vector3 position,
+            float yaw,
+            float scale)
         {
-            GameObject plant = RootObject(name, parent, position);
-            Cylinder("Pot", plant.transform, new Vector3(0f, 0.22f, 0f), new Vector3(0.24f, 0.22f, 0.24f), Quaternion.identity, Mat("M_PlantPot"));
-            Cylinder("Stem", plant.transform, new Vector3(0f, 0.58f, 0f), new Vector3(0.032f, 0.34f, 0.032f), Quaternion.identity, Mat("M_PlantLeaf"));
-            for (int i = 0; i < 5; i++)
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Models/Generated/" + fileName);
+            if (model == null)
             {
-                float angle = i * 72f;
-                Vector3 leafPosition = new Vector3(
-                    Mathf.Cos(angle * Mathf.Deg2Rad) * 0.20f,
-                    0.68f + (i % 2) * 0.11f,
-                    Mathf.Sin(angle * Mathf.Deg2Rad) * 0.20f);
-                GameObject leaf = Sphere($"Leaf_{i}", plant.transform, leafPosition, new Vector3(0.26f, 0.09f, 0.15f), Mat("M_PlantLeaf"));
-                leaf.transform.localRotation = Quaternion.Euler(0f, -angle, 18f);
+                Debug.LogWarning("Authored plant missing, keeping empty spot: " + fileName);
+                return;
             }
+
+            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(model, parent);
+            instance.name = name;
+            instance.transform.localPosition = position;
+            instance.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            instance.transform.localScale = new Vector3(scale, scale, scale);
         }
 
         private static void BuildRecoveryLighting(Transform root)

@@ -7,6 +7,8 @@ namespace AdieLab.TeacherTraining
         private const int KoreanClassroomTraining = 0;
         private const int KoreanClassroomCircleTraining = 0;
         private const int KoreanClassroomRecoveryTraining = 0;
+        private const int KoreanSchoolyardTraining = 0;
+        private const int KoreanGymnasiumTraining = 0;
         private static readonly string AssetPrefix = new string(new[]
         {
             'A', 's', 's', 'e', 't', 's', '/', 'S', 'c', 'e', 'n', 'e', 's', '/'
@@ -23,6 +25,8 @@ namespace AdieLab.TeacherTraining
                 TrainingSceneId.GeneralClassroom => nameof(KoreanClassroomTraining),
                 TrainingSceneId.CircleDiscussion => nameof(KoreanClassroomCircleTraining),
                 TrainingSceneId.RecoveryRoom => nameof(KoreanClassroomRecoveryTraining),
+                TrainingSceneId.Schoolyard => nameof(KoreanSchoolyardTraining),
+                TrainingSceneId.Gymnasium => nameof(KoreanGymnasiumTraining),
                 _ => throw new ArgumentOutOfRangeException(nameof(sceneId), sceneId, null)
             };
         }
@@ -38,7 +42,9 @@ namespace AdieLab.TeacherTraining
             {
                 SceneAssetPath(TrainingSceneId.GeneralClassroom),
                 SceneAssetPath(TrainingSceneId.CircleDiscussion),
-                SceneAssetPath(TrainingSceneId.RecoveryRoom)
+                SceneAssetPath(TrainingSceneId.RecoveryRoom),
+                SceneAssetPath(TrainingSceneId.Schoolyard),
+                SceneAssetPath(TrainingSceneId.Gymnasium)
             };
         }
 
@@ -48,27 +54,24 @@ namespace AdieLab.TeacherTraining
             {
                 TrainingSceneId.GeneralClassroom => TrainingSceneId.CircleDiscussion,
                 TrainingSceneId.CircleDiscussion => TrainingSceneId.RecoveryRoom,
-                TrainingSceneId.RecoveryRoom => TrainingSceneId.GeneralClassroom,
+                TrainingSceneId.RecoveryRoom => TrainingSceneId.Schoolyard,
+                TrainingSceneId.Schoolyard => TrainingSceneId.Gymnasium,
+                TrainingSceneId.Gymnasium => TrainingSceneId.GeneralClassroom,
                 _ => throw new ArgumentOutOfRangeException(nameof(sceneId), sceneId, null)
             };
         }
 
         public static TrainingSceneId FromSceneName(string sceneName)
         {
-            if (string.Equals(
-                    sceneName,
-                    SceneName(TrainingSceneId.CircleDiscussion),
-                    StringComparison.Ordinal))
+            foreach (TrainingSceneId sceneId in (TrainingSceneId[])Enum.GetValues(typeof(TrainingSceneId)))
             {
-                return TrainingSceneId.CircleDiscussion;
+                if (string.Equals(sceneName, SceneName(sceneId), StringComparison.Ordinal))
+                {
+                    return sceneId;
+                }
             }
 
-            return string.Equals(
-                    sceneName,
-                    SceneName(TrainingSceneId.RecoveryRoom),
-                    StringComparison.Ordinal)
-                ? TrainingSceneId.RecoveryRoom
-                : TrainingSceneId.GeneralClassroom;
+            return TrainingSceneId.GeneralClassroom;
         }
     }
 
