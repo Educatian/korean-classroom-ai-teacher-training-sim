@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -225,6 +226,15 @@ namespace AdieLab.TeacherTraining.Editor
             SetMaterialFloat("M_Glass", "_Glossiness", 0.94f);
             SetMaterialFloat("M_Wall", "_Glossiness", 0.18f);
             SetMaterialFloat("M_CorridorWall", "_Glossiness", 0.16f);
+            // Gymnasium: polished maple court reads glossy; stage wood satin.
+            SetMaterialFloat("M_GymFloorMaple", "_Glossiness", 0.62f);
+            SetMaterialFloat("M_GymLineBlue", "_Glossiness", 0.58f);
+            SetMaterialFloat("M_GymLineGreen", "_Glossiness", 0.58f);
+            SetMaterialFloat("M_GymStageWoodDark", "_Glossiness", 0.42f);
+            SetMaterialFloat("M_GymWindowGlass", "_Glossiness", 0.94f);
+            SetMaterialFloat("M_GymPianoBlack", "_Glossiness", 0.7f);
+            // Recovery room: satin birch floor, matte rug stays untouched.
+            SetMaterialFloat("M_RecoveryFloorWood", "_Glossiness", 0.4f);
             ApplyDetailMaps();
         }
 
@@ -326,6 +336,25 @@ namespace AdieLab.TeacherTraining.Editor
 
             RenderSettings.ambientIntensity = 1.02f;
 
+            // Indoor grounding shadows: the two strongest point/spot lights per scene
+            // cast soft shadows so characters and furniture stop floating visually.
+            var localLights = new List<Light>();
+            foreach (Light light in Object.FindObjectsByType<Light>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            {
+                if (light.type == LightType.Point || light.type == LightType.Spot)
+                {
+                    light.shadows = LightShadows.None;
+                    localLights.Add(light);
+                }
+            }
+
+            localLights.Sort((a, b) => b.intensity.CompareTo(a.intensity));
+            for (int index = 0; index < Mathf.Min(2, localLights.Count); index++)
+            {
+                localLights[index].shadows = LightShadows.Soft;
+                localLights[index].shadowStrength = 0.6f;
+            }
+
             // Scene-typed trilight ambient: cool sky bounce outdoors, warm interior fill.
             string sceneName = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().name;
             bool outdoor = sceneName.Contains("Schoolyard");
@@ -335,6 +364,19 @@ namespace AdieLab.TeacherTraining.Editor
                 RenderSettings.ambientSkyColor = new Color(0.62f, 0.72f, 0.85f);
                 RenderSettings.ambientEquatorColor = new Color(0.60f, 0.62f, 0.58f);
                 RenderSettings.ambientGroundColor = new Color(0.30f, 0.36f, 0.26f);
+                // Afternoon sun angle: long readable shadows from trees, goals, and
+                // the apartment ring — near-noon light left the ground shadowless.
+                // Ambient is pulled down outdoors so sun shadows keep their contrast
+                // against the bright field instead of washing out.
+                RenderSettings.ambientIntensity = 0.85f;
+                foreach (Light light in Object.FindObjectsByType<Light>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+                {
+                    if (light.type == LightType.Directional)
+                    {
+                        light.transform.rotation = Quaternion.Euler(48f, -32f, 0f);
+                        light.shadowStrength = 0.9f;
+                    }
+                }
             }
             else
             {
