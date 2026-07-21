@@ -22,6 +22,7 @@ namespace AdieLab.TeacherTraining
         private ScenarioBeat[] beats;
         private TrainingScenarioAsset scenarioAsset;
         private string sessionId;
+        private string sessionStartedAtUtc;
         private int beatIndex;
         private int score;
         private int dialogueRequestId;
@@ -35,8 +36,14 @@ namespace AdieLab.TeacherTraining
         private TrainingTurnCoordinator turnCoordinator;
         private readonly ConversationSessionState conversationState = new ConversationSessionState(8);
         private readonly List<TeacherResponseOption> selectedResponses = new List<TeacherResponseOption>();
+        private PrebriefPanel prebriefPanel;
+        private NpcPerformance dialogueTarget;
+        private Transform focalSpeechAnchor;
         private readonly List<TrainingTelemetryEvent> telemetryEvents = new List<TrainingTelemetryEvent>();
         private NpcSpeechPerformance speechPerformance;
+        private TeacherEyeTrackingRecorder eyeTrackingRecorder;
+        private ResearchCloudSyncClient researchCloudSync;
+        private ResearchAutomaticSessionBootstrap researchBootstrap;
 
         private bool awaitingContinue =>
             turnCoordinator != null && turnCoordinator.Phase == TrainingPhase.ReviewingFeedback;
@@ -54,6 +61,7 @@ namespace AdieLab.TeacherTraining
         private void Awake()
         {
             sessionId = Guid.NewGuid().ToString("N");
+            sessionStartedAtUtc = DateTime.UtcNow.ToString("O");
             if (secureProxyCoach == null)
             {
                 secureProxyCoach = GetComponent<SecureProxyLlmGateway>();
@@ -61,6 +69,16 @@ namespace AdieLab.TeacherTraining
                 {
                     secureProxyCoach = gameObject.AddComponent<SecureProxyLlmGateway>();
                 }
+            }
+            researchCloudSync = GetComponent<ResearchCloudSyncClient>();
+            if (researchCloudSync == null)
+            {
+                researchCloudSync = gameObject.AddComponent<ResearchCloudSyncClient>();
+            }
+            researchBootstrap = GetComponent<ResearchAutomaticSessionBootstrap>();
+            if (researchBootstrap == null)
+            {
+                researchBootstrap = gameObject.AddComponent<ResearchAutomaticSessionBootstrap>();
             }
             if (ecdAssessmentModel == null)
             {
@@ -81,9 +99,57 @@ namespace AdieLab.TeacherTraining
             {
                 speechPerformance = focalStudent.gameObject.AddComponent<NpcSpeechPerformance>();
             }
+            eyeTrackingRecorder = GetComponent<TeacherEyeTrackingRecorder>();
+            if (eyeTrackingRecorder == null)
+            {
+                eyeTrackingRecorder = gameObject.AddComponent<TeacherEyeTrackingRecorder>();
+            }
+            eyeTrackingRecorder.Initialize(sessionId, EyeTrackingResearchSettings.LoadDefault(), CaptureStudentState);
+            StudentGazeAoiInstaller.Install(focalStudent, "focal-student", true);
+            for (int index = 0; index < classmates.Length; index++)
+            {
+                StudentGazeAoiInstaller.Install(classmates[index], "classmate-" + index, false);
+            }
+            StudentGazeAoiInstaller.InstallHud(hud.GetComponentInParent<Canvas>());
+            StudentGazeAoiInstaller.InstallNamedSceneTargets();
             hud.OptionSelected += HandleOptionSelected;
             hud.ContinueSelected += HandleContinue;
             hud.TeacherUtteranceSubmitted += HandleTeacherUtterance;
+            hud.OptionSelected += _ => prebriefPanel?.Dismiss();
+            hud.TeacherUtteranceSubmitted += _ => prebriefPanel?.Dismiss();
+        }
+
+        public void ConfigureResearchSession(
+            string bearerToken,
+            string pseudonymousParticipantCode,
+            bool consentToRawGaze)
+        {
+            secureProxyCoach?.SetSessionAuthorization(bearerToken);
+            ConfigureResearchLoggingSession(
+                bearerToken,
+                pseudonymousParticipantCode,
+                consentToRawGaze);
+        }
+
+        public void ConfigureResearchLoggingSession(
+            string bearerToken,
+            string pseudonymousParticipantCode,
+            bool consentToRawGaze)
+        {
+            researchCloudSync?.SetSessionAuthorization(
+                bearerToken,
+                pseudonymousParticipantCode,
+                consentToRawGaze);
+            eyeTrackingRecorder?.SetRawGazeConsent(consentToRawGaze);
+        }
+
+        public void RegisterResearchLoggingSession()
+        {
+            CrisisScenarioProfile scenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, 0);
+            researchCloudSync?.RegisterActiveSession(
+                sessionId,
+                scenario.id,
+                sessionStartedAtUtc);
         }
 
         private void Start()
@@ -123,7 +189,61 @@ namespace AdieLab.TeacherTraining
                 TrainingEventKind.SessionStarted,
                 TrainingPhase.PresentingScenario,
                 turnCoordinator.Phase);
+            researchBootstrap?.Initialize(this);
             hud.SetDialogueState(false, LlmGateway == null ? "로컬 대화 모드" : LlmGateway.ConfigurationLabel);
+            prebriefPanel = PrebriefPanel.Show(
+                hud.RootCanvas,
+                hud.PrimaryFont,
+                TrainingResearchCatalog.ForBeat(ActiveSceneId, 0),
+                null);
+            HudPanelFolding.Install(hud.RootCanvas, hud.PrimaryFont);
+            dialogueTarget = focalStudent;
+            focalSpeechAnchor = HeadOf(focalStudent);
+            Camera sceneCamera = teacherCamera != null ? teacherCamera.GetComponent<Camera>() : Camera.main;
+            StudentDialogueSelector selector = StudentDialogueSelector.Install(sceneCamera, focalStudent, classmates);
+            if (selector != null)
+            {
+                selector.StudentClicked += HandleStudentClicked;
+            }
+        }
+
+        private void HandleStudentClicked(NpcPerformance student)
+        {
+            if (student == null)
+            {
+                return;
+            }
+
+            prebriefPanel?.Dismiss();
+            dialogueTarget = student;
+            if (student == focalStudent)
+            {
+                if (focalSpeechAnchor != null)
+                {
+                    hud.SetSpeechTarget(focalSpeechAnchor);
+                }
+                hud.SetDialogueState(true, "집중 학생에게 말하기 · 대응이 평가에 반영됩니다");
+                return;
+            }
+
+            hud.SetSpeechTarget(HeadOf(student));
+            hud.SetDialogueState(
+                true,
+                AmbientPersonaChat.DisplayNameFor(student.gameObject.name) + "에게 말하기 · 자유 대화");
+        }
+
+        private static Transform HeadOf(NpcPerformance student)
+        {
+            if (student == null)
+            {
+                return null;
+            }
+
+            Animator animator = student.GetComponentInChildren<Animator>();
+            Transform head = animator != null && animator.isHuman
+                ? animator.GetBoneTransform(HumanBodyBones.Head)
+                : null;
+            return head != null ? head : student.transform;
         }
 
         private void OnDestroy()
@@ -138,6 +258,7 @@ namespace AdieLab.TeacherTraining
                         TrainingEventKind.SessionAborted,
                         previous,
                         TrainingPhase.Aborted);
+                    QueueAbortedResearchSession();
                 }
             }
 
@@ -151,8 +272,33 @@ namespace AdieLab.TeacherTraining
             hud.TeacherUtteranceSubmitted -= HandleTeacherUtterance;
         }
 
+        private void OnApplicationPause(bool paused)
+        {
+            if (paused && turnCoordinator != null && !sessionComplete)
+            {
+                QueueAbortedResearchSession();
+            }
+        }
+
         private void HandleTeacherUtterance(string utterance)
         {
+            // A clicked classmate receives a persona-flavored ambient reply outside the
+            // assessed crisis flow; only the focal student enters the scored pipeline.
+            if (dialogueTarget != null && dialogueTarget != focalStudent)
+            {
+                string speakerName = AmbientPersonaChat.DisplayNameFor(dialogueTarget.gameObject.name);
+                dialogueTarget.SetGesture(BehaviorGesture.Listen, 0.5f);
+                hud.SetSpeechTarget(HeadOf(dialogueTarget));
+                hud.ShowAmbientReply(speakerName, AmbientPersonaChat.ReplyFor(speakerName, utterance));
+                return;
+            }
+
+            if (eyeTrackingRecorder.RequiresLiveEyeTracking && !eyeTrackingRecorder.ResearchReady)
+            {
+                hud.SetDialogueState(false, "Quest Pro eye tracking permission/calibration required");
+                return;
+            }
+
             if (sessionComplete ||
                 !turnCoordinator.TrySubmit(
                     TeacherAction.FromUtterance(utterance),
@@ -162,6 +308,7 @@ namespace AdieLab.TeacherTraining
             }
 
             StudentStateSnapshot stateBefore = CaptureStudentState();
+            eyeTrackingRecorder.MarkTeacherAction(token.Value.ToString());
             DateTime requestStartedUtc = DateTime.UtcNow;
 
             teacherCamera?.EnterConversationFocus();
@@ -349,6 +496,12 @@ namespace AdieLab.TeacherTraining
 
         private void HandleOptionSelected(int optionIndex)
         {
+            if (eyeTrackingRecorder.RequiresLiveEyeTracking && !eyeTrackingRecorder.ResearchReady)
+            {
+                hud.SetDialogueState(false, "Quest Pro eye tracking permission/calibration required");
+                return;
+            }
+
             if (optionIndex < 0 ||
                 optionIndex >= beats[beatIndex].options.Length ||
                 !turnCoordinator.TrySubmit(
@@ -357,6 +510,7 @@ namespace AdieLab.TeacherTraining
             {
                 return;
             }
+            eyeTrackingRecorder.MarkTeacherAction(token.Value.ToString());
 
             StudentStateSnapshot stateBefore = CaptureStudentState();
             if (!turnCoordinator.TryResolve(token))
@@ -451,6 +605,8 @@ namespace AdieLab.TeacherTraining
             {
                 focalStudent.SetGesture(beat.entryGesture, beat.gestureIntensity);
             }
+            CrisisScenarioProfile researchScenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, beatIndex);
+            eyeTrackingRecorder.BeginCue(researchScenario.id, beatIndex);
             hud.ShowBeat(beatIndex, beats.Length, beat, score, beatIndex);
         }
 
@@ -479,10 +635,9 @@ namespace AdieLab.TeacherTraining
                         hud.AppendAiCoachFeedback(
                             $"LLM 루브릭(검증 신뢰도 {rubric.confidence:P0}) · {rubric.improvementSuggestion}");
                     }
-                    else if (sessionComplete)
-                    {
-                        ShowResearchDebrief();
-                    }
+                    // A rubric that arrives after session completion is recorded in telemetry
+                    // only; re-running the debrief here would re-queue the upload bundle and
+                    // re-open the dashboard from an async callback.
                 },
                 error => Debug.LogWarning($"Teacher rubric request failed: {error}")));
         }
@@ -525,12 +680,35 @@ namespace AdieLab.TeacherTraining
         }
 
 
+        private void QueueAbortedResearchSession()
+        {
+            ResearchDebriefReport report = EcdAssessmentEngine.Evaluate(
+                telemetryEvents,
+                ecdAssessmentModel);
+            CrisisScenarioProfile scenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, 0);
+            researchCloudSync?.QueueAbortedSession(
+                sessionId,
+                scenario.id,
+                sessionStartedAtUtc,
+                telemetryEvents,
+                report,
+                eyeTrackingRecorder != null ? eyeTrackingRecorder.RawDataPath : string.Empty);
+        }
+
         private void ShowResearchDebrief()
         {
             ResearchDebriefReport report = EcdAssessmentEngine.Evaluate(
                 telemetryEvents,
                 ecdAssessmentModel);
             modeNavigator?.ShowResearchDebrief(report, RestartSession);
+            CrisisScenarioProfile scenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, 0);
+            researchCloudSync?.QueueCompletedSession(
+                sessionId,
+                scenario.id,
+                sessionStartedAtUtc,
+                telemetryEvents,
+                report,
+                eyeTrackingRecorder != null ? eyeTrackingRecorder.RawDataPath : string.Empty);
         }
 
         private void RestartSession()
@@ -601,6 +779,8 @@ namespace AdieLab.TeacherTraining
             CrisisScenarioProfile scenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, beatIndex);
             string teacherHash = TextHash(teacherText);
             string replyHash = TextHash(studentReply);
+            TeacherGazeSummary gazeSummary =
+                eyeTrackingRecorder.TakeSummary(token.Value.ToString());
             var inference = new ModelPromptProvenance
             {
                 modelId = LlmGateway == null ? string.Empty : LlmGateway.ModelId,
@@ -650,7 +830,8 @@ namespace AdieLab.TeacherTraining
                 studentStateBefore = stateBefore,
                 studentStateAfter = stateBefore,
                 inference = inference,
-                competencyEvidence = evidence ?? Array.Empty<CompetencyEvidence>()
+                competencyEvidence = evidence ?? Array.Empty<CompetencyEvidence>(),
+                gaze = gazeSummary
             });
             AppendTelemetry(new TrainingTelemetryEvent
             {
@@ -678,7 +859,8 @@ namespace AdieLab.TeacherTraining
                 studentStateAfter = stateAfter,
                 inference = inference,
                 competencyEvidence = Array.Empty<CompetencyEvidence>(),
-                studentSpeech = speechPerformance?.CaptureTelemetry() ?? new StudentSpeechTelemetry()
+                studentSpeech = speechPerformance?.CaptureTelemetry() ?? new StudentSpeechTelemetry(),
+                gaze = gazeSummary
             });
         }
 
@@ -747,7 +929,15 @@ namespace AdieLab.TeacherTraining
             };
 
             string path = Path.Combine(Application.persistentDataPath, "teacher_training_sessions.jsonl");
-            File.AppendAllText(path, JsonUtility.ToJson(record) + Environment.NewLine);
+            try
+            {
+                File.AppendAllText(path, JsonUtility.ToJson(record) + Environment.NewLine);
+            }
+            catch (Exception exception) when (
+                exception is IOException || exception is UnauthorizedAccessException)
+            {
+                Debug.LogWarning(exception.GetType().Name);
+            }
         }
 
     }

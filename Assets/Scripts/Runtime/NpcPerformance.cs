@@ -81,7 +81,13 @@ namespace AdieLab.TeacherTraining
                 {
                     if (animator.enabled)
                     {
-                        animator.speed = (gestureIntensity < 0.45f ? 0f : 0.72f) * animationSpeedBias;
+                        // Slow continuous playback instead of a frozen pose, so background
+                        // students keep reading as alive while staying visually quiet.
+                        float ambientSpeed = Mathf.Lerp(
+                            0.3f,
+                            0.72f,
+                            Mathf.InverseLerp(0.12f, 0.45f, gestureIntensity));
+                        animator.speed = ambientSpeed * animationSpeedBias;
                     }
                 }
                 else
@@ -268,35 +274,22 @@ namespace AdieLab.TeacherTraining
                     return;
                 }
 
+                // Play the requested gesture softly instead of freezing on an Idle pose;
+                // playback speed is governed per-frame in Update.
                 animator.enabled = true;
-                animator.speed = 1f;
-                animator.Play("Idle", 0, 0f);
-                animator.Update(0f);
-                animator.speed = 0f;
+                animator.CrossFadeInFixedTime(
+                    StateNameFor(gesture),
+                    0.55f,
+                    0,
+                    (float)gestureRandom.NextDouble() * 0.85f);
                 return;
             }
 
             animator.enabled = true;
 
-            string stateName = gesture switch
-                {
-                    BehaviorGesture.Neutral => "Idle",
-                    BehaviorGesture.AvoidGaze => "AvoidGaze",
-                    BehaviorGesture.Fidget => "Fidget",
-                    BehaviorGesture.Withdraw => "Withdraw",
-                    BehaviorGesture.Protest => "Protest",
-                    BehaviorGesture.Defiant => "Defiant",
-                    BehaviorGesture.DeskTap => "DeskTap",
-                    BehaviorGesture.Shield => "Shield",
-                    BehaviorGesture.Point => "Point",
-                    BehaviorGesture.PushAway => "PushAway",
-                    BehaviorGesture.Listen => "Listen",
-                    BehaviorGesture.Recover => "Recover",
-                    _ => "Idle"
-                };
             float transition = Mathf.Lerp(0.42f, 0.16f, gestureIntensity);
             float normalizedTimeOffset = (float)gestureRandom.NextDouble() * 0.85f;
-            animator.CrossFadeInFixedTime(stateName, transition, 0, normalizedTimeOffset);
+            animator.CrossFadeInFixedTime(StateNameFor(gesture), transition, 0, normalizedTimeOffset);
         }
 
         public void SetAmbientGesture(BehaviorGesture gesture, float intensity, float minimumHoldSeconds)
@@ -304,6 +297,26 @@ namespace AdieLab.TeacherTraining
             ambientPerformance = true;
             SetGesture(gesture, Mathf.Min(intensity, 0.44f));
             nextGestureTime = Mathf.Max(nextGestureTime, Time.time + Mathf.Max(0f, minimumHoldSeconds));
+        }
+
+        private static string StateNameFor(BehaviorGesture gesture)
+        {
+            return gesture switch
+            {
+                BehaviorGesture.Neutral => "Idle",
+                BehaviorGesture.AvoidGaze => "AvoidGaze",
+                BehaviorGesture.Fidget => "Fidget",
+                BehaviorGesture.Withdraw => "Withdraw",
+                BehaviorGesture.Protest => "Protest",
+                BehaviorGesture.Defiant => "Defiant",
+                BehaviorGesture.DeskTap => "DeskTap",
+                BehaviorGesture.Shield => "Shield",
+                BehaviorGesture.Point => "Point",
+                BehaviorGesture.PushAway => "PushAway",
+                BehaviorGesture.Listen => "Listen",
+                BehaviorGesture.Recover => "Recover",
+                _ => "Idle"
+            };
         }
 
         private void ApplyProceduralGesture()
@@ -326,6 +339,12 @@ namespace AdieLab.TeacherTraining
             }
 
             float pulse = Mathf.Sin(Time.time * Mathf.Lerp(2.1f, 7.5f, currentVector.arousal) + gestureMotionPhase);
+            // Universal breathing: slow chest pitch every student always carries, faster and
+            // deeper as arousal rises, phase-desynced per student.
+            float arousal01 = Mathf.Clamp01(currentVector.arousal);
+            float breath = Mathf.Sin(Time.time * Mathf.Lerp(1.7f, 4.6f, arousal01) + gestureMotionPhase * 1.7f)
+                * Mathf.Lerp(0.7f, 1.5f, arousal01);
+            Quaternion breathOffset = Quaternion.AngleAxis(breath, Vector3.right);
             Quaternion offset = Quaternion.identity;
             if (currentGesture == BehaviorGesture.Fidget || currentGesture == BehaviorGesture.DeskTap)
             {
@@ -357,7 +376,7 @@ namespace AdieLab.TeacherTraining
                 offset = Quaternion.AngleAxis(pulse * 0.65f * gestureIntensity, Vector3.right);
             }
 
-            chest.rotation = proceduralRotation.Apply(chest.rotation, offset);
+            chest.rotation = proceduralRotation.Apply(chest.rotation, breathOffset * offset);
         }
 
         private static AffectVector VectorFor(StudentAffect affect)

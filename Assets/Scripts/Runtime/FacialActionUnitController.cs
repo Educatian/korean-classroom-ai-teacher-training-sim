@@ -27,6 +27,7 @@ namespace AdieLab.TeacherTraining
             public int index;
             public string name;
             public float target;
+            public FacialActionUnit[] matchedUnits = Array.Empty<FacialActionUnit>();
         }
 
         public int ChannelCount => channels.Count;
@@ -272,6 +273,27 @@ namespace AdieLab.TeacherTraining
                     }
                 }
             }
+
+            // Channel names and the explicit-unit set are immutable after this scan, so the
+            // per-channel unit mapping is resolved once instead of per RebuildTargets call.
+            var matched = new List<FacialActionUnit>();
+            for (int i = 0; i < channels.Count; i++)
+            {
+                BlendShapeChannel channel = channels[i];
+                matched.Clear();
+                foreach (FacialActionUnit unit in Units)
+                {
+                    bool matches = explicitActionUnits.Contains(unit)
+                        ? MatchesExplicitUnit(channel.name, unit)
+                        : MatchesFallbackUnit(channel.name, unit);
+                    if (matches)
+                    {
+                        matched.Add(unit);
+                    }
+                }
+
+                channel.matchedUnits = matched.ToArray();
+            }
         }
 
         private void RebuildTargets()
@@ -280,15 +302,10 @@ namespace AdieLab.TeacherTraining
             {
                 BlendShapeChannel channel = channels[i];
                 float strongest = 0f;
-                foreach (FacialActionUnit unit in Units)
+                FacialActionUnit[] matchedUnits = channel.matchedUnits;
+                for (int unitIndex = 0; unitIndex < matchedUnits.Length; unitIndex++)
                 {
-                    bool matches = explicitActionUnits.Contains(unit)
-                        ? MatchesExplicitUnit(channel.name, unit)
-                        : MatchesFallbackUnit(channel.name, unit);
-                    if (matches)
-                    {
-                        strongest = Mathf.Max(strongest, GetActionUnit(unit));
-                    }
+                    strongest = Mathf.Max(strongest, GetActionUnit(matchedUnits[unitIndex]));
                 }
 
                 channel.target = strongest * 100f;

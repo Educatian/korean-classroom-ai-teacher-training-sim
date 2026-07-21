@@ -36,6 +36,26 @@ namespace AdieLab.TeacherTraining
         public event Action ContinueSelected;
         public event Action<string> TeacherUtteranceSubmitted;
 
+        public Canvas RootCanvas => rootCanvas;
+        public TMP_FontAsset PrimaryFont => beatLabel != null ? beatLabel.font : null;
+
+        public void SetSpeechTarget(Transform target)
+        {
+            if (target != null)
+            {
+                speechTarget = target;
+            }
+        }
+
+        public void ShowAmbientReply(string speakerName, string reply)
+        {
+            speechBubbleText.text = KeepKoreanPhrasesTogether(reply);
+            speechBubble.gameObject.SetActive(true);
+            StopCoroutine(nameof(AnimateSpeechBubble));
+            StartCoroutine(nameof(AnimateSpeechBubble));
+            dialogueStatus.text = $"{speakerName} · 자유 대화 (평가에 반영되지 않습니다)";
+        }
+
         private void Awake()
         {
             for (int i = 0; i < optionButtons.Length; i++)
@@ -54,6 +74,10 @@ namespace AdieLab.TeacherTraining
                 }
             });
             speechBubble.gameObject.SetActive(false);
+            // Long student lines and beat titles must degrade with an ellipsis instead of
+            // hard-clipping mid-word inside their fixed-height panels.
+            studentLine.overflowMode = TextOverflowModes.Ellipsis;
+            beatLabel.overflowMode = TextOverflowModes.Ellipsis;
         }
 
         private void LateUpdate()
@@ -128,7 +152,29 @@ namespace AdieLab.TeacherTraining
             StartCoroutine(nameof(AnimateSpeechBubble));
             observationText.text =
                 $"<b><color=#FFFFFF>교사 · “{KeepKoreanPhrasesTogether(teacherUtterance)}”</color></b>\n" +
-                $"<color=#BFE7DF>정서가 {affect.valence:+0.00;-0.00;0.00} · 각성 {affect.arousal:0.00} · 주도성 {affect.dominance:+0.00;-0.00;0.00}</color>";
+                $"<color=#BFE7DF>{DescribeAffect(affect)}</color>";
+        }
+
+        private static string DescribeAffect(AffectVector affect)
+        {
+            string valence = affect.valence <= -0.55f
+                ? "부정 정서 강함"
+                : affect.valence <= -0.15f
+                    ? "부정 정서"
+                    : affect.valence < 0.15f
+                        ? "중립 정서"
+                        : "긍정 정서";
+            string arousal = affect.arousal >= 0.72f
+                ? "흥분 높음"
+                : affect.arousal >= 0.45f
+                    ? "긴장 상태"
+                    : "차분한 상태";
+            string dominance = affect.dominance <= -0.35f
+                ? "위축됨"
+                : affect.dominance >= 0.35f
+                    ? "주도적"
+                    : "관망 중";
+            return $"{valence} · {arousal} · {dominance}";
         }
 
         private System.Collections.IEnumerator AnimateSpeechBubble()
@@ -184,14 +230,21 @@ namespace AdieLab.TeacherTraining
         public void ShowFeedback(TeacherResponseOption option, int score, int completed)
         {
             string marker = option.quality == 3 ? "효과적인 대응" : option.quality == 2 ? "부분적으로 효과적" : "재구성이 필요한 대응";
-            feedbackText.text = $"<b>{marker}</b>\n{option.rationale}";
+            // The authored rationale needs the full panel height; the disabled option list
+            // is hidden until the next beat re-populates it in ShowBeat.
+            feedbackText.rectTransform.anchorMin = new Vector2(0f, 0.14f);
+            feedbackText.rectTransform.anchorMax = Vector2.one;
+            feedbackText.fontSize = 16;
+            feedbackText.text = $"<b>{marker}</b>\n<color=#5A6B70>선택: {option.label}</color>\n\n{option.rationale}";
             scoreText.text = $"공동조절 점수 {score}  ·  {ResponseScorer.GetLevel(score, completed)}";
             for (int i = 0; i < optionButtons.Length; i++)
             {
                 optionButtons[i].interactable = false;
+                optionButtons[i].gameObject.SetActive(false);
             }
 
             continueButton.gameObject.SetActive(true);
+            UiEntranceMotion.Play(feedbackText.gameObject, 0.2f);
         }
 
         public void ShowCompletion(int score, int maxScore)
@@ -211,7 +264,7 @@ namespace AdieLab.TeacherTraining
             feedbackText.rectTransform.anchorMax = Vector2.one;
             feedbackText.rectTransform.offsetMin = new Vector2(24f, 24f);
             feedbackText.rectTransform.offsetMax = new Vector2(-24f, -50f);
-            feedbackText.text = $"<size=18>최종 공동조절 점수</size>\n<b><size=38>{score}/{maxScore}</size></b>\n<size=18>{ResponseScorer.GetLevel(score, 3)}</size>";
+            feedbackText.text = $"<size=18>최종 공동조절 점수</size>\n<b><size=38>{score}/{maxScore}</size></b>\n<size=18>{ResponseScorer.GetLevel(score, Mathf.Max(1, maxScore / 3))}</size>";
             scoreText.text = "세션 기록이 로컬에 저장되었습니다.";
             foreach (Button button in optionButtons)
             {
