@@ -430,6 +430,9 @@ namespace AdieLab.TeacherTraining.Editor
                 Cube($"MidBook_{i:00}", shelf.transform, new Vector3(0f, 0.4375f + 0.10f, -0.45f + i * 0.16f), new Vector3(0.15f, 0.20f, 0.036f), bookMaterials[(i + 3) % bookMaterials.Length]);
             }
 
+            // --- "우리의 약속" strategy board: beat-4 coping-plan assembly -------
+            BuildStrategyBoard(furnishing);
+
             // --- Potted plants (Blender-authored, two corners) ------------------
             PlaceAuthoredPlant(furnishing, "RecoveryPlant_SW", "SM_PottedSansevieria_Realistic.obj",
                 new Vector3(-13.1f, 0f, 0.55f), 35f, 1.05f);
@@ -449,6 +452,66 @@ namespace AdieLab.TeacherTraining.Editor
             Cylinder("ClockFace", clock.transform, new Vector3(0f, 0.055f, 0f), new Vector3(0.88f, 0.03f, 0.88f), Quaternion.identity, Mat("M_ClockFace"));
             Cube("HourHand", clock.transform, new Vector3(0f, 0.09f, 0.09f), new Vector3(0.025f, 0.025f, 0.20f), metal);
             Cube("MinuteHand", clock.transform, new Vector3(0.09f, 0.10f, 0f), new Vector3(0.28f, 0.025f, 0.025f), metal);
+        }
+
+        private static readonly string[] StrategyCardLabels =
+        {
+            "심호흡 세 번", "물 마시기", "파란 카드 신호", "잠깐 쉬기", "선생님에게 말하기", "자리 옮기기"
+        };
+
+        private static void BuildStrategyBoard(Transform furnishing)
+        {
+            GameObject board = RootObject("StrategyBoard", furnishing, new Vector3(-9.55f, 0f, 3.55f));
+            board.transform.localRotation = Quaternion.Euler(0f, 215f, 0f);
+            Material wood = Mat("M_TrimWood");
+            Material face = Mat("M_Paper");
+
+            // Kid-height easel: two legs + tilted board panel.
+            Cube("LegL", board.transform, new Vector3(-0.26f, 0.42f, 0.05f), new Vector3(0.035f, 0.84f, 0.035f), wood);
+            Cube("LegR", board.transform, new Vector3(0.26f, 0.42f, 0.05f), new Vector3(0.035f, 0.84f, 0.035f), wood);
+            GameObject panel = Cube("Panel", board.transform, new Vector3(0f, 0.72f, 0f), new Vector3(0.62f, 0.78f, 0.022f), face);
+            panel.transform.localRotation = Quaternion.Euler(-12f, 0f, 0f);
+
+            // Unscaled face anchor: decorations parented to the scaled panel cube
+            // would inherit its 0.022 z-scale and collapse onto the back face.
+            GameObject faceAnchor = RootObject("Face", board.transform, new Vector3(0f, 0.72f, 0f));
+            faceAnchor.transform.localRotation = Quaternion.Euler(-12f, 0f, 0f);
+
+            Cube("Header", faceAnchor.transform, new Vector3(0f, 0.30f, 0.016f), new Vector3(0.56f, 0.11f, 0.008f), Mat("M_WorkMint"));
+            CreateRecoverySignText("StrategyBoardTitle", faceAnchor.transform, "우리의 약속",
+                new Vector3(0f, 0.30f, 0.024f), Quaternion.Euler(0f, 180f, 0f), 0.9f, new Color(0.05f, 0.25f, 0.18f));
+
+            // Three slot outlines on the panel face (anchors for magnetic snapping).
+            for (int i = 0; i < 3; i++)
+            {
+                float slotY = 0.12f - i * 0.21f;
+                GameObject slot = RootObject($"StrategySlot_{i:00}", faceAnchor.transform, new Vector3(0f, slotY, 0.016f));
+                Material outline = Mat("M_WorkMint");
+                Cube("OutlineN", slot.transform, new Vector3(0f, 0.045f, 0f), new Vector3(0.25f, 0.008f, 0.006f), outline);
+                Cube("OutlineS", slot.transform, new Vector3(0f, -0.045f, 0f), new Vector3(0.25f, 0.008f, 0.006f), outline);
+                Cube("OutlineE", slot.transform, new Vector3(0.125f, 0f, 0f), new Vector3(0.008f, 0.098f, 0.006f), outline);
+                Cube("OutlineW", slot.transform, new Vector3(-0.125f, 0f, 0f), new Vector3(0.008f, 0.098f, 0.006f), outline);
+            }
+
+            // Tray ledge with six strategy cards to choose from.
+            Cube("Tray", board.transform, new Vector3(0f, 0.30f, 0.10f), new Vector3(0.66f, 0.02f, 0.16f), wood);
+            Material[] palette =
+            {
+                Mat("M_RecoveryCard_Green"), Mat("M_RecoveryCard_Blue"), Mat("M_RecoveryCard_Yellow"),
+                Mat("M_RecoveryCard_Orange"), Mat("M_RecoveryCard_Purple"), Mat("M_RecoveryCard_Red")
+            };
+            for (int i = 0; i < 6; i++)
+            {
+                float x = -0.25f + (i % 3) * 0.25f;
+                float z = 0.055f + (i / 3) * 0.075f;
+                float y = 0.315f + (i / 3) * 0.004f;
+                Cube($"StrategyCard_{i:00}", board.transform,
+                    new Vector3(x, y, z), new Vector3(0.21f, 0.006f, 0.062f), palette[i]);
+                // Label parented to the board (not the scaled card) so the TMP text
+                // keeps uniform scale; readable from above, facing the teacher side.
+                CreateRecoverySignText($"StrategyCardLabel_{i:00}", board.transform, StrategyCardLabels[i],
+                    new Vector3(x, y + 0.006f, z), Quaternion.Euler(90f, 180f, 0f), 0.24f, new Color(0.12f, 0.12f, 0.14f));
+            }
         }
 
         private static void BuildCardDropZone(Transform parent, string name, Vector3 localPosition)

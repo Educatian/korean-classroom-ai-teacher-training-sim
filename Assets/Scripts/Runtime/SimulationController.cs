@@ -227,6 +227,7 @@ namespace AdieLab.TeacherTraining
             if (recoveryRoomScenario)
             {
                 HandsOnCardSystem.Install(this, sceneCamera);
+                StrategyBoardSystem.Install(this, sceneCamera);
             }
             StudentDialogueSelector selector = StudentDialogueSelector.Install(sceneCamera, focalStudent, classmates);
             if (selector != null)
