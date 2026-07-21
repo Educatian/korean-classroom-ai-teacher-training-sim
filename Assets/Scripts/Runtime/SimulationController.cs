@@ -224,6 +224,10 @@ namespace AdieLab.TeacherTraining
             dialogueTarget = focalStudent;
             focalSpeechAnchor = HeadOf(focalStudent);
             Camera sceneCamera = teacherCamera != null ? teacherCamera.GetComponent<Camera>() : Camera.main;
+            if (recoveryRoomScenario)
+            {
+                HandsOnCardSystem.Install(this, sceneCamera);
+            }
             StudentDialogueSelector selector = StudentDialogueSelector.Install(sceneCamera, focalStudent, classmates);
             if (selector != null)
             {
@@ -254,6 +258,55 @@ namespace AdieLab.TeacherTraining
             hud.SetDialogueState(
                 true,
                 AmbientPersonaChat.DisplayNameFor(student.gameObject.name) + "에게 말하기 · 자유 대화");
+        }
+
+        private readonly HashSet<string> handsOnActionsRecorded = new HashSet<string>();
+
+        /// <summary>
+        /// Records a physical hands-on action (card handed, signal placed) as a
+        /// deterministic teacher-action event with competency evidence. Idempotent
+        /// per action id so repeated snapping cannot farm evidence.
+        /// </summary>
+        public void RecordHandsOnAction(string actionId, TeacherCompetency competency, string coachLine)
+        {
+            if (string.IsNullOrEmpty(actionId) || !handsOnActionsRecorded.Add(actionId))
+            {
+                return;
+            }
+
+            hud.SetDialogueState(true, coachLine);
+            focalStudent.SetGesture(BehaviorGesture.Listen, 0.4f);
+            CrisisScenarioProfile scenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, beatIndex);
+            StudentStateSnapshot state = CaptureStudentState();
+            AppendTelemetry(new TrainingTelemetryEvent
+            {
+                eventId = Guid.NewGuid().ToString(),
+                sessionId = sessionId,
+                sequence = telemetrySequence++,
+                timestampUtc = DateTime.UtcNow.ToString("O"),
+                scenarioId = scenario.id,
+                beatIndex = beatIndex,
+                kind = TrainingEventKind.TeacherAction,
+                phaseBefore = turnCoordinator.Phase,
+                phaseAfter = turnCoordinator.Phase,
+                actionId = actionId,
+                actionSource = TrainingActionSource.TeacherChoice,
+                turnRoute = StudentTurnRoute.ScriptedScenario,
+                turnOutcome = StudentTurnOutcome.Accepted,
+                studentStateBefore = state,
+                studentStateAfter = state,
+                competencyEvidence = new[]
+                {
+                    new CompetencyEvidence
+                    {
+                        evidenceId = actionId,
+                        observableId = competency.ToString(),
+                        rationale = string.Empty,
+                        dimension = competency,
+                        score = 3f
+                    }
+                }
+            });
         }
 
         private static Transform HeadOf(NpcPerformance student)

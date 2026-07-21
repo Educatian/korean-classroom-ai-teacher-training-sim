@@ -382,6 +382,11 @@ namespace AdieLab.TeacherTraining.Editor
                 card.transform.localRotation = Quaternion.Euler(0f, -Mathf.Rad2Deg * angle + 90f + (i % 3 - 1) * 8f, 0f);
             }
 
+            // Hands-on card sockets: outlined drop zones the runtime card system
+            // turns into magnetic targets (student hand-over + blue signal spot).
+            BuildCardDropZone(table.transform, "StudentCardAnchor", new Vector3(0f, RecoveryTableTopY + 0.002f, 0.36f));
+            BuildCardDropZone(table.transform, "SignalCardAnchor", new Vector3(0.34f, RecoveryTableTopY + 0.002f, 0.16f));
+
             GameObject tissue = Cube("TissueBox", table.transform, new Vector3(0.26f, RecoveryTableTopY + 0.045f, -0.24f), new Vector3(0.23f, 0.09f, 0.115f), paper);
             Cube("TissuePuff", tissue.transform, new Vector3(0f, 0.55f, 0f), new Vector3(0.35f, 0.28f, 0.5f), paper);
             GameObject cup = Cylinder("PencilCup", table.transform, new Vector3(-0.30f, RecoveryTableTopY + 0.055f, -0.20f), new Vector3(0.09f, 0.055f, 0.09f), Quaternion.identity, Mat("M_WorkBlue"));
@@ -444,6 +449,17 @@ namespace AdieLab.TeacherTraining.Editor
             Cylinder("ClockFace", clock.transform, new Vector3(0f, 0.055f, 0f), new Vector3(0.88f, 0.03f, 0.88f), Quaternion.identity, Mat("M_ClockFace"));
             Cube("HourHand", clock.transform, new Vector3(0f, 0.09f, 0.09f), new Vector3(0.025f, 0.025f, 0.20f), metal);
             Cube("MinuteHand", clock.transform, new Vector3(0.09f, 0.10f, 0f), new Vector3(0.28f, 0.025f, 0.025f), metal);
+        }
+
+        private static void BuildCardDropZone(Transform parent, string name, Vector3 localPosition)
+        {
+            GameObject anchor = RootObject(name, parent, localPosition);
+            Material outline = Mat("M_WorkMint");
+            // Thin frame outline so the drop zone reads as an affordance, not decor.
+            Cube("OutlineN", anchor.transform, new Vector3(0f, 0f, 0.085f), new Vector3(0.125f, 0.0025f, 0.008f), outline);
+            Cube("OutlineS", anchor.transform, new Vector3(0f, 0f, -0.085f), new Vector3(0.125f, 0.0025f, 0.008f), outline);
+            Cube("OutlineE", anchor.transform, new Vector3(0.062f, 0f, 0f), new Vector3(0.008f, 0.0025f, 0.162f), outline);
+            Cube("OutlineW", anchor.transform, new Vector3(-0.062f, 0f, 0f), new Vector3(0.008f, 0.0025f, 0.162f), outline);
         }
 
         private static void PlaceAuthoredPlant(
