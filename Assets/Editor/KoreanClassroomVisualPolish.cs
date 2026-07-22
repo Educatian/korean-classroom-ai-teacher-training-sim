@@ -227,10 +227,15 @@ namespace AdieLab.TeacherTraining.Editor
             SetMaterialFloat("M_Wall", "_Glossiness", 0.18f);
             SetMaterialFloat("M_CorridorWall", "_Glossiness", 0.16f);
             // Gymnasium: polished maple court reads glossy; stage wood satin.
-            SetMaterialFloat("M_GymFloorMaple", "_Glossiness", 0.62f);
-            SetMaterialFloat("M_GymLineBlue", "_Glossiness", 0.58f);
-            SetMaterialFloat("M_GymLineGreen", "_Glossiness", 0.58f);
+            SetMaterialFloat("M_GymFloorMaple", "_Glossiness", 0.84f);
+            SetMaterialFloat("M_GymFloorMaple", "_Metallic", 0.035f);
+            SetMaterialFloat("M_GymFloorMaple", "_BumpScale", 0.24f);
+            SetMaterialFloat("M_GymLineBlue", "_Glossiness", 0.76f);
+            SetMaterialFloat("M_GymLineGreen", "_Glossiness", 0.76f);
             SetMaterialFloat("M_GymStageWoodDark", "_Glossiness", 0.42f);
+            SetMaterialFloat("M_GymStageWoodDark", "_BumpScale", 0.30f);
+            SetMaterialFloat("M_GymWallSlat", "_BumpScale", 0.26f);
+            SetMaterialFloat("M_GymDoorWood", "_BumpScale", 0.28f);
             SetMaterialFloat("M_GymWindowGlass", "_Glossiness", 0.94f);
             SetMaterialFloat("M_GymPianoBlack", "_Glossiness", 0.7f);
             // Recovery room: satin birch floor, matte rug stays untouched.
@@ -253,6 +258,10 @@ namespace AdieLab.TeacherTraining.Editor
             SetDetail("M_RecoveryWall", wallDetail, microNormal, 5f, 0.3f);
             SetDetail("M_Floor", floorDetail, microNormal, 8f, 0.45f);
             SetDetail("M_CorridorFloor", floorDetail, microNormal, 8f, 0.4f);
+            SetDetail("M_GymFloorMaple", null, microNormal, 12f, 0.14f);
+            SetDetail("M_GymWallSlat", null, microNormal, 8f, 0.18f);
+            SetDetail("M_GymStageWoodDark", floorDetail, microNormal, 7f, 0.22f);
+            SetDetail("M_GymDoorWood", null, microNormal, 5f, 0.20f);
         }
 
         private static void EnsureNormalImport(string path)

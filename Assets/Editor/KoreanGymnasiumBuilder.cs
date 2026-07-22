@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using AdieLab.TeacherTraining;
 using TMPro;
@@ -147,6 +148,7 @@ namespace AdieLab.TeacherTraining.Editor
             gymRoot.transform.position = Vector3.zero;
             BuildGymnasiumShell(gymRoot.transform);
             BuildGymnasiumCourtMarkings(gymRoot.transform);
+            BuildGymnasiumFloorSheen(gymRoot.transform);
             BuildGymnasiumRoofStructure(gymRoot.transform);
             BuildGymnasiumWallDressing(gymRoot.transform);
             BuildGymnasiumStage(gymRoot.transform);
@@ -193,6 +195,7 @@ namespace AdieLab.TeacherTraining.Editor
 
             // 6) Polish + save + register.
             KoreanClassroomVisualPolish.ApplyVisualPolish();
+            ConfigureGymnasiumPbrSupport(gymRoot);
             EditorSceneManager.SaveScene(scene, GymnasiumScenePath);
             RegisterTrainingScenes();
             AssetDatabase.SaveAssets();
@@ -210,11 +213,14 @@ namespace AdieLab.TeacherTraining.Editor
             EnsureFolder(MaterialRoot);
             CreateMaterial(
                 "M_GymFloorMaple",
-                new Color(0.88f, 0.77f, 0.58f),
+                new Color(0.78f, 0.70f, 0.58f),
                 0f,
                 0.42f,
                 "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2.png",
-                new Vector2(14f, 20f));
+                new Vector2(14f, 20f),
+                false,
+                false,
+                "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2_Normal.png");
             CreateMaterial("M_GymLineBlue", new Color(0.16f, 0.32f, 0.62f), 0f, 0.40f);
             CreateMaterial("M_GymLineGreen", new Color(0.18f, 0.46f, 0.28f), 0f, 0.40f);
             CreateMaterial("M_GymTrussGreen", new Color(0.44f, 0.52f, 0.38f), 0.35f, 0.45f);
@@ -225,13 +231,20 @@ namespace AdieLab.TeacherTraining.Editor
                 0f,
                 0.22f,
                 "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2.png",
-                new Vector2(6f, 3f));
+                new Vector2(6f, 3f),
+                false,
+                false,
+                "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2_Normal.png");
             CreateMaterial("M_GymSlatSeam", new Color(0.58f, 0.47f, 0.34f), 0f, 0.18f);
             CreateMaterial("M_GymWainscotGreen", new Color(0.42f, 0.66f, 0.30f), 0f, 0.28f);
             CreateMaterial("M_GymWainscotOrange", new Color(0.92f, 0.55f, 0.16f), 0f, 0.28f);
             CreateMaterial("M_GymTrimWhite", new Color(0.92f, 0.92f, 0.90f), 0.1f, 0.35f);
-            CreateMaterial("M_GymStageWoodDark", new Color(0.42f, 0.29f, 0.18f), 0f, 0.38f);
-            CreateMaterial("M_GymStageFascia", new Color(0.62f, 0.45f, 0.29f), 0f, 0.30f);
+            CreateMaterial("M_GymStageWoodDark", new Color(0.42f, 0.29f, 0.18f), 0f, 0.38f,
+                "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2.png", new Vector2(8f, 3f), false, false,
+                "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2_Normal.png");
+            CreateMaterial("M_GymStageFascia", new Color(0.62f, 0.45f, 0.29f), 0f, 0.30f,
+                "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2.png", new Vector2(7f, 1.5f), false, false,
+                "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2_Normal.png");
             CreateMaterial("M_GymBackPanel", new Color(0.84f, 0.74f, 0.58f), 0f, 0.24f);
             CreateMaterial("M_GymValanceNavy", new Color(0.09f, 0.13f, 0.33f), 0f, 0.34f);
             CreateMaterial("M_GymValanceNavyDeep", new Color(0.06f, 0.09f, 0.25f), 0f, 0.30f);
@@ -239,12 +252,85 @@ namespace AdieLab.TeacherTraining.Editor
             CreateMaterial("M_GymSpeakerBlack", new Color(0.09f, 0.09f, 0.10f), 0.1f, 0.30f);
             CreateMaterial("M_GymSteelSilver", new Color(0.72f, 0.74f, 0.76f), 0.7f, 0.55f);
             CreateMaterial("M_GymWindowGlass", new Color(0.74f, 0.83f, 0.90f), 0.1f, 0.85f, null, null, false, true);
-            CreateMaterial("M_GymDoorWood", new Color(0.52f, 0.38f, 0.26f), 0f, 0.30f);
+            CreateMaterial("M_GymDoorWood", new Color(0.52f, 0.38f, 0.26f), 0f, 0.30f,
+                "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2.png", new Vector2(1.25f, 2.5f), false, false,
+                "Assets/Art/Textures/BirchDesk_Laminate_HQ_v2_Normal.png");
             CreateMaterial("M_GymMatBlue", new Color(0.22f, 0.36f, 0.62f), 0f, 0.18f);
             CreateMaterial("M_GymMatGreen", new Color(0.30f, 0.52f, 0.34f), 0f, 0.18f);
             CreateMaterial("M_GymPianoBlack", new Color(0.06f, 0.06f, 0.07f), 0.2f, 0.72f);
             CreateMaterial("M_GymLightEmissive", new Color(1f, 0.97f, 0.90f), 0f, 0.4f, null, null, false, true);
+            CreateGymnasiumFloorSheenMaterial();
             AssetDatabase.SaveAssets();
+        }
+
+        private static void CreateGymnasiumFloorSheenMaterial()
+        {
+            const string texturePath = "Assets/Art/GeneratedMaterials/TX_GymFloor_LightSheen.png";
+            const string materialPath = MaterialRoot + "/M_GymFloorSheen.mat";
+            // Regenerate deterministically so visual tuning survives scene rebuilds.
+            {
+                var texture = new Texture2D(256, 64, TextureFormat.RGBA32, false, false);
+                for (int y = 0; y < texture.height; y++)
+                {
+                    float vertical = Mathf.Abs((y + 0.5f) / texture.height * 2f - 1f);
+                    for (int x = 0; x < texture.width; x++)
+                    {
+                        float horizontal = Mathf.Abs((x + 0.5f) / texture.width * 2f - 1f);
+                        float fade = Mathf.Pow(1f - Mathf.Clamp01(vertical), 2.2f) *
+                                     Mathf.Pow(1f - Mathf.Clamp01(horizontal), 0.7f);
+                        texture.SetPixel(x, y, new Color(1f, 0.965f, 0.84f, fade * 0.62f));
+                    }
+                }
+                texture.Apply(false, false);
+                File.WriteAllBytes(texturePath, texture.EncodeToPNG());
+                UnityEngine.Object.DestroyImmediate(texture);
+                AssetDatabase.ImportAsset(texturePath, ImportAssetOptions.ForceSynchronousImport);
+                var importer = AssetImporter.GetAtPath(texturePath) as TextureImporter;
+                if (importer != null)
+                {
+                    importer.wrapMode = TextureWrapMode.Clamp;
+                    importer.mipmapEnabled = true;
+                    importer.alphaSource = TextureImporterAlphaSource.FromInput;
+                    importer.textureCompression = TextureImporterCompression.Compressed;
+                    importer.maxTextureSize = 256;
+                    TextureImporterPlatformSettings android = importer.GetPlatformTextureSettings("Android");
+                    android.overridden = true;
+                    android.maxTextureSize = 256;
+                    android.format = TextureImporterFormat.ETC2_RGBA8;
+                    importer.SetPlatformTextureSettings(android);
+                    importer.SaveAndReimport();
+                }
+            }
+
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+            if (material == null)
+            {
+                material = new Material(Shader.Find("Unlit/Transparent")) { name = "M_GymFloorSheen" };
+                AssetDatabase.CreateAsset(material, materialPath);
+            }
+            material.shader = Shader.Find("Unlit/Transparent");
+            material.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+            material.renderQueue = 2990;
+            EditorUtility.SetDirty(material);
+        }
+
+        private static void BuildGymnasiumFloorSheen(Transform root)
+        {
+            Transform sheenRoot = RootObject("FloorLightSheen", root, Vector3.zero).transform;
+            Material sheen = Mat("M_GymFloorSheen");
+            foreach (float z in new[] { -13.5f, -4.5f, 4.5f, 13.5f })
+            {
+                foreach (float x in new[] { -6.5f, 6.5f })
+                {
+                    Quad(
+                        $"LightSheen_{x:0}_{z:0}",
+                        sheenRoot,
+                        new Vector3(x, 0.012f, z + 1.4f),
+                        new Vector3(5.8f, 1.15f, 1f),
+                        Quaternion.Euler(90f, 0f, 0f),
+                        sheen);
+                }
+            }
         }
 
         // Floor slab, perimeter walls to eave height, stepped gable tops on
@@ -719,6 +805,8 @@ namespace AdieLab.TeacherTraining.Editor
                     point.intensity = 0.85f;
                     point.color = new Color(1f, 0.96f, 0.88f);
                     point.shadows = LightShadows.None;
+                    point.lightmapBakeType = LightmapBakeType.Baked;
+                    point.renderMode = LightRenderMode.ForceVertex;
                 }
             }
 
@@ -732,6 +820,122 @@ namespace AdieLab.TeacherTraining.Editor
             wash.intensity = 0.75f;
             wash.color = new Color(1f, 0.95f, 0.85f);
             wash.shadows = LightShadows.None;
+            wash.lightmapBakeType = LightmapBakeType.Mixed;
+            wash.renderMode = LightRenderMode.ForceVertex;
+
+            // One broad specular source gives the polyurethane-coated maple
+            // floor the long, soft ceiling-light sheen seen in Korean school halls.
+            // It is the scene's sole forced pixel light on Quest.
+            GameObject courtSheen = new GameObject("CourtFloorSheen");
+            courtSheen.transform.SetParent(lights, false);
+            courtSheen.transform.localPosition = new Vector3(0f, 8.2f, -0.5f);
+            courtSheen.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            Light sheen = courtSheen.AddComponent<Light>();
+            sheen.type = LightType.Spot;
+            sheen.range = 15f;
+            sheen.spotAngle = 105f;
+            sheen.innerSpotAngle = 72f;
+            sheen.intensity = 1.15f;
+            sheen.color = new Color(1f, 0.95f, 0.84f);
+            sheen.shadows = LightShadows.None;
+            sheen.lightmapBakeType = LightmapBakeType.Mixed;
+            sheen.renderMode = LightRenderMode.ForcePixel;
+        }
+
+        private static void ConfigureGymnasiumPbrSupport(GameObject gymRoot)
+        {
+            StaticEditorFlags flags = StaticEditorFlags.BatchingStatic |
+                                      StaticEditorFlags.ReflectionProbeStatic |
+                                      StaticEditorFlags.ContributeGI;
+            foreach (Transform child in gymRoot.GetComponentsInChildren<Transform>(true))
+            {
+                GameObjectUtility.SetStaticEditorFlags(child.gameObject, flags);
+            }
+
+            foreach (string legacyProbeName in new[]
+                     {
+                         "ClassroomReflectionProbe",
+                         "Probe_Classroom",
+                         "Probe_CorridorEast",
+                         "Probe_CorridorWest",
+                         "Probe_RecoveryRoom"
+                     })
+            {
+                GameObject legacyProbe = GameObject.Find(legacyProbeName);
+                if (legacyProbe != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(legacyProbe);
+                }
+            }
+
+            CreateGymReflectionProbe(
+                gymRoot.transform,
+                "Probe_GymCourt",
+                new Vector3(0f, 3.4f, -1.5f),
+                new Vector3(28f, 7.2f, 32f),
+                1);
+            CreateGymReflectionProbe(
+                gymRoot.transform,
+                "Probe_GymStage",
+                new Vector3(0f, 3.8f, 17.2f),
+                new Vector3(28f, 7.6f, 8.5f),
+                2);
+
+            GameObject probeGrid = new GameObject("GymLightProbeGrid");
+            probeGrid.transform.SetParent(gymRoot.transform, false);
+            LightProbeGroup group = probeGrid.AddComponent<LightProbeGroup>();
+            var positions = new List<Vector3>();
+            foreach (float y in new[] { 0.65f, 1.55f, 3.2f })
+            {
+                foreach (float z in new[] { -15f, -5f, 5f, 15f })
+                {
+                    foreach (float x in new[] { -10f, -3.35f, 3.35f, 10f })
+                    {
+                        positions.Add(new Vector3(x, y, z));
+                    }
+                }
+            }
+            group.probePositions = positions.ToArray();
+
+            // The directional light provides character grounding. Local gym
+            // lights stay shadow-free to hold the Quest 72 Hz budget.
+            foreach (Light light in gymRoot.GetComponentsInChildren<Light>(true))
+            {
+                light.shadows = LightShadows.None;
+            }
+            foreach (Light light in UnityEngine.Object.FindObjectsByType<Light>(
+                         FindObjectsInactive.Exclude,
+                         FindObjectsSortMode.None))
+            {
+                if ((light.type == LightType.Point || light.type == LightType.Spot) &&
+                    light.name != "StageWash" &&
+                    light.name != "CourtFloorSheen")
+                {
+                    light.lightmapBakeType = LightmapBakeType.Baked;
+                    light.renderMode = LightRenderMode.ForceVertex;
+                    light.shadows = LightShadows.None;
+                }
+            }
+        }
+
+        private static void CreateGymReflectionProbe(
+            Transform parent,
+            string name,
+            Vector3 position,
+            Vector3 size,
+            int importance)
+        {
+            GameObject probeObject = new GameObject(name);
+            probeObject.transform.SetParent(parent, false);
+            probeObject.transform.localPosition = position;
+            ReflectionProbe probe = probeObject.AddComponent<ReflectionProbe>();
+            probe.mode = UnityEngine.Rendering.ReflectionProbeMode.Baked;
+            probe.boxProjection = true;
+            probe.size = size;
+            probe.resolution = 128;
+            probe.intensity = 1.05f;
+            probe.importance = importance;
+            probe.blendDistance = 2.5f;
         }
 
         // World-space TMP sign (depth-tested Korean SDF font — mirrors the
