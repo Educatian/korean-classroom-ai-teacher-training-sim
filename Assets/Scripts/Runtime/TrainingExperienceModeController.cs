@@ -20,6 +20,7 @@ namespace AdieLab.TeacherTraining
 
         public TrainingExperienceMode CurrentMode { get; private set; } = TrainingExperienceMode.Desktop;
         public string Status { get; private set; } = "DESKTOP";
+        public bool IsXrActive => xrRig.IsEnabled;
 
         private void Awake()
         {

@@ -16,6 +16,10 @@ namespace AdieLab.TeacherTraining
         private bool rawGazeConsent;
         private bool authorized;
 
+        public bool IsAuthorized => authorized;
+        public string RuntimeStatus { get; private set; } = "Not initialized";
+        public string LastAuthorizationError { get; private set; } = string.Empty;
+
         public void Initialize(SimulationController simulationController)
         {
             if (controller != null)
@@ -30,6 +34,7 @@ namespace AdieLab.TeacherTraining
                 !settings.IsConfigured ||
                 !settings.AutomaticLogging)
             {
+                RuntimeStatus = "Automatic research logging is not configured";
                 return;
             }
 
@@ -41,6 +46,7 @@ namespace AdieLab.TeacherTraining
                 null,
                 participantCode,
                 rawGazeConsent);
+            RuntimeStatus = "Waiting for short-lived session authorization";
             TryAuthorize();
         }
 
@@ -70,6 +76,7 @@ namespace AdieLab.TeacherTraining
                 return;
             }
             authorizationRoutine = StartCoroutine(RequestAuthorization());
+            RuntimeStatus = "Authorizing research session";
         }
 
         private IEnumerator RequestAuthorization()
@@ -103,6 +110,8 @@ namespace AdieLab.TeacherTraining
                 request.responseCode < 200 ||
                 request.responseCode >= 300)
             {
+                LastAuthorizationError = request.responseCode + " " + request.error;
+                RuntimeStatus = "Authorization failed; retry scheduled on resume";
                 Debug.LogWarning(
                     "Automatic research authorization will retry on app resume: " +
                     request.responseCode + " " + request.error);
@@ -116,11 +125,15 @@ namespace AdieLab.TeacherTraining
                 string.IsNullOrWhiteSpace(response.token) ||
                 response.participantCode != participantCode)
             {
+                LastAuthorizationError = "Invalid authorization response";
+                RuntimeStatus = "Authorization response validation failed";
                 Debug.LogWarning("Automatic research authorization returned an invalid response.");
                 yield break;
             }
 
             authorized = true;
+            LastAuthorizationError = string.Empty;
+            RuntimeStatus = "Authorized";
             controller.ConfigureResearchSession(
                 response.token,
                 participantCode,

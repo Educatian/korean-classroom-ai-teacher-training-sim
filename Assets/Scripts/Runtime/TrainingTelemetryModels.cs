@@ -112,6 +112,27 @@ namespace AdieLab.TeacherTraining
     }
 
     [Serializable]
+    public sealed class CrisisOrchestrationTelemetry
+    {
+        public string scenarioId;
+        public string beatId;
+        public CrisisOrchestrationAction action;
+        public bool accepted;
+        public CrisisOrchestrationPhase phaseBefore;
+        public CrisisOrchestrationPhase phaseAfter;
+        [Range(0f, 1f)] public float teacherArousalBefore;
+        [Range(0f, 1f)] public float teacherArousalAfter;
+        [Range(0f, 1f)] public float focalStudentRiskBefore;
+        [Range(0f, 1f)] public float focalStudentRiskAfter;
+        public int unsafePeersBefore;
+        public int unsafePeersAfter;
+        public SupportResponseState colleagueResponseAfter;
+        public SupportResponseState administratorResponseAfter;
+        public CrisisOrchestrationEvidenceId[] evidence =
+            Array.Empty<CrisisOrchestrationEvidenceId>();
+    }
+
+    [Serializable]
     public sealed class CompetencyEvidence
     {
         public string evidenceId;
@@ -124,7 +145,7 @@ namespace AdieLab.TeacherTraining
     [Serializable]
     public sealed class TrainingTelemetryEvent
     {
-        public const int CurrentSchemaVersion = 6;
+        public const int CurrentSchemaVersion = 7;
 
         public int schemaVersion = CurrentSchemaVersion;
         public string eventId;
@@ -151,6 +172,8 @@ namespace AdieLab.TeacherTraining
         public CompetencyEvidence[] competencyEvidence = Array.Empty<CompetencyEvidence>();
         public StudentSpeechTelemetry studentSpeech = new StudentSpeechTelemetry();
         public LearningSupportTelemetry learningSupport = new LearningSupportTelemetry();
+        public CrisisOrchestrationTelemetry orchestration =
+            new CrisisOrchestrationTelemetry();
         public TeacherGazeSummary gaze = new TeacherGazeSummary();
     }
 }

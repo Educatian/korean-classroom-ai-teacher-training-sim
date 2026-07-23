@@ -29,6 +29,10 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private SecureLlmProxySettings settings;
         private string sessionAuthorization;
         private string pseudonymousSessionScope;
+        public bool HasSuccessfulStudentTurn { get; private set; }
+        public bool HasSuccessfulTranscription { get; private set; }
+        public bool HasSuccessfulSpeechSynthesis { get; private set; }
+        public string LastSuccessfulOperationAtUtc { get; private set; } = string.Empty;
         public bool IsConfigured => settings != null && settings.IsValid && !string.IsNullOrWhiteSpace(sessionAuthorization);
         public string ConfigurationLabel => IsConfigured ? "보안 LLM 프록시 연결" : "로컬 대화 모드 · 보안 프록시 세션 대기";
         public string ModelId => "secure-proxy/managed";
@@ -51,6 +55,8 @@ namespace AdieLab.TeacherTraining
             if (!string.IsNullOrWhiteSpace(error) || response?.studentTurn == null) { failed?.Invoke(error ?? "보안 프록시 학생 응답이 비어 있습니다."); yield break; }
             StudentTurnResolution resolution = StudentTurnBoundary.Normalize(JsonUtility.ToJson(response.studentTurn));
             if (resolution.Outcome != StudentTurnOutcome.Accepted) { failed?.Invoke("보안 프록시 학생 응답이 검증 계약을 충족하지 못했습니다."); yield break; }
+            HasSuccessfulStudentTurn = true;
+            LastSuccessfulOperationAtUtc = DateTime.UtcNow.ToString("O");
             completed?.Invoke(resolution.Turn);
         }
 
@@ -72,6 +78,8 @@ namespace AdieLab.TeacherTraining
             if (!Succeeded(request, failed)) yield break;
             TranscriptResponse response = JsonUtility.FromJson<TranscriptResponse>(request.downloadHandler.text);
             if (response == null || response.schemaVersion != 1 || string.IsNullOrWhiteSpace(response.transcript)) { failed?.Invoke("음성 전사 응답이 올바르지 않습니다."); yield break; }
+            HasSuccessfulTranscription = true;
+            LastSuccessfulOperationAtUtc = DateTime.UtcNow.ToString("O");
             completed?.Invoke(response.transcript.Trim());
         }
 
@@ -89,7 +97,7 @@ namespace AdieLab.TeacherTraining
             using UnityWebRequest audioRequest = UnityWebRequestMultimedia.GetAudioClip(new Uri(path).AbsoluteUri, AudioType.WAV);
             yield return audioRequest.SendWebRequest();
             if (audioRequest.result != UnityWebRequest.Result.Success) failed?.Invoke("합성된 학생 음성을 불러오지 못했습니다.");
-            else { AudioClip clip = DownloadHandlerAudioClip.GetContent(audioRequest); clip.name = "StudentSpeechSecureProxy"; completed?.Invoke(clip); }
+            else { AudioClip clip = DownloadHandlerAudioClip.GetContent(audioRequest); clip.name = "StudentSpeechSecureProxy"; HasSuccessfulSpeechSynthesis = true; LastSuccessfulOperationAtUtc = DateTime.UtcNow.ToString("O"); completed?.Invoke(clip); }
             try { File.Delete(path); } catch (IOException) { }
         }
 

@@ -28,6 +28,9 @@ namespace AdieLab.TeacherTraining
         private bool rawGazeConsent;
         private bool uploadInProgress;
 
+        public bool UploadInProgress => uploadInProgress;
+        public int PendingUploadCount => CountPendingManifests();
+
         public bool IsConfigured =>
             settings != null &&
             settings.IsConfigured &&
@@ -391,6 +394,26 @@ namespace AdieLab.TeacherTraining
         private static string QueueDirectory()
         {
             return Path.Combine(Application.persistentDataPath, "research-upload-queue");
+        }
+
+        private static int CountPendingManifests()
+        {
+#if UNITY_WEBGL
+            return 0;
+#else
+            try
+            {
+                string directory = QueueDirectory();
+                return Directory.Exists(directory)
+                    ? Directory.GetFiles(directory, "*.json").Length
+                    : 0;
+            }
+            catch (Exception exception) when (
+                exception is IOException || exception is UnauthorizedAccessException)
+            {
+                return -1;
+            }
+#endif
         }
     }
 }

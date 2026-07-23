@@ -36,6 +36,30 @@ namespace AdieLab.TeacherTraining
             }
         }
 
+        public static bool HasInputDevice
+        {
+            get
+            {
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN || UNITY_ANDROID
+                return Microphone.devices != null && Microphone.devices.Length > 0;
+#else
+                return false;
+#endif
+            }
+        }
+
+        public static bool HasMicrophonePermission
+        {
+            get
+            {
+#if UNITY_ANDROID && !UNITY_EDITOR
+                return Permission.HasUserAuthorizedPermission(Permission.Microphone);
+#else
+                return HasInputDevice;
+#endif
+            }
+        }
+
         private void Awake()
         {
             microphoneButton.onClick.AddListener(ToggleListening);

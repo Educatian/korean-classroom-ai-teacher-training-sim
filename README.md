@@ -84,6 +84,10 @@ After the six-beat session, the simulation opens a research debrief dashboard wi
 
 The training HUD now provides fading, non-scoring support during action. A teacher can request an observation cue, request the underlying response principle, and compare a completed action with the strongest authored alternative. Inactivity and repeated missed signals can trigger bounded support automatically; retries delay and cap automatic help. The left-edge HUD dock uses three separately generated transparent icon assets for observation, response, and direct dialogue. Each circular button toggles its associated window and confirms the change in a short notification window.
 
+### Team-Based Crisis Orchestration Training
+
+The left-side **Safety Training** launcher opens a seven-beat crisis-response module for a teacher-directed verbal outburst and object-throwing incident. It covers teacher self-state awareness, peer safety, concrete help-seeking, verified colleague arrival, structured handoff, low-stimulus recontact, objective documentation, and teacher recovery support. Feelings are never scored; only observable actions create evidence. Scenario text, thresholds, and the eight-dimension ECD model are editable ScriptableObjects, and schema-v7 telemetry records the before/after operational state without adding raw dialogue text. See [`Docs/CRISIS_ORCHESTRATION_VERTICAL_SLICE.md`](Docs/CRISIS_ORCHESTRATION_VERTICAL_SLICE.md).
+
 ## Research Purpose
 
 The prototype is designed to help teachers practice co-regulation-oriented responses, not merely behavior control. It emphasizes reading emotional signals before, during, and after visible behavior, then choosing low-escalation language that preserves student dignity, safety, and agency.

@@ -49,6 +49,7 @@ namespace AdieLab.TeacherTraining
         private TeacherEyeTrackingRecorder eyeTrackingRecorder;
         private ResearchCloudSyncClient researchCloudSync;
         private ResearchAutomaticSessionBootstrap researchBootstrap;
+        private QuestAcceptanceMonitor questAcceptanceMonitor;
         private AdaptiveLearningSupportController learningSupport;
         private TeacherResponseOption latestTeacherResponse;
 
@@ -124,6 +125,12 @@ namespace AdieLab.TeacherTraining
                 eyeTrackingRecorder = gameObject.AddComponent<TeacherEyeTrackingRecorder>();
             }
             eyeTrackingRecorder.Initialize(sessionId, EyeTrackingResearchSettings.LoadDefault(), CaptureStudentState);
+            questAcceptanceMonitor = GetComponent<QuestAcceptanceMonitor>();
+            if (questAcceptanceMonitor == null)
+            {
+                questAcceptanceMonitor = gameObject.AddComponent<QuestAcceptanceMonitor>();
+            }
+            questAcceptanceMonitor.Initialize(this);
             StudentGazeAoiInstaller.Install(focalStudent, "focal-student", true);
             for (int index = 0; index < classmates.Length; index++)
             {
@@ -243,6 +250,10 @@ namespace AdieLab.TeacherTraining
                 ActiveSceneId,
                 null);
             HudPanelFolding.Install(hud.RootCanvas, hud.PrimaryFont);
+            CrisisOrchestrationPanel.Install(
+                hud.RootCanvas,
+                hud.PrimaryFont,
+                RecordCrisisOrchestrationAction);
             PauseMenuSystem.Install(this, hud.RootCanvas, hud.PrimaryFont);
             MinimapSystem.Install(
                 hud.RootCanvas,
@@ -843,6 +854,49 @@ namespace AdieLab.TeacherTraining
                 studentStateBefore = state,
                 studentStateAfter = state,
                 learningSupport = support ?? new LearningSupportTelemetry()
+            });
+        }
+
+        private void RecordCrisisOrchestrationAction(
+            string orchestrationBeatId,
+            CrisisOrchestrationAction action,
+            CrisisOrchestrationResolution resolution)
+        {
+            if (resolution == null) return;
+            StudentStateSnapshot studentState = CaptureStudentState();
+            AppendTelemetry(new TrainingTelemetryEvent
+            {
+                eventId = Guid.NewGuid().ToString(),
+                sessionId = sessionId,
+                sequence = telemetrySequence++,
+                timestampUtc = DateTime.UtcNow.ToString("O"),
+                scenarioId = "teacher-directed-aggression-v1",
+                beatIndex = beatIndex,
+                kind = TrainingEventKind.TeacherAction,
+                phaseBefore = turnCoordinator?.Phase ?? TrainingPhase.PresentingScenario,
+                phaseAfter = turnCoordinator?.Phase ?? TrainingPhase.PresentingScenario,
+                actionId = "crisis-orchestration." + orchestrationBeatId + "." + action,
+                actionSource = TrainingActionSource.TeacherChoice,
+                studentStateBefore = studentState,
+                studentStateAfter = studentState,
+                orchestration = new CrisisOrchestrationTelemetry
+                {
+                    scenarioId = "teacher-directed-aggression-v1",
+                    beatId = orchestrationBeatId,
+                    action = action,
+                    accepted = resolution.accepted,
+                    phaseBefore = resolution.before.phase,
+                    phaseAfter = resolution.after.phase,
+                    teacherArousalBefore = resolution.before.teacher.arousal,
+                    teacherArousalAfter = resolution.after.teacher.arousal,
+                    focalStudentRiskBefore = resolution.before.classroom.focalStudentRisk,
+                    focalStudentRiskAfter = resolution.after.classroom.focalStudentRisk,
+                    unsafePeersBefore = resolution.before.classroom.peersInUnsafeArea,
+                    unsafePeersAfter = resolution.after.classroom.peersInUnsafeArea,
+                    colleagueResponseAfter = resolution.after.support.colleagueResponse,
+                    administratorResponseAfter = resolution.after.support.administratorResponse,
+                    evidence = resolution.evidence ?? Array.Empty<CrisisOrchestrationEvidenceId>()
+                }
             });
         }
 

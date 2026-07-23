@@ -21,6 +21,7 @@ namespace AdieLab.TeacherTraining
     public sealed class AdaptiveLearningSupportController : MonoBehaviour
     {
         private LearningSupportPolicy policy;
+        private ApprovedKnowledgeCatalog knowledgeCatalog;
         private LearningSupportStateMachine stateMachine;
         private AdaptiveLearningSupportPanel panel;
         private Func<bool> canOfferSupport;
@@ -46,6 +47,7 @@ namespace AdieLab.TeacherTraining
             }
 
             policy = authoredPolicy != null ? authoredPolicy : LearningSupportPolicy.LoadDefault();
+            knowledgeCatalog = ApprovedKnowledgeCatalog.LoadDefault();
             stateMachine = new LearningSupportStateMachine(policy);
             canOfferSupport = canOffer;
             isAfterAction = afterAction;
@@ -144,6 +146,7 @@ namespace AdieLab.TeacherTraining
                 HeadingFor(decision.Level),
                 BuildBody(decision.Level, context),
                 decision.Automatic ? "상황 흐름에 따라 제공된 단서" : "교사가 요청한 단서");
+            panel.SetSource(BuildSourceLabel(decision, context));
             recordTelemetry?.Invoke(
                 TrainingEventKind.LearningSupportShown,
                 ToTelemetry(decision, 0L));
@@ -204,6 +207,38 @@ namespace AdieLab.TeacherTraining
             }
 
             return string.Empty;
+        }
+
+        private string BuildSourceLabel(
+            LearningSupportDecision decision,
+            LearningSupportContext context)
+        {
+            string delivery = decision.Automatic
+                ? "상황 흐름에 따라 제공된 단서"
+                : "교사가 요청한 단서";
+            if (knowledgeCatalog == null || context == null)
+            {
+                return delivery + " · 작성형 정책";
+            }
+
+            GroundedKnowledgeCitation[] citations = knowledgeCatalog.Retrieve(
+                context.stage.ToString(), context.stage, context.teacherGoals, 2);
+            if (citations.Length == 0)
+            {
+                return delivery + " · 승인 근거 없음(작성형 정책 사용)";
+            }
+
+            var label = new StringBuilder(delivery + " · 승인 문서 ");
+            for (int index = 0; index < citations.Length; index++)
+            {
+                if (index > 0) label.Append(" / ");
+                label.Append(citations[index].sourceTitle);
+                if (!string.IsNullOrWhiteSpace(citations[index].locator))
+                {
+                    label.Append(" ").Append(citations[index].locator);
+                }
+            }
+            return label.ToString();
         }
 
         private static string BuildPostActionContrast(LearningSupportContext context)
@@ -421,6 +456,11 @@ namespace AdieLab.TeacherTraining
                 root.gameObject.SetActive(true);
                 root.SetAsLastSibling();
                 UiEntranceMotion.Play(root.gameObject, 0.2f);
+            }
+
+            public void SetSource(string value)
+            {
+                source.text = (value ?? string.Empty) + " · 점수에 직접 반영되지 않음";
             }
 
             public void Hide()
