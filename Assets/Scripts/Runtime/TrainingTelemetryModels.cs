@@ -14,7 +14,9 @@ namespace AdieLab.TeacherTraining
         SessionResumed = 6,
         SessionAborted = 7,
         RubricEvaluation = 8,
-        ReflectionSubmitted = 9
+        ReflectionSubmitted = 9,
+        LearningSupportShown = 10,
+        LearningSupportDismissed = 11
     }
 
     public enum TrainingActionSource
@@ -98,6 +100,18 @@ namespace AdieLab.TeacherTraining
     }
 
     [Serializable]
+    public sealed class LearningSupportTelemetry
+    {
+        public LearningSupportLevel level;
+        public LearningSupportTrigger trigger;
+        public bool automatic;
+        public long idleMilliseconds;
+        public int requestCount;
+        public int consecutiveMisses;
+        public long displayedMilliseconds;
+    }
+
+    [Serializable]
     public sealed class CompetencyEvidence
     {
         public string evidenceId;
@@ -110,7 +124,7 @@ namespace AdieLab.TeacherTraining
     [Serializable]
     public sealed class TrainingTelemetryEvent
     {
-        public const int CurrentSchemaVersion = 5;
+        public const int CurrentSchemaVersion = 6;
 
         public int schemaVersion = CurrentSchemaVersion;
         public string eventId;
@@ -136,6 +150,7 @@ namespace AdieLab.TeacherTraining
         public ModelPromptProvenance inference = new ModelPromptProvenance();
         public CompetencyEvidence[] competencyEvidence = Array.Empty<CompetencyEvidence>();
         public StudentSpeechTelemetry studentSpeech = new StudentSpeechTelemetry();
+        public LearningSupportTelemetry learningSupport = new LearningSupportTelemetry();
         public TeacherGazeSummary gaze = new TeacherGazeSummary();
     }
 }

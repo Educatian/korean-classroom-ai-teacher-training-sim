@@ -21,6 +21,7 @@ namespace AdieLab.TeacherTraining
         [SerializeField] private bool schoolyardScenario;
         [SerializeField] private bool gymnasiumScenario;
         [SerializeField] private EcdAssessmentModel ecdAssessmentModel;
+        [SerializeField] private LearningSupportPolicy learningSupportPolicy;
 
         private ScenarioBeat[] beats;
         private TrainingScenarioAsset scenarioAsset;
@@ -48,6 +49,8 @@ namespace AdieLab.TeacherTraining
         private TeacherEyeTrackingRecorder eyeTrackingRecorder;
         private ResearchCloudSyncClient researchCloudSync;
         private ResearchAutomaticSessionBootstrap researchBootstrap;
+        private AdaptiveLearningSupportController learningSupport;
+        private TeacherResponseOption latestTeacherResponse;
 
         private bool awaitingContinue =>
             turnCoordinator != null && turnCoordinator.Phase == TrainingPhase.ReviewingFeedback;
@@ -93,6 +96,10 @@ namespace AdieLab.TeacherTraining
             if (ecdAssessmentModel == null)
             {
                 ecdAssessmentModel = EcdAssessmentModel.LoadDefault();
+            }
+            if (learningSupportPolicy == null)
+            {
+                learningSupportPolicy = LearningSupportPolicy.LoadDefault();
             }
             scenarioAsset = TrainingScenarioCatalog
                 .LoadDefault()
@@ -204,6 +211,22 @@ namespace AdieLab.TeacherTraining
                     gestureIntensity,
                     initialHold);
             }
+
+            learningSupport = GetComponent<AdaptiveLearningSupportController>();
+            if (learningSupport == null)
+            {
+                learningSupport = gameObject.AddComponent<AdaptiveLearningSupportController>();
+            }
+            learningSupport.Initialize(
+                hud.RootCanvas,
+                hud.PrimaryFont,
+                learningSupportPolicy,
+                () => turnCoordinator != null &&
+                      turnCoordinator.Phase == TrainingPhase.AwaitingTeacherAction &&
+                      !sessionComplete,
+                () => awaitingContinue && !sessionComplete,
+                BuildLearningSupportContext,
+                RecordLearningSupportTelemetry);
 
             PresentBeat();
             turnCoordinator.Start();
@@ -573,6 +596,7 @@ namespace AdieLab.TeacherTraining
             source += " · " + StudentSpeechSynthesizer.VoiceDisclosure;
             hud.SetDialogueState(false, source);
             hud.ShowFeedback(assessment, score, beatIndex + 1);
+            latestTeacherResponse = assessment;
             RecordResolvedTurn(
                 TrainingActionSource.TeacherUtterance,
                 utterance,
@@ -585,6 +609,7 @@ namespace AdieLab.TeacherTraining
                 requestStartedUtc,
                 error);
             AppendRecord(-1, assessment);
+            learningSupport?.RecordOutcome(assessment);
             if (fromLlm && LlmGateway != null && LlmGateway.IsConfigured)
             {
                 RequestRubricEvaluation(utterance, turn.studentReply, assessment, beatIndex, token);
@@ -679,6 +704,7 @@ namespace AdieLab.TeacherTraining
             }
 
             hud.ShowFeedback(option, score, beatIndex + 1);
+            latestTeacherResponse = option;
             RecordResolvedTurn(
                 TrainingActionSource.TeacherChoice,
                 option.spokenResponse,
@@ -691,6 +717,7 @@ namespace AdieLab.TeacherTraining
                 DateTime.UtcNow,
                 null);
             AppendRecord(optionIndex, option);
+            learningSupport?.RecordOutcome(option);
             if (aiCoach != null && aiCoach.IsConfigured)
             {
                 int requestBeat = beatIndex;
@@ -726,6 +753,7 @@ namespace AdieLab.TeacherTraining
             }
             if (complete)
             {
+                learningSupport?.EndSession();
                 focalStudent.SetAffect(StudentAffect.Recovering);
                 focalStudent.SetUprightEyeContact(true);
                 teacherCamera?.SetUprightFocus(true);
@@ -761,6 +789,7 @@ namespace AdieLab.TeacherTraining
 
         private void PresentBeat()
         {
+            latestTeacherResponse = null;
             ScenarioBeat beat = beats[beatIndex];
             if (beat.gestureIntensity > 0f)
             {
@@ -769,6 +798,52 @@ namespace AdieLab.TeacherTraining
             CrisisScenarioProfile researchScenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, beatIndex);
             eyeTrackingRecorder.BeginCue(researchScenario.id, beatIndex);
             hud.ShowBeat(beatIndex, beats.Length, beat, score, beatIndex);
+            learningSupport?.BeginBeat(attemptNumber);
+        }
+
+        private LearningSupportContext BuildLearningSupportContext()
+        {
+            ScenarioBeatAuthoringData authored = scenarioAsset.AuthoredBeats[beatIndex];
+            var goals = new TeacherCompetency[authored.TeacherGoals.Count];
+            for (int index = 0; index < goals.Length; index++)
+            {
+                goals[index] = authored.TeacherGoals[index];
+            }
+
+            return new LearningSupportContext
+            {
+                stage = authored.Stage,
+                peerAttention = authored.PeerAttention,
+                presentationAvoidance = authored.PresentationAvoidance,
+                teacherGoals = goals,
+                beat = beats[beatIndex],
+                latestResponse = latestTeacherResponse
+            };
+        }
+
+        private void RecordLearningSupportTelemetry(
+            TrainingEventKind kind,
+            LearningSupportTelemetry support)
+        {
+            CrisisScenarioProfile scenario = TrainingResearchCatalog.ForBeat(ActiveSceneId, beatIndex);
+            StudentStateSnapshot state = CaptureStudentState();
+            AppendTelemetry(new TrainingTelemetryEvent
+            {
+                eventId = Guid.NewGuid().ToString(),
+                sessionId = sessionId,
+                sequence = telemetrySequence++,
+                timestampUtc = DateTime.UtcNow.ToString("O"),
+                scenarioId = scenario.id,
+                beatIndex = beatIndex,
+                kind = kind,
+                phaseBefore = turnCoordinator?.Phase ?? TrainingPhase.PresentingScenario,
+                phaseAfter = turnCoordinator?.Phase ?? TrainingPhase.PresentingScenario,
+                actionId = $"learning-support.{support.level}.{support.trigger}",
+                actionSource = TrainingActionSource.System,
+                studentStateBefore = state,
+                studentStateAfter = state,
+                learningSupport = support ?? new LearningSupportTelemetry()
+            });
         }
 
         private void RequestRubricEvaluation(
@@ -1067,6 +1142,7 @@ namespace AdieLab.TeacherTraining
                 studentStateAfter = stateBefore,
                 inference = inference,
                 competencyEvidence = evidence ?? Array.Empty<CompetencyEvidence>(),
+                learningSupport = learningSupport?.CaptureActionSnapshot() ?? new LearningSupportTelemetry(),
                 gaze = gazeSummary
             });
             AppendTelemetry(new TrainingTelemetryEvent

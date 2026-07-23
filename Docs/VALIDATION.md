@@ -132,3 +132,11 @@ The final PlayMode run logged `CLASSMATE_GAZE_QA_OK`, `NPC_IDLE_BEHAVIOR_QA_OK`,
 - The final Meta Quest build emitted `META_QUEST_BUILD_OK bytes=941446479`; the APK is 124,082,840 bytes on disk and excludes the Windows-only PDF plugins.
 - The built player loaded the sample, rendered pages 1 and 2, and emitted `BOARD_PRESENTATION_EVIDENCE_OK title=BoardPresentationDemo pages=3 current=2`.
 - Visual review confirmed upright, non-mirrored Korean text, correct 16:9 fitting, visible page controls, and successful page transition in `Unity_PdfPresentation_Page01.png` and `Unity_PdfPresentation_Page02.png`.
+# Adaptive learning support and left-edge HUD dock (2026-07-22)
+
+- Full EditMode regression suite passed: `134/134`.
+- The learning-support PlayMode gate opened the authored classroom scene, dismissed the prebrief, toggled the observation window from the left dock, verified the notification window, restored the panel, and opened an observation cue.
+- All three generated HUD icons loaded as runtime sprites from separate transparent PNG assets.
+- Runtime checks confirmed that the dock remains inside and within 20 pixels of the left canvas edge; the learning-support panel remains inside the canvas and does not overlap the response-choice panel.
+- Heading, body, source, option, and notification labels generated visible TextMeshPro glyph meshes without overflow.
+- Evidence capture: `Assets/Reference/Unity_Adaptive_Learning_Support.png` at 3200×1800.

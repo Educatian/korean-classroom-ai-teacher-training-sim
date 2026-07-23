@@ -35,6 +35,16 @@ namespace AdieLab.TeacherTraining.Tests
                     fallbackUsed = true,
                     fallbackReason = nameof(ModelPromptProvenance.fallbackReason),
                     latencyMilliseconds = 1234
+                },
+                learningSupport = new LearningSupportTelemetry
+                {
+                    level = LearningSupportLevel.Principle,
+                    trigger = LearningSupportTrigger.ManualRequest,
+                    automatic = false,
+                    idleMilliseconds = 8200,
+                    requestCount = 2,
+                    consecutiveMisses = 1,
+                    displayedMilliseconds = 3400
                 }
             };
 
@@ -52,6 +62,9 @@ namespace AdieLab.TeacherTraining.Tests
             Assert.That(restored.teacherTextLength, Is.EqualTo(17));
             Assert.That(restored.teacherTextHash, Is.Not.Empty);
             Assert.That(restored.turnRoute, Is.EqualTo(StudentTurnRoute.LocalFallback));
+            Assert.That(restored.learningSupport.level, Is.EqualTo(LearningSupportLevel.Principle));
+            Assert.That(restored.learningSupport.requestCount, Is.EqualTo(2));
+            Assert.That(restored.learningSupport.displayedMilliseconds, Is.EqualTo(3400));
         }
 
         [Test]

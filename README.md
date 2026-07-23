@@ -13,8 +13,8 @@ This project is a research and teacher-education prototype. It does not replace 
 | Training scenes | Scene 1 general classroom, Scene 2 circle discussion and presentation |
 | Student NPCs | 15 Rocketbox-based students per classroom |
 | Dialogue | Deterministic fallback plus desktop OpenRouter and authenticated Quest secure-proxy routes |
-| Assessment | Authored response scoring plus evidence-centered telemetry events |
-| Validation | EditMode `115/115`, Worker `12/12`, XR/scenario PlayMode QA, Windows and Quest builds passed |
+| Assessment | Authored response scoring, adaptive learning support, and evidence-centered telemetry events |
+| Validation | EditMode `134/134`, Worker `12/12`, XR/scenario/learning-support PlayMode QA, Windows and Quest builds passed |
 | Status | Active research prototype |
 
 ## Screenshots
@@ -78,6 +78,12 @@ The circle scene uses the same direct-dialogue and speech-bubble system, allowin
 
 After the six-beat session, the simulation opens a research debrief dashboard with affect trajectories, an intervention timeline, competency evidence counts, missed-signal prompts, anonymized JSON/CSV export, and a same-scenario retry control.
 
+### Adaptive In-Session Learning Support
+
+![Adaptive observation cue and generated left-edge HUD icons](Assets/Reference/Unity_Adaptive_Learning_Support.png)
+
+The training HUD now provides fading, non-scoring support during action. A teacher can request an observation cue, request the underlying response principle, and compare a completed action with the strongest authored alternative. Inactivity and repeated missed signals can trigger bounded support automatically; retries delay and cap automatic help. The left-edge HUD dock uses three separately generated transparent icon assets for observation, response, and direct dialogue. Each circular button toggles its associated window and confirms the change in a short notification window.
+
 ## Research Purpose
 
 The prototype is designed to help teachers practice co-regulation-oriented responses, not merely behavior control. It emphasizes reading emotional signals before, during, and after visible behavior, then choosing low-escalation language that preserves student dignity, safety, and agency.
@@ -138,6 +144,8 @@ The current training loop asks the teacher to:
 - Direct dialogue input with Windows/Quest microphone capture and authenticated OpenRouter Korean transcription.
 - Subtle button feedback sound and classroom-footstep style movement audio.
 - Scene selector for switching between the general classroom and the circle discussion scene.
+- Left-edge circular HUD dock with generated observation, response, and dialogue icon assets plus click notifications.
+- Adaptive observation cues, response principles, and post-action contrasts with retry-based fading.
 
 ### OpenRouter LLM Integration
 
@@ -218,6 +226,7 @@ The runtime separates raw text from research telemetry. Session events include:
 - scoring evidence and rubric dimensions;
 - student synthetic-voice route, speaking rate, pitch, volume, and punctuation-pause plan;
 - LLM route, model, prompt version, fallback state, and latency metadata when applicable.
+- learning-support level, trigger, automatic/manual route, idle duration, request count, repeated misses, and display duration.
 
 Replay validation checks event sequence order and schema compatibility. The editable ECD model at [TeacherResponseEcdModel.asset](Assets/Resources/Training/ECD/TeacherResponseEcdModel.asset) links competencies to observable behaviors, event evidence, weights, expected scores, and missed-signal feedback without requiring C# edits. This makes the prototype more useful for future learning analytics and evidence-centered design work while reducing unnecessary sensitive text retention.
 
